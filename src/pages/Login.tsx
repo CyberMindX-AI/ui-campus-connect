@@ -35,7 +35,7 @@ const Login = () => {
     setTimeout(() => {
       setLoading(false);
       toast({ title: 'Welcome back!', description: 'You have signed in successfully.' });
-      navigate('/');
+      navigate('/dashboard/buyer');
     }, 1500);
   };
 
