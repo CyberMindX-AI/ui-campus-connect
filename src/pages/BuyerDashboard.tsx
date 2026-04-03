@@ -1,10 +1,11 @@
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShoppingBag, MessageSquare, Heart, Package, TrendingUp, Clock, Star, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
 import { products, categories } from '@/data/mock';
+import { useAuth } from '@/contexts/AuthContext';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -34,6 +35,11 @@ const statusColors: Record<string, string> = {
 const BuyerDashboard = () => {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const { user, isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
     <Layout>
@@ -45,7 +51,7 @@ const BuyerDashboard = () => {
           className="mb-6 rounded-2xl bg-gradient-to-r from-primary to-primary-dark p-5 text-primary-foreground sm:mb-8 sm:p-8"
         >
           <h1 className="font-heading text-xl font-bold sm:text-2xl lg:text-3xl">
-            {greeting}, Student! 👋
+            {greeting}, {user?.fullname?.split(' ')[0] || 'Student'}! 👋
           </h1>
           <p className="mt-1 text-sm text-primary-foreground/80 sm:text-base">
             {new Date().toLocaleDateString('en-NG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}

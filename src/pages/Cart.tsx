@@ -100,9 +100,11 @@ const Cart = () => {
               <div className="mt-4">
                 <Input placeholder="Enter promo code" className="text-sm" />
               </div>
-              <Button variant="hero" className="mt-4 w-full gap-2" size="lg">
-                Checkout <ArrowRight className="h-4 w-4" />
-              </Button>
+              <Link to="/checkout">
+                <Button variant="hero" className="mt-4 w-full gap-2" size="lg">
+                  Checkout <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
               <Link to="/products" className="mt-3 block text-center text-sm text-primary hover:underline">
                 Continue Shopping
               </Link>
