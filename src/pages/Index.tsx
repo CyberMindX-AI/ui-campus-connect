@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, ShieldCheck, Store, CreditCard, Star, ChevronDown, Users, Package, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,7 @@ import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
 import { products, categories, stats, testimonials, faqs } from '@/data/mock';
 import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -14,6 +15,11 @@ const fadeUp = {
 
 const Index = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const { isAuthenticated } = useAuth();
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard/buyer" replace />;
+  }
 
   return (
     <Layout>
