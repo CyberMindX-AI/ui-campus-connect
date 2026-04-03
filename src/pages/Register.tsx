@@ -55,7 +55,7 @@ const Register = () => {
     setTimeout(() => {
       setLoading(false);
       toast({ title: 'Account created!', description: 'Check your UI email for a verification link.' });
-      navigate('/login');
+      navigate(role === 'seller' ? '/dashboard/seller' : '/dashboard/buyer');
     }, 1500);
   };
 
