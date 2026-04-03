@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,6 +16,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const validate = () => {
     const errs: Record<string, string> = {};
@@ -34,6 +36,7 @@ const Login = () => {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
+      login({ fullname: 'Student', email, role: 'both', faculty: 'Science' });
       toast({ title: 'Welcome back!', description: 'You have signed in successfully.' });
       navigate('/dashboard/buyer');
     }, 1500);

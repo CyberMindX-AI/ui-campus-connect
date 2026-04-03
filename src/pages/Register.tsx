@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,6 +23,7 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const update = (field: string, value: string | boolean) => {
     setForm((p) => ({ ...p, [field]: value }));
@@ -54,6 +56,7 @@ const Register = () => {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
+      login({ fullname: form.fullname, email: form.email, role, faculty: form.faculty });
       toast({ title: 'Account created!', description: 'Check your UI email for a verification link.' });
       navigate(role === 'seller' ? '/dashboard/seller' : '/dashboard/buyer');
     }, 1500);
