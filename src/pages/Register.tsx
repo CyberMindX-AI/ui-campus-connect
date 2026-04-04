@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, Check, X } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { useToast } from '@/hooks/use-toast';
 
@@ -13,6 +13,14 @@ const faculties = [
   'Pharmacy', 'Science', 'Social Sciences', 'Technology', 'Veterinary Medicine',
   'Public Health', 'Economics', 'Environmental Design & Management', 'Renewable Natural Resources',
   'Multidisciplinary Studies', 'Basic Medical Sciences',
+];
+
+const passwordRules = [
+  { label: 'At least 8 characters', test: (pw: string) => pw.length >= 8 },
+  { label: 'One uppercase letter', test: (pw: string) => /[A-Z]/.test(pw) },
+  { label: 'One lowercase letter', test: (pw: string) => /[a-z]/.test(pw) },
+  { label: 'One number', test: (pw: string) => /[0-9]/.test(pw) },
+  { label: 'One special character (!@#$...)', test: (pw: string) => /[^A-Za-z0-9]/.test(pw) },
 ];
 
 const Register = () => {
@@ -40,10 +48,7 @@ const Register = () => {
     if (!form.email.trim()) errs.email = 'Email is required';
     else if (!form.email.endsWith('@ui.edu.ng')) errs.email = 'Must be a valid @ui.edu.ng email';
     if (!form.password) errs.password = 'Password is required';
-    else if (form.password.length < 8) errs.password = 'Minimum 8 characters';
-    else if (!/[A-Z]/.test(form.password)) errs.password = 'Must include an uppercase letter';
-    else if (!/[0-9]/.test(form.password)) errs.password = 'Must include a number';
-    else if (!/[^A-Za-z0-9]/.test(form.password)) errs.password = 'Must include a special character';
+    else if (!passwordRules.every((r) => r.test(form.password))) errs.password = 'Password does not meet all requirements';
     if (!form.confirm) errs.confirm = 'Please confirm your password';
     else if (form.confirm !== form.password) errs.confirm = 'Passwords do not match';
     if (!form.faculty) errs.faculty = 'Please select your faculty';
@@ -106,6 +111,20 @@ const Register = () => {
                     {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+                {/* Password strength checklist */}
+                {form.password.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    {passwordRules.map((rule) => {
+                      const passes = rule.test(form.password);
+                      return (
+                        <div key={rule.label} className={`flex items-center gap-1.5 text-xs ${passes ? 'text-primary' : 'text-muted-foreground'}`}>
+                          {passes ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                          {rule.label}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
                 <FieldError field="password" />
               </div>
               <div>
@@ -160,8 +179,8 @@ const Register = () => {
                   onChange={(e) => update('terms', e.target.checked)}
                 />
                 <Label htmlFor="terms" className="text-sm font-normal leading-snug">
-                  I agree to the <a href="#" className="text-primary hover:underline">Terms of Service</a> and{' '}
-                  <a href="#" className="text-primary hover:underline">Community Guidelines</a>
+                  I agree to the <Link to="/terms" className="text-primary hover:underline">Terms of Service</Link> and{' '}
+                  <Link to="/privacy" className="text-primary hover:underline">Community Guidelines</Link>
                 </Label>
               </div>
               <FieldError field="terms" />

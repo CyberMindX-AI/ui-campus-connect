@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { CartProvider } from "@/contexts/CartContext";
 import Index from "./pages/Index.tsx";
 import Login from "./pages/Login.tsx";
 import Register from "./pages/Register.tsx";
@@ -36,43 +37,45 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/verify-email" element={<EmailVerification />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/products/:id" element={<ProductDetail />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/categories" element={<Categories />} />
-            <Route path="/wishlist" element={<Wishlist />} />
-            <Route path="/dashboard/buyer" element={<BuyerDashboard />} />
-            <Route path="/dashboard/buyer/orders" element={<MyOrders />} />
-            <Route path="/dashboard/seller" element={<SellerDashboard />} />
-            <Route path="/dashboard/seller/orders" element={<SellerOrders />} />
-            <Route path="/dashboard/seller/products" element={<SellerProducts />} />
-            <Route path="/dashboard/seller/products/new" element={<CreateProduct />} />
-            <Route path="/dashboard/seller/products/:id/edit" element={<CreateProduct />} />
-            <Route path="/store/:storeSlug" element={<SellerStore />} />
-            <Route path="/messages" element={<Messages />} />
-            <Route path="/messages/:conversationId" element={<Messages />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/wallet" element={<Wallet />} />
-            <Route path="/support" element={<Dispute />} />
-            <Route path="/dispute/:orderId" element={<Dispute />} />
-            <Route path="/help" element={<HelpCenter />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <CartProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/verify-email" element={<EmailVerification />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/products/:id" element={<ProductDetail />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/categories" element={<Categories />} />
+              <Route path="/wishlist" element={<Wishlist />} />
+              <Route path="/dashboard/buyer" element={<BuyerDashboard />} />
+              <Route path="/dashboard/buyer/orders" element={<MyOrders />} />
+              <Route path="/dashboard/seller" element={<SellerDashboard />} />
+              <Route path="/dashboard/seller/orders" element={<SellerOrders />} />
+              <Route path="/dashboard/seller/products" element={<SellerProducts />} />
+              <Route path="/dashboard/seller/products/new" element={<CreateProduct />} />
+              <Route path="/dashboard/seller/products/:id/edit" element={<CreateProduct />} />
+              <Route path="/store/:storeSlug" element={<SellerStore />} />
+              <Route path="/messages" element={<Messages />} />
+              <Route path="/messages/:conversationId" element={<Messages />} />
+              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/wallet" element={<Wallet />} />
+              <Route path="/support" element={<Dispute />} />
+              <Route path="/dispute/:orderId" element={<Dispute />} />
+              <Route path="/help" element={<HelpCenter />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </CartProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

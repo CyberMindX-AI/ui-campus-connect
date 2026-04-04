@@ -3,29 +3,10 @@ import { Minus, Plus, Trash2, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Layout from '@/components/Layout';
-import { products } from '@/data/mock';
-import { useState } from 'react';
-
-interface CartItem {
-  product: typeof products[0];
-  qty: number;
-}
+import { useCart } from '@/contexts/CartContext';
 
 const Cart = () => {
-  const [items, setItems] = useState<CartItem[]>([
-    { product: products[0], qty: 1 },
-    { product: products[4], qty: 2 },
-  ]);
-
-  const updateQty = (id: string, delta: number) => {
-    setItems((prev) =>
-      prev.map((item) =>
-        item.product.id === id ? { ...item, qty: Math.max(1, item.qty + delta) } : item
-      )
-    );
-  };
-
-  const remove = (id: string) => setItems((prev) => prev.filter((i) => i.product.id !== id));
+  const { items, updateQty, removeFromCart } = useCart();
 
   const subtotal = items.reduce((sum, i) => sum + i.product.price * i.qty, 0);
   const fee = Math.round(subtotal * 0.05);
@@ -72,7 +53,7 @@ const Cart = () => {
                       <p className="font-heading text-lg font-bold text-primary">₦{(product.price * qty).toLocaleString()}</p>
                     </div>
                   </div>
-                  <button onClick={() => remove(product.id)} className="self-start text-muted-foreground hover:text-destructive">
+                  <button onClick={() => removeFromCart(product.id)} className="self-start text-muted-foreground hover:text-destructive">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>

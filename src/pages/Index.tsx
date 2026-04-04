@@ -15,10 +15,11 @@ const fadeUp = {
 
 const Index = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard/buyer" replace />;
+    const dest = user?.role === 'seller' ? '/dashboard/seller' : '/dashboard/buyer';
+    return <Navigate to={dest} replace />;
   }
 
   return (
