@@ -61,7 +61,7 @@ const Register = () => {
     setTimeout(() => {
       setLoading(false);
       login({ fullname: form.fullname, email: form.email, role, faculty: form.faculty });
-      toast({ title: 'Account created!', description: 'Check your UI email for a verification link.' });
+      toast({ title: 'Account created!', description: 'Welcome to UI Marketplace!' });
       navigate(role === 'seller' ? '/dashboard/seller' : '/dashboard/buyer');
     }, 1500);
   };
