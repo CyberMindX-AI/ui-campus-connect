@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ShoppingCart, Menu, X, Search, Bell, User, LogOut, Settings, Package, Store } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCart } from '@/contexts/CartContext';
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -11,6 +12,9 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
+  const { cartCount } = useCart();
+
+  const dashboardLink = user?.role === 'seller' ? '/dashboard/seller' : '/dashboard/buyer';
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -55,7 +59,9 @@ const Navbar = () => {
               <Link to="/cart">
                 <Button variant="ghost" size="icon" className="relative">
                   <ShoppingCart className="h-5 w-5" />
-                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-accent-foreground">2</span>
+                  {cartCount > 0 && (
+                    <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-accent-foreground">{cartCount}</span>
+                  )}
                 </Button>
               </Link>
               <div className="relative">
@@ -69,9 +75,11 @@ const Navbar = () => {
                       <p className="text-xs text-muted-foreground">{user?.email}</p>
                     </div>
                     <div className="mt-1 space-y-0.5">
-                      <Link to="/dashboard/buyer" onClick={() => setUserMenu(false)} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted">
-                        <Package className="h-4 w-4" /> Buyer Dashboard
-                      </Link>
+                      {(user?.role === 'buyer' || user?.role === 'both') && (
+                        <Link to="/dashboard/buyer" onClick={() => setUserMenu(false)} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted">
+                          <Package className="h-4 w-4" /> Buyer Dashboard
+                        </Link>
+                      )}
                       {(user?.role === 'seller' || user?.role === 'both') && (
                         <Link to="/dashboard/seller" onClick={() => setUserMenu(false)} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted">
                           <Store className="h-4 w-4" /> Seller Dashboard
@@ -90,12 +98,6 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Link to="/cart">
-                <Button variant="ghost" size="icon" className="relative">
-                  <ShoppingCart className="h-5 w-5" />
-                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-accent-foreground">2</span>
-                </Button>
-              </Link>
               <Link to="/login">
                 <Button variant="hero-outline" size="sm">Sign In</Button>
               </Link>
@@ -128,13 +130,15 @@ const Navbar = () => {
                 <>
                   <Link to="/messages" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Messages</Link>
                   <Link to="/notifications" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Notifications</Link>
-                  <Link to="/dashboard/buyer" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Buyer Dashboard</Link>
+                  <Link to="/cart" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Cart {cartCount > 0 && `(${cartCount})`}</Link>
+                  {(user?.role === 'buyer' || user?.role === 'both') && (
+                    <Link to="/dashboard/buyer" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Buyer Dashboard</Link>
+                  )}
                   {(user?.role === 'seller' || user?.role === 'both') && (
                     <Link to="/dashboard/seller" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Seller Dashboard</Link>
                   )}
                 </>
               )}
-              <Link to="/cart" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Cart (2)</Link>
               <hr className="my-2" />
               {isAuthenticated ? (
                 <>

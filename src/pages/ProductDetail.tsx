@@ -1,15 +1,23 @@
-import { useParams, Link } from 'react-router-dom';
-import { ShoppingCart, MessageCircle, Heart, Star, MapPin, Shield, ChevronLeft, Truck, Package as PackageIcon } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { ShoppingCart, MessageCircle, Heart, Star, MapPin, Shield, ChevronLeft, Truck, Package as PackageIcon, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
 import { products } from '@/data/mock';
 import { useState } from 'react';
+import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 const ProductDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const product = products.find((p) => p.id === id);
   const [selectedImage, setSelectedImage] = useState(0);
+  const { addToCart } = useCart();
+  const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
+  const [added, setAdded] = useState(false);
 
   if (!product) {
     return (
@@ -21,6 +29,27 @@ const ProductDetail = () => {
       </Layout>
     );
   }
+
+  const handleAddToCart = () => {
+    if (!isAuthenticated) {
+      toast({ title: 'Please sign in', description: 'You need to be logged in to add items to cart.', variant: 'destructive' });
+      navigate('/login');
+      return;
+    }
+    addToCart(product);
+    setAdded(true);
+    toast({ title: 'Added to cart!', description: `${product.title} has been added to your cart.` });
+    setTimeout(() => setAdded(false), 2000);
+  };
+
+  const handleMessageSeller = () => {
+    if (!isAuthenticated) {
+      toast({ title: 'Please sign in', description: 'You need to be logged in to message sellers.', variant: 'destructive' });
+      navigate('/login');
+      return;
+    }
+    navigate('/messages');
+  };
 
   const related = products.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
 
@@ -100,10 +129,10 @@ const ProductDetail = () => {
 
             {/* Actions */}
             <div className="mt-6 flex gap-3">
-              <Button variant="hero" size="lg" className="flex-1 gap-2">
-                <ShoppingCart className="h-4 w-4" /> Add to Cart
+              <Button variant="hero" size="lg" className="flex-1 gap-2" onClick={handleAddToCart}>
+                {added ? <><Check className="h-4 w-4" /> Added!</> : <><ShoppingCart className="h-4 w-4" /> Add to Cart</>}
               </Button>
-              <Button variant="hero-outline" size="lg" className="gap-2">
+              <Button variant="hero-outline" size="lg" className="gap-2" onClick={handleMessageSeller}>
                 <MessageCircle className="h-4 w-4" /> Message Seller
               </Button>
             </div>
