@@ -21,7 +21,7 @@ const overviewCards = [
 
 const quickActions = [
   { icon: Plus, label: 'Add Product', to: '/dashboard/seller/products/new', variant: 'hero' as const },
-  { icon: Package, label: 'Manage Listings', to: '/dashboard/seller/products', variant: 'outline' as const },
+  { icon: Package, label: 'My Listings', to: '/dashboard/seller/products', variant: 'outline' as const },
   { icon: MessageSquare, label: 'Messages', to: '/messages', variant: 'outline' as const },
   { icon: Wallet, label: 'Withdraw', to: '/wallet', variant: 'outline' as const },
 ];

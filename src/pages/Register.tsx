@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,7 +23,11 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard/buyer" replace />;
+  }
 
   const update = (field: string, value: string | boolean) => {
     setForm((p) => ({ ...p, [field]: value }));
@@ -57,7 +61,7 @@ const Register = () => {
     setTimeout(() => {
       setLoading(false);
       login({ fullname: form.fullname, email: form.email, role, faculty: form.faculty });
-      toast({ title: 'Account created!', description: 'Check your UI email for a verification link.' });
+      toast({ title: 'Account created!', description: 'Welcome to UI Marketplace!' });
       navigate(role === 'seller' ? '/dashboard/seller' : '/dashboard/buyer');
     }, 1500);
   };

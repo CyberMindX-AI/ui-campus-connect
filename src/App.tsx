@@ -24,6 +24,11 @@ import Dispute from "./pages/Dispute.tsx";
 import CreateProduct from "./pages/CreateProduct.tsx";
 import SellerOrders from "./pages/SellerOrders.tsx";
 import SellerStore from "./pages/SellerStore.tsx";
+import SellerProducts from "./pages/SellerProducts.tsx";
+import Wishlist from "./pages/Wishlist.tsx";
+import HelpCenter from "./pages/HelpCenter.tsx";
+import Terms from "./pages/Terms.tsx";
+import Privacy from "./pages/Privacy.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -45,10 +50,12 @@ const App = () => (
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/categories" element={<Categories />} />
+            <Route path="/wishlist" element={<Wishlist />} />
             <Route path="/dashboard/buyer" element={<BuyerDashboard />} />
             <Route path="/dashboard/buyer/orders" element={<MyOrders />} />
             <Route path="/dashboard/seller" element={<SellerDashboard />} />
             <Route path="/dashboard/seller/orders" element={<SellerOrders />} />
+            <Route path="/dashboard/seller/products" element={<SellerProducts />} />
             <Route path="/dashboard/seller/products/new" element={<CreateProduct />} />
             <Route path="/dashboard/seller/products/:id/edit" element={<CreateProduct />} />
             <Route path="/store/:storeSlug" element={<SellerStore />} />
@@ -59,6 +66,9 @@ const App = () => (
             <Route path="/wallet" element={<Wallet />} />
             <Route path="/support" element={<Dispute />} />
             <Route path="/dispute/:orderId" element={<Dispute />} />
+            <Route path="/help" element={<HelpCenter />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

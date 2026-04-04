@@ -26,17 +26,17 @@ const Footer = () => (
         <div>
           <h4 className="mb-3 font-heading text-sm font-semibold uppercase tracking-wider text-primary-foreground/60">Support</h4>
           <ul className="space-y-2 text-sm text-primary-foreground/80">
-            <li><a href="#" className="hover:text-primary-foreground">Help Center</a></li>
-            <li><a href="#" className="hover:text-primary-foreground">Safety Tips</a></li>
-            <li><a href="#" className="hover:text-primary-foreground">Report an Issue</a></li>
+            <li><Link to="/help" className="hover:text-primary-foreground">Help Center</Link></li>
+            <li><Link to="/support" className="hover:text-primary-foreground">Contact Support</Link></li>
+            <li><Link to="/help" className="hover:text-primary-foreground">Safety Tips</Link></li>
           </ul>
         </div>
         <div>
           <h4 className="mb-3 font-heading text-sm font-semibold uppercase tracking-wider text-primary-foreground/60">Legal</h4>
           <ul className="space-y-2 text-sm text-primary-foreground/80">
-            <li><a href="#" className="hover:text-primary-foreground">Terms of Service</a></li>
-            <li><a href="#" className="hover:text-primary-foreground">Privacy Policy</a></li>
-            <li><a href="#" className="hover:text-primary-foreground">Community Guidelines</a></li>
+            <li><Link to="/terms" className="hover:text-primary-foreground">Terms of Service</Link></li>
+            <li><Link to="/privacy" className="hover:text-primary-foreground">Privacy Policy</Link></li>
+            <li><Link to="/terms" className="hover:text-primary-foreground">Community Guidelines</Link></li>
           </ul>
         </div>
       </div>
