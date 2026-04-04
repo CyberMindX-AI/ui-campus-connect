@@ -22,6 +22,8 @@ const Login = () => {
     return <Navigate to="/dashboard/buyer" replace />;
   }
 
+  const { user } = useAuth();
+
   const validate = () => {
     const errs: Record<string, string> = {};
     if (!email.trim()) errs.email = 'Email is required';
