@@ -23,7 +23,11 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard/buyer" replace />;
+  }
 
   const update = (field: string, value: string | boolean) => {
     setForm((p) => ({ ...p, [field]: value }));
