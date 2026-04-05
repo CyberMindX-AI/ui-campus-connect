@@ -74,7 +74,7 @@ const SellerDashboard = () => {
                   <Button
                     size="sm"
                     variant={action.variant}
-                    className={action.variant === 'hero' ? '' : 'border-white/30 text-white hover:bg-white/10'}
+                    className={action.variant === 'hero' ? '' : 'bg-transparent border-white/30 text-white hover:bg-primary-foreground/10 hover:border-primary-foreground/50 hover:text-white'}
                   >
                     <action.icon className="mr-1.5 h-4 w-4" /> {action.label}
                   </Button>
