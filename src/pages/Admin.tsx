@@ -212,10 +212,9 @@ const Admin = () => {
   };
 
   return (
-    <Layout>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-[#EFF6FF]">
         {/* Admin Header */}
-        <div className="bg-primary text-primary-foreground">
+        <div className="bg-[#2563EB] text-white">
           <div className="container mx-auto px-4 py-6">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
