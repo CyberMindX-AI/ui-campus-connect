@@ -15,7 +15,7 @@ import {
   ShieldCheck, Users, Package, Store, AlertTriangle, TrendingUp,
   CheckCircle, XCircle, Eye, Ban, Search, BarChart3, MessageSquare,
   Clock, DollarSign, Flag, Settings, Activity, ArrowUpRight, ArrowDownRight,
-  Trash2, UserCheck, UserX, FileText, Bell
+  Trash2, UserCheck, UserX, FileText, Bell, LogOut
 } from 'lucide-react';
 
 // Mock admin data
