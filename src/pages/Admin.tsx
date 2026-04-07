@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Layout from '@/components/Layout';
-import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +15,7 @@ import {
   ShieldCheck, Users, Package, Store, AlertTriangle, TrendingUp,
   CheckCircle, XCircle, Eye, Ban, Search, BarChart3, MessageSquare,
   Clock, DollarSign, Flag, Settings, Activity, ArrowUpRight, ArrowDownRight,
-  Trash2, UserCheck, UserX, FileText, Bell
+  Trash2, UserCheck, UserX, FileText, Bell, LogOut
 } from 'lucide-react';
 
 // Mock admin data
@@ -56,10 +54,19 @@ const recentTransactions = [
   { id: 'TXN004', buyer: 'Adebayo Tunde', seller: 'Blessing Okafor', product: 'Custom T-Shirt', amount: 8000, status: 'completed', date: '2025-01-12' },
 ];
 
+const ADMIN_CREDENTIALS = { email: 'admin@ui.edu.ng', password: 'Admin@2025' };
+
 const Admin = () => {
-  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const [isAdminAuth, setIsAdminAuth] = useState(() => {
+    return sessionStorage.getItem('ui_admin_auth') === 'true';
+  });
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const [products, setProducts] = useState(pendingProducts);
   const [sellers, setSellers] = useState(pendingSellers);
@@ -81,6 +88,80 @@ const Admin = () => {
     escrowEnabled: true,
     emailNotifications: true,
   });
+
+  const handleAdminLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (adminEmail === ADMIN_CREDENTIALS.email && adminPassword === ADMIN_CREDENTIALS.password) {
+      setIsAdminAuth(true);
+      sessionStorage.setItem('ui_admin_auth', 'true');
+      setAuthError('');
+      toast({ title: '✅ Welcome, Admin', description: 'You are now logged into the admin dashboard.' });
+    } else {
+      setAuthError('Invalid admin credentials. Please try again.');
+    }
+  };
+
+  const handleAdminLogout = () => {
+    setIsAdminAuth(false);
+    sessionStorage.removeItem('ui_admin_auth');
+    navigate('/');
+  };
+
+  if (!isAdminAuth) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#EFF6FF]">
+        <div className="w-full max-w-md px-4">
+          <div className="rounded-2xl border border-[#BFDBFE] bg-white p-8 shadow-xl">
+            <div className="mb-6 text-center">
+              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-[#2563EB]">
+                <ShieldCheck className="h-8 w-8 text-white" />
+              </div>
+              <h1 className="font-heading text-2xl font-bold text-[#1E3A5F]">Admin Access</h1>
+              <p className="mt-1 text-sm text-[#64748B]">UI Marketplace Control Center</p>
+            </div>
+            <form onSubmit={handleAdminLogin} className="space-y-4">
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-[#1E3A5F]">Admin Email</label>
+                <Input
+                  type="email"
+                  placeholder="admin@ui.edu.ng"
+                  value={adminEmail}
+                  onChange={e => setAdminEmail(e.target.value)}
+                  className="border-[#BFDBFE] focus:border-[#2563EB] focus:ring-[#2563EB]"
+                  required
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-[#1E3A5F]">Password</label>
+                <div className="relative">
+                  <Input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Enter admin password"
+                    value={adminPassword}
+                    onChange={e => setAdminPassword(e.target.value)}
+                    className="border-[#BFDBFE] pr-10 focus:border-[#2563EB] focus:ring-[#2563EB]"
+                    required
+                  />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#64748B] hover:text-[#1E3A5F]">
+                    <Eye className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+              {authError && (
+                <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{authError}</div>
+              )}
+              <Button type="submit" className="w-full bg-[#2563EB] text-white hover:bg-[#1D4ED8]">
+                <ShieldCheck className="mr-2 h-4 w-4" /> Sign In as Admin
+              </Button>
+            </form>
+            <div className="mt-4 text-center">
+              <button onClick={() => navigate('/')} className="text-sm text-[#2563EB] hover:underline">← Back to Marketplace</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const approveProduct = (id: string) => {
     setProducts(prev => prev.filter(p => p.id !== id));
@@ -131,25 +212,28 @@ const Admin = () => {
   };
 
   return (
-    <Layout>
-      <div className="min-h-screen bg-background">
+    <>
+      <div className="min-h-screen bg-[#EFF6FF]">
         {/* Admin Header */}
-        <div className="bg-primary text-primary-foreground">
+        <div className="bg-[#2563EB] text-white">
           <div className="container mx-auto px-4 py-6">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-foreground/20">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20">
                   <ShieldCheck className="h-7 w-7" />
                 </div>
                 <div>
                   <h1 className="font-heading text-2xl font-bold">Admin Dashboard</h1>
-                  <p className="text-sm text-primary-foreground/70">UI Marketplace Control Center</p>
+                  <p className="text-sm text-white/70">UI Marketplace Control Center</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="border-primary-foreground/30 text-primary-foreground">
+                <Badge variant="outline" className="border-white/30 text-white">
                   <Activity className="mr-1 h-3 w-3" /> System Online
                 </Badge>
+                <Button size="sm" variant="outline" className="border-white/30 text-white hover:bg-white/10" onClick={handleAdminLogout}>
+                  <LogOut className="mr-1 h-4 w-4" /> Logout
+                </Button>
               </div>
             </div>
           </div>
@@ -161,7 +245,7 @@ const Admin = () => {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
-                  <Users className="h-5 w-5 text-primary" />
+                  <Users className="h-5 w-5 text-[#2563EB]" />
                   <span className="flex items-center text-xs text-green-600"><ArrowUpRight className="h-3 w-3" /> 12%</span>
                 </div>
                 <p className="mt-2 text-2xl font-bold text-foreground">{stats.totalUsers}</p>
@@ -171,7 +255,7 @@ const Admin = () => {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
-                  <Store className="h-5 w-5 text-primary" />
+                  <Store className="h-5 w-5 text-[#2563EB]" />
                   <span className="flex items-center text-xs text-green-600"><ArrowUpRight className="h-3 w-3" /> 8%</span>
                 </div>
                 <p className="mt-2 text-2xl font-bold text-foreground">{stats.totalSellers}</p>
@@ -236,14 +320,14 @@ const Admin = () => {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
-                    <Package className="h-5 w-5 text-primary" /> Product Approval Queue
+                    <Package className="h-5 w-5 text-[#2563EB]" /> Product Approval Queue
                   </CardTitle>
                   <CardDescription>Review and approve product listings before they go live.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {products.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <CheckCircle className="mb-3 h-12 w-12 text-primary/30" />
+                      <CheckCircle className="mb-3 h-12 w-12 text-[#2563EB]/30" />
                       <p className="font-medium text-foreground">All caught up!</p>
                       <p className="text-sm text-muted-foreground">No products pending review.</p>
                     </div>
@@ -259,7 +343,7 @@ const Admin = () => {
                               <div className="mt-1 flex flex-wrap gap-1.5">
                                 <Badge variant="outline" className="text-[10px]">{product.category}</Badge>
                                 <Badge variant="outline" className="text-[10px]">{product.condition}</Badge>
-                                <span className="text-sm font-semibold text-primary">₦{product.price.toLocaleString()}</span>
+                                <span className="text-sm font-semibold text-[#2563EB]">₦{product.price.toLocaleString()}</span>
                               </div>
                             </div>
                           </div>
@@ -267,7 +351,7 @@ const Admin = () => {
                             <Button size="sm" variant="outline" onClick={() => setSelectedProduct(product)}>
                               <Eye className="mr-1 h-3 w-3" /> Review
                             </Button>
-                            <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => approveProduct(product.id)}>
+                            <Button size="sm" className="bg-[#2563EB] text-white hover:bg-[#1D4ED8]" onClick={() => approveProduct(product.id)}>
                               <CheckCircle className="mr-1 h-3 w-3" /> Approve
                             </Button>
                             <Button size="sm" variant="destructive" onClick={() => { setRejectType('product'); setRejectId(product.id); setShowRejectDialog(true); }}>
@@ -287,14 +371,14 @@ const Admin = () => {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
-                    <Store className="h-5 w-5 text-primary" /> Seller Approval Queue
+                    <Store className="h-5 w-5 text-[#2563EB]" /> Seller Approval Queue
                   </CardTitle>
                   <CardDescription>Review seller applications before granting marketplace access.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {sellers.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <CheckCircle className="mb-3 h-12 w-12 text-primary/30" />
+                      <CheckCircle className="mb-3 h-12 w-12 text-[#2563EB]/30" />
                       <p className="font-medium text-foreground">All caught up!</p>
                       <p className="text-sm text-muted-foreground">No seller applications pending.</p>
                     </div>
@@ -303,7 +387,7 @@ const Admin = () => {
                       {sellers.map(seller => (
                         <div key={seller.id} className="flex flex-col gap-3 rounded-xl border border-border p-4 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between">
                           <div className="flex items-start gap-3">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 font-bold text-primary">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#2563EB]/10 font-bold text-[#2563EB]">
                               {seller.name.charAt(0)}
                             </div>
                             <div className="min-w-0">
@@ -317,7 +401,7 @@ const Admin = () => {
                             <Button size="sm" variant="outline" onClick={() => setSelectedSeller(seller)}>
                               <Eye className="mr-1 h-3 w-3" /> View
                             </Button>
-                            <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => approveSeller(seller.id)}>
+                            <Button size="sm" className="bg-[#2563EB] text-white hover:bg-[#1D4ED8]" onClick={() => approveSeller(seller.id)}>
                               <UserCheck className="mr-1 h-3 w-3" /> Approve
                             </Button>
                             <Button size="sm" variant="destructive" onClick={() => { setRejectType('seller'); setRejectId(seller.id); setShowRejectDialog(true); }}>
@@ -339,7 +423,7 @@ const Admin = () => {
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <CardTitle className="flex items-center gap-2 text-lg">
-                        <Users className="h-5 w-5 text-primary" /> All Users
+                        <Users className="h-5 w-5 text-[#2563EB]" /> All Users
                       </CardTitle>
                       <CardDescription>{users.length} registered users</CardDescription>
                     </div>
@@ -382,7 +466,7 @@ const Admin = () => {
                             <TableCell className="text-right">
                               <div className="flex items-center justify-end gap-1">
                                 <Button size="sm" variant="ghost" onClick={() => toggleUserStatus(u.id)}>
-                                  {u.status === 'active' ? <Ban className="h-4 w-4 text-destructive" /> : <CheckCircle className="h-4 w-4 text-primary" />}
+                                  {u.status === 'active' ? <Ban className="h-4 w-4 text-destructive" /> : <CheckCircle className="h-4 w-4 text-[#2563EB]" />}
                                 </Button>
                                 <Button size="sm" variant="ghost">
                                   <MessageSquare className="h-4 w-4" />
@@ -456,7 +540,7 @@ const Admin = () => {
                 <CardContent>
                   {reports.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <CheckCircle className="mb-3 h-12 w-12 text-primary/30" />
+                      <CheckCircle className="mb-3 h-12 w-12 text-[#2563EB]/30" />
                       <p className="font-medium text-foreground">No open reports</p>
                     </div>
                   ) : (
@@ -563,7 +647,7 @@ const Admin = () => {
               <img src={selectedProduct.images[0]} alt="" className="h-48 w-full rounded-lg border border-border bg-muted object-cover" />
               <div>
                 <h3 className="text-lg font-semibold text-foreground">{selectedProduct.title}</h3>
-                <p className="text-2xl font-bold text-primary">₦{selectedProduct.price.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-[#2563EB]">₦{selectedProduct.price.toLocaleString()}</p>
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div><span className="text-muted-foreground">Seller:</span> <span className="font-medium text-foreground">{selectedProduct.seller}</span></div>
@@ -576,7 +660,7 @@ const Admin = () => {
                 <Button variant="destructive" onClick={() => { setRejectType('product'); setRejectId(selectedProduct.id); setShowRejectDialog(true); }}>
                   <XCircle className="mr-1 h-4 w-4" /> Reject
                 </Button>
-                <Button className="bg-primary text-primary-foreground" onClick={() => approveProduct(selectedProduct.id)}>
+                <Button className="bg-[#2563EB] text-white" onClick={() => approveProduct(selectedProduct.id)}>
                   <CheckCircle className="mr-1 h-4 w-4" /> Approve
                 </Button>
               </DialogFooter>
@@ -595,7 +679,7 @@ const Admin = () => {
           {selectedSeller && (
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-xl font-bold text-primary">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#2563EB]/10 text-xl font-bold text-[#2563EB]">
                   {selectedSeller.name.charAt(0)}
                 </div>
                 <div>
@@ -617,7 +701,7 @@ const Admin = () => {
                 <Button variant="destructive" onClick={() => { setRejectType('seller'); setRejectId(selectedSeller.id); setShowRejectDialog(true); }}>
                   <UserX className="mr-1 h-4 w-4" /> Reject
                 </Button>
-                <Button className="bg-primary text-primary-foreground" onClick={() => approveSeller(selectedSeller.id)}>
+                <Button className="bg-[#2563EB] text-white" onClick={() => approveSeller(selectedSeller.id)}>
                   <UserCheck className="mr-1 h-4 w-4" /> Approve
                 </Button>
               </DialogFooter>
@@ -647,7 +731,7 @@ const Admin = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Layout>
+    </>
   );
 };
 
