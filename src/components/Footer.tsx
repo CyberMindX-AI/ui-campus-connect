@@ -6,8 +6,8 @@ const Footer = () => (
     <div className="container mx-auto px-4 py-12">
       <div className="grid gap-8 md:grid-cols-4">
         <div>
-          <div className="mb-3 flex items-center gap-2">
-            <img src={logo} alt="UI Marketplace" className="h-8 w-auto rounded brightness-0 invert" />
+          <div className="mb-3">
+            <img src={logo} alt="UI Marketplace" className="h-14 w-auto object-contain brightness-0 invert" />
           </div>
           <p className="text-sm text-primary-foreground/70">
             The premier University of Ibadan student commerce platform. Buy, sell & thrive within your campus community.
