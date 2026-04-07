@@ -245,7 +245,7 @@ const Admin = () => {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
-                  <Users className="h-5 w-5 text-primary" />
+                  <Users className="h-5 w-5 text-[#2563EB]" />
                   <span className="flex items-center text-xs text-green-600"><ArrowUpRight className="h-3 w-3" /> 12%</span>
                 </div>
                 <p className="mt-2 text-2xl font-bold text-foreground">{stats.totalUsers}</p>
@@ -255,7 +255,7 @@ const Admin = () => {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
-                  <Store className="h-5 w-5 text-primary" />
+                  <Store className="h-5 w-5 text-[#2563EB]" />
                   <span className="flex items-center text-xs text-green-600"><ArrowUpRight className="h-3 w-3" /> 8%</span>
                 </div>
                 <p className="mt-2 text-2xl font-bold text-foreground">{stats.totalSellers}</p>
@@ -320,14 +320,14 @@ const Admin = () => {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
-                    <Package className="h-5 w-5 text-primary" /> Product Approval Queue
+                    <Package className="h-5 w-5 text-[#2563EB]" /> Product Approval Queue
                   </CardTitle>
                   <CardDescription>Review and approve product listings before they go live.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {products.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <CheckCircle className="mb-3 h-12 w-12 text-primary/30" />
+                      <CheckCircle className="mb-3 h-12 w-12 text-[#2563EB]/30" />
                       <p className="font-medium text-foreground">All caught up!</p>
                       <p className="text-sm text-muted-foreground">No products pending review.</p>
                     </div>
@@ -343,7 +343,7 @@ const Admin = () => {
                               <div className="mt-1 flex flex-wrap gap-1.5">
                                 <Badge variant="outline" className="text-[10px]">{product.category}</Badge>
                                 <Badge variant="outline" className="text-[10px]">{product.condition}</Badge>
-                                <span className="text-sm font-semibold text-primary">₦{product.price.toLocaleString()}</span>
+                                <span className="text-sm font-semibold text-[#2563EB]">₦{product.price.toLocaleString()}</span>
                               </div>
                             </div>
                           </div>
@@ -351,7 +351,7 @@ const Admin = () => {
                             <Button size="sm" variant="outline" onClick={() => setSelectedProduct(product)}>
                               <Eye className="mr-1 h-3 w-3" /> Review
                             </Button>
-                            <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => approveProduct(product.id)}>
+                            <Button size="sm" className="bg-primary text-[#2563EB]-foreground hover:bg-primary/90" onClick={() => approveProduct(product.id)}>
                               <CheckCircle className="mr-1 h-3 w-3" /> Approve
                             </Button>
                             <Button size="sm" variant="destructive" onClick={() => { setRejectType('product'); setRejectId(product.id); setShowRejectDialog(true); }}>
@@ -371,14 +371,14 @@ const Admin = () => {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
-                    <Store className="h-5 w-5 text-primary" /> Seller Approval Queue
+                    <Store className="h-5 w-5 text-[#2563EB]" /> Seller Approval Queue
                   </CardTitle>
                   <CardDescription>Review seller applications before granting marketplace access.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {sellers.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <CheckCircle className="mb-3 h-12 w-12 text-primary/30" />
+                      <CheckCircle className="mb-3 h-12 w-12 text-[#2563EB]/30" />
                       <p className="font-medium text-foreground">All caught up!</p>
                       <p className="text-sm text-muted-foreground">No seller applications pending.</p>
                     </div>
@@ -387,7 +387,7 @@ const Admin = () => {
                       {sellers.map(seller => (
                         <div key={seller.id} className="flex flex-col gap-3 rounded-xl border border-border p-4 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between">
                           <div className="flex items-start gap-3">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 font-bold text-primary">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#2563EB]/10 font-bold text-[#2563EB]">
                               {seller.name.charAt(0)}
                             </div>
                             <div className="min-w-0">
@@ -401,7 +401,7 @@ const Admin = () => {
                             <Button size="sm" variant="outline" onClick={() => setSelectedSeller(seller)}>
                               <Eye className="mr-1 h-3 w-3" /> View
                             </Button>
-                            <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => approveSeller(seller.id)}>
+                            <Button size="sm" className="bg-primary text-[#2563EB]-foreground hover:bg-primary/90" onClick={() => approveSeller(seller.id)}>
                               <UserCheck className="mr-1 h-3 w-3" /> Approve
                             </Button>
                             <Button size="sm" variant="destructive" onClick={() => { setRejectType('seller'); setRejectId(seller.id); setShowRejectDialog(true); }}>
@@ -423,7 +423,7 @@ const Admin = () => {
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <CardTitle className="flex items-center gap-2 text-lg">
-                        <Users className="h-5 w-5 text-primary" /> All Users
+                        <Users className="h-5 w-5 text-[#2563EB]" /> All Users
                       </CardTitle>
                       <CardDescription>{users.length} registered users</CardDescription>
                     </div>
@@ -466,7 +466,7 @@ const Admin = () => {
                             <TableCell className="text-right">
                               <div className="flex items-center justify-end gap-1">
                                 <Button size="sm" variant="ghost" onClick={() => toggleUserStatus(u.id)}>
-                                  {u.status === 'active' ? <Ban className="h-4 w-4 text-destructive" /> : <CheckCircle className="h-4 w-4 text-primary" />}
+                                  {u.status === 'active' ? <Ban className="h-4 w-4 text-destructive" /> : <CheckCircle className="h-4 w-4 text-[#2563EB]" />}
                                 </Button>
                                 <Button size="sm" variant="ghost">
                                   <MessageSquare className="h-4 w-4" />
@@ -540,7 +540,7 @@ const Admin = () => {
                 <CardContent>
                   {reports.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <CheckCircle className="mb-3 h-12 w-12 text-primary/30" />
+                      <CheckCircle className="mb-3 h-12 w-12 text-[#2563EB]/30" />
                       <p className="font-medium text-foreground">No open reports</p>
                     </div>
                   ) : (
@@ -647,7 +647,7 @@ const Admin = () => {
               <img src={selectedProduct.images[0]} alt="" className="h-48 w-full rounded-lg border border-border bg-muted object-cover" />
               <div>
                 <h3 className="text-lg font-semibold text-foreground">{selectedProduct.title}</h3>
-                <p className="text-2xl font-bold text-primary">₦{selectedProduct.price.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-[#2563EB]">₦{selectedProduct.price.toLocaleString()}</p>
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div><span className="text-muted-foreground">Seller:</span> <span className="font-medium text-foreground">{selectedProduct.seller}</span></div>
@@ -660,7 +660,7 @@ const Admin = () => {
                 <Button variant="destructive" onClick={() => { setRejectType('product'); setRejectId(selectedProduct.id); setShowRejectDialog(true); }}>
                   <XCircle className="mr-1 h-4 w-4" /> Reject
                 </Button>
-                <Button className="bg-primary text-primary-foreground" onClick={() => approveProduct(selectedProduct.id)}>
+                <Button className="bg-primary text-[#2563EB]-foreground" onClick={() => approveProduct(selectedProduct.id)}>
                   <CheckCircle className="mr-1 h-4 w-4" /> Approve
                 </Button>
               </DialogFooter>
@@ -679,7 +679,7 @@ const Admin = () => {
           {selectedSeller && (
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-xl font-bold text-primary">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#2563EB]/10 text-xl font-bold text-[#2563EB]">
                   {selectedSeller.name.charAt(0)}
                 </div>
                 <div>
@@ -701,7 +701,7 @@ const Admin = () => {
                 <Button variant="destructive" onClick={() => { setRejectType('seller'); setRejectId(selectedSeller.id); setShowRejectDialog(true); }}>
                   <UserX className="mr-1 h-4 w-4" /> Reject
                 </Button>
-                <Button className="bg-primary text-primary-foreground" onClick={() => approveSeller(selectedSeller.id)}>
+                <Button className="bg-primary text-[#2563EB]-foreground" onClick={() => approveSeller(selectedSeller.id)}>
                   <UserCheck className="mr-1 h-4 w-4" /> Approve
                 </Button>
               </DialogFooter>
