@@ -21,7 +21,7 @@ const Navbar = () => {
     <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2">
-          <img src={logo} alt="UI Marketplace" className="h-12 w-auto object-contain" />
+          <img src={logo} alt="UI Marketplace" className="h-10 md:h-14 w-auto object-contain" />
         </Link>
 
         {/* Desktop nav */}
