@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import logo from '@/assets/logo.jpeg';
 
 const Footer = () => (
   <footer className="border-t border-border bg-primary text-primary-foreground">
@@ -6,10 +7,7 @@ const Footer = () => (
       <div className="grid gap-8 md:grid-cols-4">
         <div>
           <div className="mb-3 flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-foreground">
-              <span className="font-heading text-sm font-bold text-primary">UI</span>
-            </div>
-            <span className="font-heading text-lg font-bold">Marketplace</span>
+            <img src={logo} alt="UI Marketplace" className="h-8 w-auto rounded brightness-0 invert" />
           </div>
           <p className="text-sm text-primary-foreground/70">
             The premier University of Ibadan student commerce platform. Buy, sell & thrive within your campus community.

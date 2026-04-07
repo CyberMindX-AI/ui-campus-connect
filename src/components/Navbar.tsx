@@ -5,6 +5,7 @@ import { ShoppingCart, Menu, X, Search, Bell, User, LogOut, Settings, Package, S
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
+import logo from '@/assets/logo.jpeg';
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -20,12 +21,7 @@ const Navbar = () => {
     <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            <span className="font-heading text-lg font-bold text-primary-foreground">UI</span>
-          </div>
-          <span className="font-heading text-lg font-bold text-foreground">
-            Marketplace
-          </span>
+          <img src={logo} alt="UI Marketplace" className="h-9 w-auto rounded" />
         </Link>
 
         {/* Desktop nav */}
