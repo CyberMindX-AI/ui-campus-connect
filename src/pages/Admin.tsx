@@ -56,10 +56,19 @@ const recentTransactions = [
   { id: 'TXN004', buyer: 'Adebayo Tunde', seller: 'Blessing Okafor', product: 'Custom T-Shirt', amount: 8000, status: 'completed', date: '2025-01-12' },
 ];
 
+const ADMIN_CREDENTIALS = { email: 'admin@ui.edu.ng', password: 'Admin@2025' };
+
 const Admin = () => {
-  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const [isAdminAuth, setIsAdminAuth] = useState(() => {
+    return sessionStorage.getItem('ui_admin_auth') === 'true';
+  });
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const [products, setProducts] = useState(pendingProducts);
   const [sellers, setSellers] = useState(pendingSellers);
@@ -81,6 +90,80 @@ const Admin = () => {
     escrowEnabled: true,
     emailNotifications: true,
   });
+
+  const handleAdminLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (adminEmail === ADMIN_CREDENTIALS.email && adminPassword === ADMIN_CREDENTIALS.password) {
+      setIsAdminAuth(true);
+      sessionStorage.setItem('ui_admin_auth', 'true');
+      setAuthError('');
+      toast({ title: '✅ Welcome, Admin', description: 'You are now logged into the admin dashboard.' });
+    } else {
+      setAuthError('Invalid admin credentials. Please try again.');
+    }
+  };
+
+  const handleAdminLogout = () => {
+    setIsAdminAuth(false);
+    sessionStorage.removeItem('ui_admin_auth');
+    navigate('/');
+  };
+
+  if (!isAdminAuth) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#EFF6FF]">
+        <div className="w-full max-w-md px-4">
+          <div className="rounded-2xl border border-[#BFDBFE] bg-white p-8 shadow-xl">
+            <div className="mb-6 text-center">
+              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-[#2563EB]">
+                <ShieldCheck className="h-8 w-8 text-white" />
+              </div>
+              <h1 className="font-heading text-2xl font-bold text-[#1E3A5F]">Admin Access</h1>
+              <p className="mt-1 text-sm text-[#64748B]">UI Marketplace Control Center</p>
+            </div>
+            <form onSubmit={handleAdminLogin} className="space-y-4">
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-[#1E3A5F]">Admin Email</label>
+                <Input
+                  type="email"
+                  placeholder="admin@ui.edu.ng"
+                  value={adminEmail}
+                  onChange={e => setAdminEmail(e.target.value)}
+                  className="border-[#BFDBFE] focus:border-[#2563EB] focus:ring-[#2563EB]"
+                  required
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-[#1E3A5F]">Password</label>
+                <div className="relative">
+                  <Input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Enter admin password"
+                    value={adminPassword}
+                    onChange={e => setAdminPassword(e.target.value)}
+                    className="border-[#BFDBFE] pr-10 focus:border-[#2563EB] focus:ring-[#2563EB]"
+                    required
+                  />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#64748B] hover:text-[#1E3A5F]">
+                    <Eye className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+              {authError && (
+                <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{authError}</div>
+              )}
+              <Button type="submit" className="w-full bg-[#2563EB] text-white hover:bg-[#1D4ED8]">
+                <ShieldCheck className="mr-2 h-4 w-4" /> Sign In as Admin
+              </Button>
+            </form>
+            <div className="mt-4 text-center">
+              <button onClick={() => navigate('/')} className="text-sm text-[#2563EB] hover:underline">← Back to Marketplace</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const approveProduct = (id: string) => {
     setProducts(prev => prev.filter(p => p.id !== id));
