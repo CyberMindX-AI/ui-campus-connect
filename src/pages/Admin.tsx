@@ -212,6 +212,7 @@ const Admin = () => {
   };
 
   return (
+    <>
       <div className="min-h-screen bg-[#EFF6FF]">
         {/* Admin Header */}
         <div className="bg-[#2563EB] text-white">
