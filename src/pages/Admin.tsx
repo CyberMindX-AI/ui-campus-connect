@@ -351,7 +351,7 @@ const Admin = () => {
                             <Button size="sm" variant="outline" onClick={() => setSelectedProduct(product)}>
                               <Eye className="mr-1 h-3 w-3" /> Review
                             </Button>
-                            <Button size="sm" className="bg-primary text-[#2563EB]-foreground hover:bg-primary/90" onClick={() => approveProduct(product.id)}>
+                            <Button size="sm" className="bg-[#2563EB] text-white hover:bg-[#1D4ED8]" onClick={() => approveProduct(product.id)}>
                               <CheckCircle className="mr-1 h-3 w-3" /> Approve
                             </Button>
                             <Button size="sm" variant="destructive" onClick={() => { setRejectType('product'); setRejectId(product.id); setShowRejectDialog(true); }}>
@@ -401,7 +401,7 @@ const Admin = () => {
                             <Button size="sm" variant="outline" onClick={() => setSelectedSeller(seller)}>
                               <Eye className="mr-1 h-3 w-3" /> View
                             </Button>
-                            <Button size="sm" className="bg-primary text-[#2563EB]-foreground hover:bg-primary/90" onClick={() => approveSeller(seller.id)}>
+                            <Button size="sm" className="bg-[#2563EB] text-white hover:bg-[#1D4ED8]" onClick={() => approveSeller(seller.id)}>
                               <UserCheck className="mr-1 h-3 w-3" /> Approve
                             </Button>
                             <Button size="sm" variant="destructive" onClick={() => { setRejectType('seller'); setRejectId(seller.id); setShowRejectDialog(true); }}>
@@ -660,7 +660,7 @@ const Admin = () => {
                 <Button variant="destructive" onClick={() => { setRejectType('product'); setRejectId(selectedProduct.id); setShowRejectDialog(true); }}>
                   <XCircle className="mr-1 h-4 w-4" /> Reject
                 </Button>
-                <Button className="bg-primary text-[#2563EB]-foreground" onClick={() => approveProduct(selectedProduct.id)}>
+                <Button className="bg-[#2563EB] text-white" onClick={() => approveProduct(selectedProduct.id)}>
                   <CheckCircle className="mr-1 h-4 w-4" /> Approve
                 </Button>
               </DialogFooter>
@@ -701,7 +701,7 @@ const Admin = () => {
                 <Button variant="destructive" onClick={() => { setRejectType('seller'); setRejectId(selectedSeller.id); setShowRejectDialog(true); }}>
                   <UserX className="mr-1 h-4 w-4" /> Reject
                 </Button>
-                <Button className="bg-primary text-[#2563EB]-foreground" onClick={() => approveSeller(selectedSeller.id)}>
+                <Button className="bg-[#2563EB] text-white" onClick={() => approveSeller(selectedSeller.id)}>
                   <UserCheck className="mr-1 h-4 w-4" /> Approve
                 </Button>
               </DialogFooter>
