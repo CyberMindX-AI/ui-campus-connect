@@ -219,18 +219,21 @@ const Admin = () => {
           <div className="container mx-auto px-4 py-6">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-foreground/20">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20">
                   <ShieldCheck className="h-7 w-7" />
                 </div>
                 <div>
                   <h1 className="font-heading text-2xl font-bold">Admin Dashboard</h1>
-                  <p className="text-sm text-primary-foreground/70">UI Marketplace Control Center</p>
+                  <p className="text-sm text-white/70">UI Marketplace Control Center</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="border-primary-foreground/30 text-primary-foreground">
+                <Badge variant="outline" className="border-white/30 text-white">
                   <Activity className="mr-1 h-3 w-3" /> System Online
                 </Badge>
+                <Button size="sm" variant="outline" className="border-white/30 text-white hover:bg-white/10" onClick={handleAdminLogout}>
+                  <LogOut className="mr-1 h-4 w-4" /> Logout
+                </Button>
               </div>
             </div>
           </div>
