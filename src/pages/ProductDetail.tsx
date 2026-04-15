@@ -3,7 +3,7 @@ import { ShoppingCart, MessageCircle, Heart, Star, MapPin, Shield, ChevronLeft, 
 import { Button } from '@/components/ui/button';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
-import { products } from '@/data/mock';
+import { useProduct, useProducts } from '@/hooks/api/useProducts';
 import { useState } from 'react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,12 +12,23 @@ import { useToast } from '@/hooks/use-toast';
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const product = products.find((p) => p.id === id);
+  const { data: product, isLoading } = useProduct(id);
+  const { data: allProducts = [] } = useProducts();
   const [selectedImage, setSelectedImage] = useState(0);
   const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [added, setAdded] = useState(false);
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-16 text-center">
+          <p className="text-lg font-medium text-foreground">Loading product...</p>
+        </div>
+      </Layout>
+    );
+  }
 
   if (!product) {
     return (
@@ -51,7 +62,7 @@ const ProductDetail = () => {
     navigate('/messages');
   };
 
-  const related = products.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
+  const related = allProducts.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
 
   return (
     <Layout>

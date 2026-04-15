@@ -1,9 +1,12 @@
 import { Link } from 'react-router-dom';
 import Layout from '@/components/Layout';
-import { categories } from '@/data/mock';
+import { useCategories } from '@/hooks/api/useMarket';
 
-const Categories = () => (
-  <Layout>
+const Categories = () => {
+  const { data: categories = [] } = useCategories();
+  
+  return (
+    <Layout>
     <div className="container mx-auto px-4 py-8">
       <h1 className="font-heading text-3xl font-bold text-foreground">Browse Categories</h1>
       <p className="mt-1 text-sm text-muted-foreground">Find exactly what you need</p>
@@ -22,6 +25,7 @@ const Categories = () => (
       </div>
     </div>
   </Layout>
-);
+  );
+};
 
 export default Categories;

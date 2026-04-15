@@ -18,41 +18,12 @@ import {
   Trash2, UserCheck, UserX, FileText, Bell, LogOut
 } from 'lucide-react';
 
-// Mock admin data
-const pendingProducts = [
-  { id: '1', title: 'iPhone 14 Pro Max', seller: 'Adebayo Tunde', sellerEmail: 'adebayo@ui.edu.ng', price: 450000, category: 'Electronics', condition: 'Used - Like New', images: ['/placeholder.svg'], submittedAt: '2025-01-15', description: 'Barely used iPhone 14 Pro Max, 256GB, Deep Purple.' },
-  { id: '2', title: 'Organic Chemistry Textbook', seller: 'Funke Adeyemi', sellerEmail: 'funke@ui.edu.ng', price: 8500, category: 'Textbooks', condition: 'Used - Good', images: ['/placeholder.svg'], submittedAt: '2025-01-14', description: 'Clayden Organic Chemistry 2nd Edition. Some highlights.' },
-  { id: '3', title: 'HP Pavilion Laptop', seller: 'Chukwuemeka Obi', sellerEmail: 'chukwuemeka@ui.edu.ng', price: 280000, category: 'Electronics', condition: 'Used - Fair', images: ['/placeholder.svg'], submittedAt: '2025-01-13', description: 'HP Pavilion 15, 8GB RAM, 256GB SSD. Minor scratches.' },
-  { id: '4', title: 'Study Desk & Chair Set', seller: 'Ngozi Eze', sellerEmail: 'ngozi@ui.edu.ng', price: 35000, category: 'Furniture', condition: 'Used - Good', images: ['/placeholder.svg'], submittedAt: '2025-01-12', description: 'Sturdy wooden desk with ergonomic chair. Perfect for hostel.' },
-];
-
-const pendingSellers = [
-  { id: '1', name: 'Adeola Bamidele', email: 'adeola@ui.edu.ng', faculty: 'Technology', matric: 'U2020/1234', phone: '08012345678', appliedAt: '2025-01-15', storeName: 'Adeola Tech Store', reason: 'I want to sell gadgets and electronics to fellow students.' },
-  { id: '2', name: 'Blessing Okafor', email: 'blessing@ui.edu.ng', faculty: 'Arts', matric: 'U2021/5678', phone: '08098765432', appliedAt: '2025-01-14', storeName: 'Bless Fashion Hub', reason: 'I make custom fashion items and want to reach more students.' },
-  { id: '3', name: 'Ibrahim Musa', email: 'ibrahim@ui.edu.ng', faculty: 'Science', matric: 'U2019/9012', phone: '07033344455', appliedAt: '2025-01-13', storeName: 'Ibrahim Books', reason: 'Selling used textbooks at affordable prices.' },
-];
-
-const allUsers = [
-  { id: '1', name: 'Adebayo Tunde', email: 'adebayo@ui.edu.ng', role: 'seller', faculty: 'Technology', status: 'active', joined: '2024-09-01', totalOrders: 45, totalSales: 1250000 },
-  { id: '2', name: 'Funke Adeyemi', email: 'funke@ui.edu.ng', role: 'buyer', faculty: 'Science', status: 'active', joined: '2024-10-15', totalOrders: 12, totalSales: 0 },
-  { id: '3', name: 'Chukwuemeka Obi', email: 'chukwuemeka@ui.edu.ng', role: 'both', faculty: 'Law', status: 'active', joined: '2024-08-20', totalOrders: 8, totalSales: 320000 },
-  { id: '4', name: 'Ngozi Eze', email: 'ngozi@ui.edu.ng', role: 'seller', faculty: 'Arts', status: 'suspended', joined: '2024-11-05', totalOrders: 3, totalSales: 75000 },
-  { id: '5', name: 'Yusuf Abdullahi', email: 'yusuf@ui.edu.ng', role: 'buyer', faculty: 'Education', status: 'active', joined: '2025-01-02', totalOrders: 1, totalSales: 0 },
-  { id: '6', name: 'Chiamaka Nwankwo', email: 'chiamaka@ui.edu.ng', role: 'buyer', faculty: 'Pharmacy', status: 'active', joined: '2024-12-10', totalOrders: 6, totalSales: 0 },
-];
-
-const reportedItems = [
-  { id: '1', type: 'product', title: 'Suspicious Electronics', reporter: 'Funke Adeyemi', reason: 'Possible counterfeit product', status: 'pending', reportedAt: '2025-01-15' },
-  { id: '2', type: 'user', title: 'Ngozi Eze', reporter: 'Adebayo Tunde', reason: 'Seller not delivering items', status: 'investigating', reportedAt: '2025-01-13' },
-  { id: '3', type: 'product', title: 'Exam Papers for Sale', reporter: 'Ibrahim Musa', reason: 'Violates academic integrity policy', status: 'pending', reportedAt: '2025-01-12' },
-];
-
-const recentTransactions = [
-  { id: 'TXN001', buyer: 'Funke Adeyemi', seller: 'Adebayo Tunde', product: 'Samsung Galaxy S23', amount: 320000, status: 'completed', date: '2025-01-15' },
-  { id: 'TXN002', buyer: 'Yusuf Abdullahi', seller: 'Chukwuemeka Obi', product: 'Law Textbooks Bundle', amount: 15000, status: 'in_escrow', date: '2025-01-14' },
-  { id: 'TXN003', buyer: 'Chiamaka Nwankwo', seller: 'Ngozi Eze', product: 'Study Lamp', amount: 5500, status: 'disputed', date: '2025-01-13' },
-  { id: 'TXN004', buyer: 'Adebayo Tunde', seller: 'Blessing Okafor', product: 'Custom T-Shirt', amount: 8000, status: 'completed', date: '2025-01-12' },
-];
+// Live data arrays (to be hydrated via Supabase later)
+const pendingProducts: any[] = [];
+const pendingSellers: any[] = [];
+const allUsers: any[] = [];
+const reportedItems: any[] = [];
+const recentTransactions: any[] = [];
 
 const ADMIN_CREDENTIALS = { email: 'admin@ui.edu.ng', password: 'Admin@2025' };
 
@@ -68,13 +39,24 @@ const Admin = () => {
   const [authError, setAuthError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const [products, setProducts] = useState(pendingProducts);
-  const [sellers, setSellers] = useState(pendingSellers);
-  const [users, setUsers] = useState(allUsers);
-  const [reports, setReports] = useState(reportedItems);
+  const { 
+    products: productsQuery, 
+    sellers: sellersQuery, 
+    reports: reportsQuery, 
+    transactions: transactionsQuery,
+    approveProduct, 
+    rejectProduct, 
+    approveSeller 
+  } = useAdminData();
+
+  const products = productsQuery.data || [];
+  const sellers = sellersQuery.data || [];
+  const reports = reportsQuery.data || [];
+  const recentTransactions = transactionsQuery.data || [];
+  
   const [search, setSearch] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState<typeof pendingProducts[0] | null>(null);
-  const [selectedSeller, setSelectedSeller] = useState<typeof pendingSellers[0] | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  const [selectedSeller, setSelectedSeller] = useState<any | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [rejectType, setRejectType] = useState<'product' | 'seller'>('product');
@@ -163,29 +145,26 @@ const Admin = () => {
     );
   }
 
-  const approveProduct = (id: string) => {
-    setProducts(prev => prev.filter(p => p.id !== id));
+  const handleApproveProduct = async (id: string) => {
+    await approveProduct(id);
     setSelectedProduct(null);
-    toast({ title: '✅ Product Approved', description: 'The product is now live on the marketplace.' });
   };
 
-  const rejectItem = () => {
+  const handleRejectItem = async () => {
     if (rejectType === 'product') {
-      setProducts(prev => prev.filter(p => p.id !== rejectId));
+      await rejectProduct(rejectId);
       setSelectedProduct(null);
     } else {
-      setSellers(prev => prev.filter(s => s.id !== rejectId));
-      setSelectedSeller(null);
+      // Logic for rejecting seller application can be added to adminService
+      setShowRejectDialog(false);
     }
     setShowRejectDialog(false);
     setRejectReason('');
-    toast({ title: '❌ Rejected', description: `The ${rejectType} has been rejected. Notification sent.`, variant: 'destructive' });
   };
 
-  const approveSeller = (id: string) => {
-    setSellers(prev => prev.filter(s => s.id !== id));
+  const handleApproveSeller = async (id: string, userId: string) => {
+    await approveSeller({ applicationId: id, userId });
     setSelectedSeller(null);
-    toast({ title: '✅ Seller Approved', description: 'The seller can now list products on the marketplace.' });
   };
 
   const toggleUserStatus = (id: string) => {
@@ -351,7 +330,7 @@ const Admin = () => {
                             <Button size="sm" variant="outline" onClick={() => setSelectedProduct(product)}>
                               <Eye className="mr-1 h-3 w-3" /> Review
                             </Button>
-                            <Button size="sm" className="bg-[#2563EB] text-white hover:bg-[#1D4ED8]" onClick={() => approveProduct(product.id)}>
+                            <Button size="sm" className="bg-[#2563EB] text-white hover:bg-[#1D4ED8]" onClick={() => handleApproveProduct(product.id)}>
                               <CheckCircle className="mr-1 h-3 w-3" /> Approve
                             </Button>
                             <Button size="sm" variant="destructive" onClick={() => { setRejectType('product'); setRejectId(product.id); setShowRejectDialog(true); }}>
@@ -401,7 +380,7 @@ const Admin = () => {
                             <Button size="sm" variant="outline" onClick={() => setSelectedSeller(seller)}>
                               <Eye className="mr-1 h-3 w-3" /> View
                             </Button>
-                            <Button size="sm" className="bg-[#2563EB] text-white hover:bg-[#1D4ED8]" onClick={() => approveSeller(seller.id)}>
+                            <Button size="sm" className="bg-[#2563EB] text-white hover:bg-[#1D4ED8]" onClick={() => handleApproveSeller(seller.id, seller.user_id)}>
                               <UserCheck className="mr-1 h-3 w-3" /> Approve
                             </Button>
                             <Button size="sm" variant="destructive" onClick={() => { setRejectType('seller'); setRejectId(seller.id); setShowRejectDialog(true); }}>
@@ -660,7 +639,7 @@ const Admin = () => {
                 <Button variant="destructive" onClick={() => { setRejectType('product'); setRejectId(selectedProduct.id); setShowRejectDialog(true); }}>
                   <XCircle className="mr-1 h-4 w-4" /> Reject
                 </Button>
-                <Button className="bg-[#2563EB] text-white" onClick={() => approveProduct(selectedProduct.id)}>
+                <Button className="bg-[#2563EB] text-white" onClick={() => handleApproveProduct(selectedProduct.id)}>
                   <CheckCircle className="mr-1 h-4 w-4" /> Approve
                 </Button>
               </DialogFooter>
@@ -701,7 +680,7 @@ const Admin = () => {
                 <Button variant="destructive" onClick={() => { setRejectType('seller'); setRejectId(selectedSeller.id); setShowRejectDialog(true); }}>
                   <UserX className="mr-1 h-4 w-4" /> Reject
                 </Button>
-                <Button className="bg-[#2563EB] text-white" onClick={() => approveSeller(selectedSeller.id)}>
+                <Button className="bg-[#2563EB] text-white" onClick={() => handleApproveSeller(selectedSeller.id, selectedSeller.user_id)}>
                   <UserCheck className="mr-1 h-4 w-4" /> Approve
                 </Button>
               </DialogFooter>
@@ -725,7 +704,7 @@ const Admin = () => {
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowRejectDialog(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={rejectItem} disabled={!rejectReason.trim()}>
+            <Button variant="destructive" onClick={handleRejectItem} disabled={!rejectReason.trim()}>
               Confirm Rejection
             </Button>
           </DialogFooter>

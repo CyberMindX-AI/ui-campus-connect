@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLogin } from '@/hooks/api/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,10 +14,10 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { login, isAuthenticated } = useAuth();
+  const { mutate: performLogin, isPending: loading } = useLogin(); 
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard/buyer" replace />;
@@ -39,13 +40,19 @@ const Login = () => {
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
 
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      login({ fullname: 'Student', email, role: 'both', faculty: 'Science' });
-      toast({ title: 'Welcome back!', description: 'You have signed in successfully.' });
-      navigate('/dashboard/buyer');
-    }, 1500);
+    performLogin(
+      { email, password },
+      {
+        onSuccess: (data) => {
+          login(data.user); // Sync Context if needed
+          toast({ title: 'Welcome back!', description: 'You have signed in successfully.' });
+          navigate('/dashboard/buyer');
+        },
+        onError: (err: any) => {
+          toast({ title: 'Login Failed', description: err.message || 'Invalid credentials.', variant: 'destructive' });
+        }
+      }
+    );
   };
 
   return (

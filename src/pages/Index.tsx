@@ -9,7 +9,8 @@ import {
 import { Button } from '@/components/ui/button';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
-import { products, categories, stats, testimonials, faqs } from '@/data/mock';
+import { useProducts } from '@/hooks/api/useProducts';
+import { useCategories, useMarketFaqs } from '@/hooks/api/useMarket';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -81,6 +82,9 @@ const topSellers = [
 const Index = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const { isAuthenticated, user } = useAuth();
+  const { data: products = [] } = useProducts();
+  const { data: categories = [] } = useCategories();
+  const { data: faqs = [] } = useMarketFaqs();
 
   if (isAuthenticated) {
     const dest = user?.role === 'seller' ? '/dashboard/seller' : '/dashboard/buyer';

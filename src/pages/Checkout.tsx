@@ -5,7 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Shield, CreditCard, Building2, Smartphone, CheckCircle } from 'lucide-react';
 import Layout from '@/components/Layout';
-import { products } from '@/data/mock';
+import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { checkoutService } from '@/services/checkout.service';
 import { useToast } from '@/hooks/use-toast';
 
 const steps = ['Delivery Details', 'Payment', 'Confirmation'];
@@ -17,27 +19,48 @@ const paymentMethods = [
 ];
 
 const Checkout = () => {
+  const { items, total: cartTotal, clearCart } = useCart();
+  const { user, isAuthenticated } = useAuth();
   const [step, setStep] = useState(0);
   const [delivery, setDelivery] = useState('Campus Pickup');
   const [payment, setPayment] = useState('card');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
+  const [orderId, setOrderId] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const items = [products[0], products[4]];
-  const subtotal = items.reduce((s, p) => s + p.price, 0);
+  const subtotal = items.reduce((s, i) => s + (i.product.price * i.qty), 0);
   const fee = Math.round(subtotal * 0.05);
   const total = subtotal + fee;
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
+    if (!isAuthenticated || !user?.id) return;
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const result = await checkoutService.createOrder(user.id, items);
+      setOrderId(result?.[0]?.id.substring(0, 8).toUpperCase() || 'CC-' + Math.random().toString(36).substr(2, 6).toUpperCase());
+      await clearCart();
       setStep(2);
-      toast({ title: 'Order placed!', description: 'Your payment has been processed.' });
-    }, 2000);
+      toast({ title: 'Order placed!', description: 'Your payment has been processed and seller notified.' });
+    } catch (error) {
+      console.error('Checkout error:', error);
+      toast({ title: 'Payment Failed', description: 'There was an error processing your transaction.', variant: 'destructive' });
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (items.length === 0 && step !== 2) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-16 text-center">
+          <h2 className="text-xl font-bold">Your cart is empty</h2>
+          <Link to="/products"><Button variant="hero" className="mt-4">Browse Products</Button></Link>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -115,7 +138,7 @@ const Checkout = () => {
                   <CheckCircle className="h-8 w-8 text-success" />
                 </div>
                 <h2 className="mt-4 font-heading text-xl font-bold text-foreground">Order Confirmed!</h2>
-                <p className="mt-1 text-sm text-muted-foreground">Order ID: ORD-2025-104</p>
+                <p className="mt-1 text-sm text-muted-foreground">Order ID: {orderId}</p>
                 <p className="mt-4 text-sm text-muted-foreground">
                   Your order has been placed successfully. The seller has been notified.
                 </p>
@@ -132,13 +155,13 @@ const Checkout = () => {
             <h3 className="font-heading text-lg font-semibold text-foreground">Order Summary</h3>
             <div className="mt-4 space-y-3">
               {items.map((item) => (
-                <div key={item.id} className="flex items-center gap-3">
-                  <img src={item.image} alt={item.title} className="h-12 w-12 rounded-lg object-cover" />
+                <div key={item.product.id} className="flex items-center gap-3">
+                  <img src={item.product.image} alt={item.product.title} className="h-12 w-12 rounded-lg object-cover" />
                   <div className="flex-1 min-w-0">
-                    <p className="truncate text-sm font-medium text-foreground">{item.title}</p>
-                    <p className="text-xs text-muted-foreground">{item.seller}</p>
+                    <p className="truncate text-sm font-medium text-foreground">{item.product.title}</p>
+                    <p className="text-xs text-muted-foreground">{item.product.seller} x{item.qty}</p>
                   </div>
-                  <span className="text-sm font-semibold text-foreground">₦{item.price.toLocaleString()}</span>
+                  <span className="text-sm font-semibold text-foreground">₦{(item.product.price * item.qty).toLocaleString()}</span>
                 </div>
               ))}
             </div>
@@ -157,3 +180,4 @@ const Checkout = () => {
 };
 
 export default Checkout;
+ Checkout;

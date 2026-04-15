@@ -5,12 +5,15 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
-import { products, categories } from '@/data/mock';
+import { useProducts } from '@/hooks/api/useProducts';
+import { useCategories } from '@/hooks/api/useMarket';
 
 const conditions = ['New', 'Like New', 'Used'];
 const sortOptions = ['Newest', 'Price: Low-High', 'Price: High-Low', 'Most Popular', 'Highest Rated'];
 
 const Products = () => {
+  const { data: products = [] } = useProducts();
+  const { data: categories = [] } = useCategories();
   const [searchParams] = useSearchParams();
   const categoryFilter = searchParams.get('category');
   const [search, setSearch] = useState('');

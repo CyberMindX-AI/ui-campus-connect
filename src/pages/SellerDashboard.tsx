@@ -1,11 +1,14 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Plus, Package, MessageSquare, Wallet, TrendingUp, ShoppingCart,
-  Star, Eye, ChevronRight, AlertTriangle, BarChart3
+  Star, Eye, ChevronRight, AlertTriangle, BarChart3, BadgeCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import Layout from '@/components/Layout';
+import { useAuth } from '@/contexts/AuthContext';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -13,10 +16,10 @@ const fadeUp = {
 };
 
 const overviewCards = [
-  { icon: TrendingUp, label: 'Total Sales', value: '₦187,500', change: '+12%', color: 'bg-primary/10 text-primary' },
-  { icon: ShoppingCart, label: 'Total Orders', value: '34', change: '+5', color: 'bg-blue-500/10 text-blue-500' },
-  { icon: Package, label: 'Active Listings', value: '12', change: '2 new', color: 'bg-accent/10 text-accent' },
-  { icon: Star, label: 'Avg Rating', value: '4.7', change: '↑ 0.2', color: 'bg-yellow-500/10 text-yellow-600' },
+  { icon: TrendingUp, label: 'Total Sales', value: '₦0', change: '0%', color: 'bg-primary/10 text-primary' },
+  { icon: ShoppingCart, label: 'Total Orders', value: '0', change: '0', color: 'bg-blue-500/10 text-blue-500' },
+  { icon: Package, label: 'Active Listings', value: '0', change: '0 new', color: 'bg-accent/10 text-accent' },
+  { icon: Star, label: 'Avg Rating', value: '0.0', change: '0.0', color: 'bg-yellow-500/10 text-yellow-600' },
 ];
 
 const quickActions = [
@@ -26,18 +29,9 @@ const quickActions = [
   { icon: Wallet, label: 'Withdraw', to: '/wallet', variant: 'outline' as const },
 ];
 
-const recentOrders = [
-  { id: 'ORD-2025-101', buyer: 'Tunde M.', item: 'Organic Chemistry Textbook', amount: 4500, status: 'New', date: '2025-07-01' },
-  { id: 'ORD-2025-098', buyer: 'Amina S.', item: 'Handmade Ankara Bag', amount: 8500, status: 'Processing', date: '2025-06-30' },
-  { id: 'ORD-2025-095', buyer: 'Chidi E.', item: 'HP Laptop Charger', amount: 5500, status: 'Completed', date: '2025-06-28' },
-  { id: 'ORD-2025-090', buyer: 'Kemi O.', item: 'Standing Fan', amount: 15000, status: 'Completed', date: '2025-06-25' },
-];
-
-const topProducts = [
-  { name: 'Homemade Jollof Rice', views: 342, sales: 87, revenue: 130500 },
-  { name: 'Organic Chemistry Textbook', views: 198, sales: 23, revenue: 103500 },
-  { name: 'Ankara Laptop Bag', views: 156, sales: 31, revenue: 263500 },
-];
+// Live data to be hydrated from backend:
+const recentOrders: any[] = [];
+const topProducts: any[] = [];
 
 const statusColors: Record<string, string> = {
   New: 'bg-blue-100 text-blue-700',
@@ -47,6 +41,8 @@ const statusColors: Record<string, string> = {
 };
 
 const SellerDashboard = () => {
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const { user } = useAuth();
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
@@ -61,8 +57,12 @@ const SellerDashboard = () => {
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="font-heading text-xl font-bold sm:text-2xl lg:text-3xl">
-                {greeting}, Seller! 🏪
+              <h1 className="font-heading text-xl font-bold flex items-center gap-2 sm:text-2xl lg:text-3xl">
+                {greeting}, {user?.fullname?.split(' ')[0] || 'Seller'}!
+                {user?.isVerified && (
+                  <BadgeCheck className="h-6 w-6 text-blue-500 fill-blue-500/10" aria-label="Verified Seller" />
+                )}
+                🏪
               </h1>
               <p className="mt-1 text-sm text-primary-foreground/80">
                 Here's how your store is performing today
@@ -118,11 +118,11 @@ const SellerDashboard = () => {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Wallet Balance</p>
-                <p className="text-xl font-bold text-foreground">₦142,300</p>
+                <p className="text-xl font-bold text-foreground">₦0</p>
               </div>
             </div>
             <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-              <span>Pending: ₦18,500</span>
+              <span>Pending: ₦0</span>
               <Link to="/wallet">
                 <Button variant="hero" size="sm" className="text-xs">Withdraw</Button>
               </Link>
@@ -138,7 +138,7 @@ const SellerDashboard = () => {
               </div>
               <div>
                 <p className="text-sm font-medium text-yellow-800">Inventory Alerts</p>
-                <p className="text-xs text-yellow-600">2 products are low on stock</p>
+                <p className="text-xs text-yellow-600">0 products are low on stock</p>
               </div>
             </div>
             <Link to="/dashboard/seller/products" className="mt-2 block text-xs font-medium text-yellow-700 hover:underline">
@@ -203,22 +203,73 @@ const SellerDashboard = () => {
             </div>
 
             {/* Store Completion */}
-            <div className="mt-4 rounded-xl border border-border bg-card p-4 sm:p-5">
-              <h3 className="text-sm font-semibold text-foreground">Store Profile</h3>
+            <div 
+              onClick={() => setProfileModalOpen(true)}
+              className="group mt-4 cursor-pointer rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/50 hover:shadow-sm sm:p-5"
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-foreground group-hover:text-primary">Store Profile</h3>
+                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+              </div>
               <div className="mt-3">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">Profile completion</span>
-                  <span className="font-medium text-primary">75%</span>
+                  <span className="font-medium text-primary">0%</span>
                 </div>
                 <div className="mt-1.5 h-2 rounded-full bg-muted">
-                  <div className="h-full w-3/4 rounded-full bg-primary transition-all" />
+                  <div className="h-full w-0 rounded-full bg-primary transition-all" />
                 </div>
               </div>
-              <p className="mt-2 text-xs text-muted-foreground">Add a store banner to complete your profile</p>
+              <p className="mt-2 text-xs text-muted-foreground">Click to see how to boost your profile</p>
             </div>
           </motion.div>
         </div>
       </div>
+
+      {/* Profile Completion Checklist Modal */}
+      <Dialog open={profileModalOpen} onOpenChange={setProfileModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Complete Your Store Profile</DialogTitle>
+            <DialogDescription>
+              Follow these steps to hit 100% completion and maximize your visibility to buyers.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="flex items-start gap-4">
+              <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-muted text-[10px] font-bold text-muted-foreground">1</div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Add a Store Banner</p>
+                <p className="text-xs text-muted-foreground mt-1">Make your storefront stand out with a custom, high-quality banner image.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-muted text-[10px] font-bold text-muted-foreground">2</div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Verify Phone Number</p>
+                <p className="text-xs text-muted-foreground mt-1">Build trust. Only verified sellers can post listings over ₦50,000.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-muted text-[10px] font-bold text-muted-foreground">3</div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Create First Listing</p>
+                <p className="text-xs text-muted-foreground mt-1">Post a textbook, laptop, or gadget to officially open your store to campus.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-muted text-[10px] font-bold text-muted-foreground">4</div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Set Delivery Preferences</p>
+                <p className="text-xs text-muted-foreground mt-1">Specify which halls and faculties you are willing to deliver products to.</p>
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 flex justify-end">
+            <Button onClick={() => setProfileModalOpen(false)}>Get Started</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };

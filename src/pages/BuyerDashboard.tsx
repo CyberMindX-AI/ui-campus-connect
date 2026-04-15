@@ -4,8 +4,9 @@ import { ShoppingBag, MessageSquare, Heart, Package, TrendingUp, Clock, Star, Ch
 import { Button } from '@/components/ui/button';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
-import { products, categories } from '@/data/mock';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCategories } from '@/hooks/api/useMarket';
+import { useProducts } from '@/hooks/api/useProducts';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -36,6 +37,8 @@ const BuyerDashboard = () => {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const { user, isAuthenticated } = useAuth();
+  const { data: products = [] } = useProducts();
+  const { data: categories = [] } = useCategories();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;

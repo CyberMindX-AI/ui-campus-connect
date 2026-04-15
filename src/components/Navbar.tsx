@@ -16,6 +16,7 @@ const Navbar = () => {
   const { cartCount } = useCart();
 
   const dashboardLink = user?.role === 'seller' ? '/dashboard/seller' : '/dashboard/buyer';
+  const isSellerView = location.pathname.startsWith('/dashboard/seller');
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -26,21 +27,40 @@ const Navbar = () => {
 
         {/* Desktop nav */}
         <div className="hidden items-center gap-6 md:flex">
-          <Link to="/products" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-            Browse
-          </Link>
-          <Link to="/categories" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-            Categories
-          </Link>
-          {isAuthenticated && (
-            <Link to="/messages" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-              Messages
-            </Link>
+          {isSellerView ? (
+            <>
+              <Link to="/dashboard/seller" className="text-sm font-medium text-primary transition-colors hover:text-primary-dark">
+                Store Overview
+              </Link>
+              <Link to="/dashboard/seller/products" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+                My Listings
+              </Link>
+              <Link to="/dashboard/seller/orders" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+                Manage Orders
+              </Link>
+              <Link to="/wallet" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+                Wallet
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link to="/products" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+                Browse
+              </Link>
+              <Link to="/categories" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+                Categories
+              </Link>
+              {isAuthenticated && (
+                <Link to="/messages" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+                  Messages
+                </Link>
+              )}
+              <Link to="/products" className="flex h-9 items-center gap-2 rounded-lg border border-input bg-secondary px-3 text-sm text-muted-foreground transition-colors hover:bg-muted">
+                <Search className="h-4 w-4" />
+                <span>Search products...</span>
+              </Link>
+            </>
           )}
-          <Link to="/products" className="flex h-9 items-center gap-2 rounded-lg border border-input bg-secondary px-3 text-sm text-muted-foreground transition-colors hover:bg-muted">
-            <Search className="h-4 w-4" />
-            <span>Search products...</span>
-          </Link>
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
@@ -49,17 +69,18 @@ const Navbar = () => {
               <Link to="/notifications">
                 <Button variant="ghost" size="icon" className="relative">
                   <Bell className="h-5 w-5" />
-                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-accent-foreground">3</span>
                 </Button>
               </Link>
-              <Link to="/cart">
-                <Button variant="ghost" size="icon" className="relative">
-                  <ShoppingCart className="h-5 w-5" />
-                  {cartCount > 0 && (
-                    <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-accent-foreground">{cartCount}</span>
-                  )}
-                </Button>
-              </Link>
+              {!isSellerView && (
+                <Link to="/cart">
+                  <Button variant="ghost" size="icon" className="relative">
+                    <ShoppingCart className="h-5 w-5" />
+                    {cartCount > 0 && (
+                      <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-accent-foreground">{cartCount}</span>
+                    )}
+                  </Button>
+                </Link>
+              )}
               <div className="relative">
                 <button onClick={() => setUserMenu(!userMenu)} className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
                   {user?.fullname?.charAt(0) || 'U'}
@@ -120,17 +141,32 @@ const Navbar = () => {
             className="overflow-hidden border-t border-border bg-background md:hidden"
           >
             <div className="flex flex-col gap-2 p-4">
-              <Link to="/products" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Browse Products</Link>
-              <Link to="/categories" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Categories</Link>
+              {isSellerView ? (
+                <>
+                  <Link to="/dashboard/seller" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Store Overview</Link>
+                  <Link to="/dashboard/seller/products" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">My Listings</Link>
+                  <Link to="/dashboard/seller/orders" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Manage Orders</Link>
+                  <Link to="/wallet" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Wallet</Link>
+                </>
+              ) : (
+                <>
+                  <Link to="/products" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Browse Products</Link>
+                  <Link to="/categories" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Categories</Link>
+                  {isAuthenticated && (
+                    <>
+                      <Link to="/messages" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Messages</Link>
+                      <Link to="/cart" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Cart {cartCount > 0 && `(${cartCount})`}</Link>
+                    </>
+                  )}
+                </>
+              )}
               {isAuthenticated && (
                 <>
-                  <Link to="/messages" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Messages</Link>
                   <Link to="/notifications" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Notifications</Link>
-                  <Link to="/cart" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Cart {cartCount > 0 && `(${cartCount})`}</Link>
-                  {(user?.role === 'buyer' || user?.role === 'both') && (
+                  {(user?.role === 'buyer' || user?.role === 'both') && !isSellerView && (
                     <Link to="/dashboard/buyer" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Buyer Dashboard</Link>
                   )}
-                  {(user?.role === 'seller' || user?.role === 'both') && (
+                  {(user?.role === 'seller' || user?.role === 'both') && !isSellerView && (
                     <Link to="/dashboard/seller" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Seller Dashboard</Link>
                   )}
                 </>

@@ -3,9 +3,10 @@ import { Star, MapPin, Clock, MessageCircle, Heart, ShieldCheck } from 'lucide-r
 import { Button } from '@/components/ui/button';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
-import { products } from '@/data/mock';
+import { useProducts } from '@/hooks/api/useProducts';
 
 const SellerStore = () => {
+  const { data: products = [] } = useProducts();
   const seller = {
     name: "Adebayo's Store",
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop',

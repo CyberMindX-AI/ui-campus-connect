@@ -1,18 +1,14 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
-
-interface User {
-  fullname: string;
-  email: string;
-  role: 'buyer' | 'seller' | 'both';
-  faculty: string;
-  avatar?: string;
-}
+import { createContext, useContext, ReactNode, useEffect } from 'react';
+import { AuthUser } from '@/services/auth.service';
+import { useQueryClient } from '@tanstack/react-query';
+import { useAuthUser, useLogout as useApiLogout } from '@/hooks/api/useAuth';
 
 interface AuthContextType {
-  user: User | null;
+  user: AuthUser | null;
   isAuthenticated: boolean;
-  login: (user: User) => void;
+  login: (user: AuthUser) => void;
   logout: () => void;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -20,29 +16,28 @@ const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   login: () => {},
   logout: () => {},
+  isLoading: false,
 });
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('ui_marketplace_user');
-    return saved ? JSON.parse(saved) : null;
-  });
+  const { data: user = null, isLoading } = useAuthUser();
+  const queryClient = useQueryClient();
+  const { mutate: apiLogout } = useApiLogout();
 
-  const login = (u: User) => {
-    setUser(u);
-    localStorage.setItem('ui_marketplace_user', JSON.stringify(u));
+  // The login function now just manually seeds the cache until a refresh, usually useLogin handles this directly.
+  const login = (u: AuthUser) => {
+    queryClient.setQueryData(['authUser'], u);
   };
 
   const logout = () => {
-    setUser(null);
-    localStorage.removeItem('ui_marketplace_user');
+    apiLogout();
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
-};
+};

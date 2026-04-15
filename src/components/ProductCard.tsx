@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Heart, Star, MapPin } from 'lucide-react';
-import type { Product } from '@/data/mock';
+import type { Product } from '@/types';
 
 const ProductCard = ({ product }: { product: Product }) => (
   <Link to={`/products/${product.id}`} className="group block overflow-hidden rounded-xl border border-border bg-card transition-all hover:shadow-lg">

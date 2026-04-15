@@ -4,22 +4,31 @@ import { Plus, Edit2, Trash2, Eye, ToggleLeft, ToggleRight, Package, Search } fr
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Layout from '@/components/Layout';
-import { products } from '@/data/mock';
+import { useProducts } from '@/hooks/api/useProducts';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
 const SellerProducts = () => {
   const { user, isAuthenticated } = useAuth();
+  const { data: products = [] } = useProducts();
   const { toast } = useToast();
   const [search, setSearch] = useState('');
-  const [listings, setListings] = useState(
-    products.slice(0, 5).map((p, i) => ({
-      ...p,
-      active: i !== 3,
-      stock: i === 1 ? 2 : i === 3 ? 0 : Math.floor(Math.random() * 20) + 5,
-      totalSales: Math.floor(Math.random() * 50),
-    }))
-  );
+  const [listings, setListings] = useState<any[]>([]);
+
+  import('react').then(React => {
+    React.useEffect(() => {
+      if (products.length > 0 && listings.length === 0) {
+        setListings(
+          products.slice(0, 5).map((p, i) => ({
+            ...p,
+            active: i !== 3,
+            stock: i === 1 ? 2 : i === 3 ? 0 : Math.floor(Math.random() * 20) + 5,
+            totalSales: Math.floor(Math.random() * 50),
+          }))
+        );
+      }
+    }, [products]);
+  });
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 

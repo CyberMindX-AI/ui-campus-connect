@@ -5,13 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Upload, X, Eye } from 'lucide-react';
 import Layout from '@/components/Layout';
-import { categories } from '@/data/mock';
+import { useCategories } from '@/hooks/api/useMarket';
 import { useToast } from '@/hooks/use-toast';
 
 const conditions = ['New', 'Like New', 'Used (Good)', 'Used (Fair)', 'Refurbished'];
 const deliveryOptions = ['Campus Pickup', 'Hall Delivery', 'Digital Delivery'];
 
 const CreateProduct = () => {
+  const { data: categories = [] } = useCategories();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');

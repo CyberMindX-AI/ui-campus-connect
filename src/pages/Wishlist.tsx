@@ -1,22 +1,28 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, Trash2, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Layout from '@/components/Layout';
-import ProductCard from '@/components/ProductCard';
-import { products } from '@/data/mock';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
+import { useWishlist } from '@/hooks/api/useWishlist';
+import { useCart } from '@/contexts/CartContext';
 
 const Wishlist = () => {
   const { isAuthenticated } = useAuth();
-  const [wishlistItems, setWishlistItems] = useState(products.slice(0, 4));
+  const { data: wishlistItems = [], isLoading, removeFromWishlist, clearWishlist } = useWishlist();
+  const { addToCart } = useCart();
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 
-  const removeItem = (id: string) => {
-    setWishlistItems((prev) => prev.filter((p) => p.id !== id));
-  };
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-16 text-center text-muted-foreground">
+          Loading your wishlist...
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -27,7 +33,7 @@ const Wishlist = () => {
             <p className="mt-1 text-sm text-muted-foreground">{wishlistItems.length} saved items</p>
           </div>
           {wishlistItems.length > 0 && (
-            <Button variant="outline" size="sm" onClick={() => setWishlistItems([])}>
+            <Button variant="outline" size="sm" onClick={() => clearWishlist()}>
               Clear All
             </Button>
           )}
@@ -59,10 +65,10 @@ const Wishlist = () => {
                   <div className="flex items-center justify-between">
                     <p className="font-heading text-lg font-bold text-primary">₦{product.price.toLocaleString()}</p>
                     <div className="flex gap-2">
-                      <Button variant="hero" size="sm" className="gap-1 text-xs">
+                      <Button variant="hero" size="sm" className="gap-1 text-xs" onClick={() => addToCart(product)}>
                         <ShoppingCart className="h-3 w-3" /> Add to Cart
                       </Button>
-                      <Button variant="outline" size="sm" onClick={() => removeItem(product.id)}>
+                      <Button variant="outline" size="sm" onClick={() => removeFromWishlist(product.id)}>
                         <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
