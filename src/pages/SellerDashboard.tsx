@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Plus, Package, MessageSquare, Wallet, TrendingUp, ShoppingCart,
-  Star, Eye, ChevronRight, AlertTriangle, BarChart3, BadgeCheck
+  Star, Eye, ChevronRight, AlertTriangle, BarChart, BadgeCheck, Store
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -25,8 +25,8 @@ const overviewCards = [
 const quickActions = [
   { icon: Plus, label: 'Add Product', to: '/dashboard/seller/products/new', variant: 'hero' as const },
   { icon: Package, label: 'My Listings', to: '/dashboard/seller/products', variant: 'outline' as const },
-  { icon: MessageSquare, label: 'Messages', to: '/messages', variant: 'outline' as const },
-  { icon: Wallet, label: 'Withdraw', to: '/wallet', variant: 'outline' as const },
+  { icon: MessageSquare, label: 'Messages', to: '/messages', variant: 'ghost' as const },
+  { icon: Wallet, label: 'Withdraw', to: '/wallet', variant: 'ghost' as const },
 ];
 
 // Live data to be hydrated from backend:
@@ -67,7 +67,8 @@ const SellerDashboard = () => {
             {quickActions.map((action) => (
               <Link key={action.label} to={action.to} className="flex-1 sm:flex-none">
                 <Button
-                  className={`${action.variant === 'hero' ? 'bg-slate-900 hover:bg-slate-800' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'} font-bold shadow-sm rounded-xl px-4 sm:px-6 w-full text-xs sm:text-sm h-10 sm:h-11`}
+                  variant={action.variant}
+                  className="font-bold shadow-sm rounded-xl px-4 sm:px-6 w-full text-xs sm:text-sm h-10 sm:h-11"
                 >
                   <action.icon className="mr-2 h-4 w-4" /> {action.label}
                 </Button>
@@ -126,7 +127,7 @@ const SellerDashboard = () => {
           <div className="bg-slate-900 p-8 rounded-3xl text-white relative overflow-hidden group">
             <div className="flex items-start gap-4 relative z-10">
               <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center text-white shadow-md">
-                <BarChart3 className="h-6 w-6" />
+                <BarChart className="h-6 w-6" />
               </div>
               <div>
                 <h3 className="text-lg font-bold">Store Performance</h3>
@@ -172,7 +173,7 @@ const SellerDashboard = () => {
               <h2 className="text-xl font-bold text-slate-900 mb-6">Top Performers</h2>
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden p-6 space-y-6">
                 <div className="text-center py-6">
-                  <BarChart3 className="h-10 w-10 text-slate-100 mx-auto mb-2" />
+                  <BarChart className="h-10 w-10 text-slate-100 mx-auto mb-2" />
                   <p className="text-xs font-bold text-slate-300 uppercase tracking-widest">No data available</p>
                 </div>
               </div>
