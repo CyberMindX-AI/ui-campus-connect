@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAdminData } from '@/hooks/api/useAdmin';
 import {
   ShieldCheck, Users, Package, Store, AlertTriangle, TrendingUp,
-  CheckCircle, XCircle, Eye, Ban, Search, BarChart3, MessageSquare,
+  CheckCircle, XCircle, Eye, Ban, Search, BarChart, MessageSquare,
   Clock, DollarSign, Flag, Settings, Activity, ArrowUpRight, ArrowDownRight,
   Trash2, UserCheck, UserX, FileText, Bell, LogOut
 } from 'lucide-react';
@@ -173,7 +173,7 @@ const Admin = () => {
   };
 
   const resolveReport = (id: string, action: string) => {
-    setReports(prev => prev.filter(r => r.id !== id));
+    setActiveReports(prev => prev.filter(r => r.id !== id));
     toast({ title: 'Report Resolved', description: `Action taken: ${action}` });
   };
 
@@ -598,7 +598,7 @@ const Admin = () => {
                       <FileText className="h-4 w-4" /> Export User Data (CSV)
                     </Button>
                     <Button variant="outline" className="w-full justify-start gap-2">
-                      <BarChart3 className="h-4 w-4" /> Generate Analytics Report
+                      <BarChart className="h-4 w-4" /> Generate Analytics Report
                     </Button>
                     <Button variant="outline" className="w-full justify-start gap-2">
                       <MessageSquare className="h-4 w-4" /> View Support Tickets
