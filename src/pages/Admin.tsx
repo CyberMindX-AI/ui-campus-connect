@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { useAdminData } from '@/hooks/api/useAdmin';
 import {
   ShieldCheck, Users, Package, Store, AlertTriangle, TrendingUp,
   CheckCircle, XCircle, Eye, Ban, Search, BarChart3, MessageSquare,
