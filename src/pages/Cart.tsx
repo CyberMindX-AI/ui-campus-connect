@@ -115,8 +115,6 @@ const Cart = () => {
           </div>
         )}
       </div>
-        )}
-      </div>
     </Layout>
   );
 };
