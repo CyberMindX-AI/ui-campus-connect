@@ -4,13 +4,7 @@ import { Package, MessageCircle, Check, X as XIcon, Truck } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { useToast } from '@/hooks/use-toast';
 
-const initialOrders = [
-  { id: 'ORD-2025-101', buyer: 'Tunde M.', item: 'Organic Chemistry Textbook', amount: 4500, status: 'New', date: '2025-07-01', image: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=100&h=100&fit=crop' },
-  { id: 'ORD-2025-098', buyer: 'Amina S.', item: 'Handmade Ankara Bag', amount: 8500, status: 'Processing', date: '2025-06-30', image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=100&h=100&fit=crop' },
-  { id: 'ORD-2025-095', buyer: 'Chidi E.', item: 'HP Laptop Charger', amount: 5500, status: 'Ready', date: '2025-06-28', image: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=100&h=100&fit=crop' },
-  { id: 'ORD-2025-090', buyer: 'Kemi O.', item: 'Standing Fan', amount: 15000, status: 'Completed', date: '2025-06-25', image: 'https://images.unsplash.com/photo-1617375407633-acd67aba7864?w=100&h=100&fit=crop' },
-  { id: 'ORD-2025-085', buyer: 'Fola B.', item: 'Jollof Rice x2', amount: 3000, status: 'Cancelled', date: '2025-06-22', image: 'https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?w=100&h=100&fit=crop' },
-];
+const initialOrders: any[] = [];
 
 const tabs = ['All', 'New', 'Processing', 'Ready', 'Completed', 'Cancelled'];
 const statusColors: Record<string, string> = {

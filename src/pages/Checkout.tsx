@@ -179,5 +179,4 @@ const Checkout = () => {
   );
 };
 
-export default Checkout;
- Checkout;
+export default Checkout;

@@ -4,13 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Package, ChevronRight, Download, RefreshCw, MessageCircle, AlertTriangle, Star } from 'lucide-react';
 import Layout from '@/components/Layout';
 
-const orders = [
-  { id: 'ORD-2025-001', item: 'Organic Chemistry Textbook', seller: 'Adebayo O.', amount: 4500, status: 'Delivered', date: '2025-06-28', image: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=100&h=100&fit=crop' },
-  { id: 'ORD-2025-002', item: 'Homemade Jollof Rice & Chicken', seller: 'Bukola F.', amount: 1500, status: 'Processing', date: '2025-06-30', image: 'https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?w=100&h=100&fit=crop' },
-  { id: 'ORD-2025-003', item: 'HP Laptop Charger', seller: 'Grace O.', amount: 5500, status: 'Pending', date: '2025-07-01', image: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=100&h=100&fit=crop' },
-  { id: 'ORD-2025-004', item: 'Nike Air Force 1', seller: 'Ibrahim K.', amount: 22000, status: 'Cancelled', date: '2025-06-20', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100&h=100&fit=crop' },
-  { id: 'ORD-2025-005', item: 'Figma UI Kit', seller: 'Tunde M.', amount: 3000, status: 'Delivered', date: '2025-06-15', image: 'https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=100&h=100&fit=crop' },
-];
+const orders: any[] = [];
 
 const tabs = ['All', 'Pending', 'Processing', 'Delivered', 'Cancelled'];
 const statusColors: Record<string, string> = {

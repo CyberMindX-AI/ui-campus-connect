@@ -8,12 +8,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCategories } from '@/hooks/api/useMarket';
 import { useProducts } from '@/hooks/api/useProducts';
 
-const recentOrders = [
-  { id: 'ORD-2025-001', item: 'Organic Chemistry Textbook', seller: 'Adebayo O.', amount: 4500, status: 'Delivered', date: '2025-06-28' },
-  { id: 'ORD-2025-002', item: 'Homemade Jollof Rice & Chicken', seller: 'Bukola F.', amount: 1500, status: 'Processing', date: '2025-06-30' },
-  { id: 'ORD-2025-003', item: 'HP Laptop Charger', seller: 'Grace O.', amount: 5500, status: 'Pending', date: '2025-07-01' },
-];
-
 const statusColors: Record<string, string> = {
   Delivered: 'bg-green-100 text-green-700',
   Processing: 'bg-yellow-100 text-yellow-700',
@@ -75,13 +69,13 @@ const BuyerDashboard = () => {
           </div>
         </div>
 
-        {/* Stats Row (More subtle, Fiverr-style) */}
+        {/* Stats Row (Reset to 0) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
           {[
-            { label: "Active Orders", value: "3", icon: ShoppingBag, color: "text-blue-600", bg: "bg-blue-50" },
-            { label: "Messages", value: "8", icon: MessageSquare, color: "text-purple-600", bg: "bg-purple-50" },
-            { label: "Wishlist Items", value: "12", icon: Heart, color: "text-rose-600", bg: "bg-rose-50" },
-            { label: "Total Spent", value: "₦47,500", icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-50" }
+            { label: "Active Orders", value: "0", icon: ShoppingBag, color: "text-blue-600", bg: "bg-blue-50" },
+            { label: "Messages", value: "0", icon: MessageSquare, color: "text-purple-600", bg: "bg-purple-50" },
+            { label: "Wishlist Items", value: "0", icon: Heart, color: "text-rose-600", bg: "bg-rose-50" },
+            { label: "Total Spent", value: "₦0", icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-50" }
           ].map((stat, i) => (
             <motion.div 
               key={stat.label} 
@@ -102,43 +96,42 @@ const BuyerDashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {/* Main Content Area */}
+          {/* Categories Sidebar (Fiverr style) */}
+          <div className="space-y-8">
+            <h2 className="text-xl font-black text-slate-900 tracking-tight">Quick Categories</h2>
+            <div className="grid grid-cols-1 gap-4">
+              {categories.slice(0, 6).map((cat) => (
+                <Link 
+                  key={cat.slug} 
+                  to={`/products?category=${cat.slug}`}
+                  className="flex items-center justify-between p-6 bg-white border border-slate-100 rounded-3xl shadow-sm hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-1 transition-all group"
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="text-3xl group-hover:scale-110 transition-transform">{cat.icon}</span>
+                    <span className="font-bold text-slate-700">{cat.name}</span>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-primary transition-colors" />
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Empty State for Orders */}
           <div className="lg:col-span-2 space-y-12">
-            
-            {/* Active Orders Section */}
-            <section>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-slate-900">Active Orders</h2>
-                <Link to="/dashboard/buyer/orders" className="text-sm font-bold text-primary hover:underline">Manage Orders</Link>
+            <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-[2.5rem] p-12 text-center">
+              <div className="h-20 w-20 bg-white rounded-3xl shadow-sm flex items-center justify-center mx-auto mb-6">
+                <ShoppingBag className="h-10 w-10 text-slate-200" />
               </div>
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                <div className="divide-y divide-slate-50">
-                  {recentOrders.map((order) => (
-                    <div key={order.id} className="p-5 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
-                      <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-xl bg-slate-100 flex items-center justify-center">
-                          <Package className="h-6 w-6 text-slate-400" />
-                        </div>
-                        <div>
-                          <p className="font-bold text-slate-900 leading-none mb-1">{order.item}</p>
-                          <p className="text-xs font-medium text-slate-400">Order #{order.id} • Seller: {order.seller}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-6">
-                        <div className="text-right">
-                          <p className="font-bold text-slate-900">₦{order.amount.toLocaleString()}</p>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase">{order.date}</p>
-                        </div>
-                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusColors[order.status]}`}>
-                          {order.status}
-                        </span>
-                        <ChevronRight className="h-5 w-5 text-slate-300" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">No Active Orders</h3>
+              <p className="text-slate-500 font-medium max-w-xs mx-auto mb-8">
+                You haven't placed any orders yet. Start browsing to find what you need!
+              </p>
+              <Link to="/products">
+                <Button className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-8 rounded-xl h-12 shadow-lg">
+                  Browse Marketplace
+                </Button>
+              </Link>
+            </div>
 
             {/* Recommendations */}
             <section>

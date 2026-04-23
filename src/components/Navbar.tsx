@@ -72,6 +72,9 @@ const Navbar = () => {
                   <Link to="/products" className="text-sm font-semibold text-slate-500 hover:text-primary transition-colors">Browse</Link>
                   <Link to="/categories" className="text-sm font-semibold text-slate-500 hover:text-primary transition-colors">Categories</Link>
                   {isAuthenticated && (
+                    <Link to="/wishlist" className="text-sm font-semibold text-slate-500 hover:text-primary transition-colors">Wishlist</Link>
+                  )}
+                  {isAuthenticated && (
                     <Link to="/messages" className="text-sm font-semibold text-slate-500 hover:text-primary transition-colors">Messages</Link>
                   )}
                   {isAuthenticated && !isLandingPage && (
@@ -183,6 +186,7 @@ const Navbar = () => {
                     <>
                       <Link to="/products" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Browse Products</Link>
                       <Link to="/categories" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Categories</Link>
+                      <Link to="/wishlist" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Wishlist</Link>
                       <Link to="/messages" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Messages</Link>
                       <Link to="/cart" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Cart {cartCount > 0 && `(${cartCount})`}</Link>
                       {isAuthenticated && !isLandingPage && (

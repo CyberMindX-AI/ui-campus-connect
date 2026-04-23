@@ -3,14 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Bell, Package, MessageCircle, Star, CreditCard, Heart, Megaphone, Check } from 'lucide-react';
 import Layout from '@/components/Layout';
 
-const notifications = [
-  { id: 1, type: 'order', icon: Package, title: 'Order Shipped', desc: 'Your order ORD-2025-003 is ready for pickup at Kuti Hall.', time: '5 min ago', read: false },
-  { id: 2, type: 'message', icon: MessageCircle, title: 'New Message', desc: 'Adebayo O. sent you a message about Organic Chemistry Textbook.', time: '1 hour ago', read: false },
-  { id: 3, type: 'review', icon: Star, title: 'New Review', desc: 'You received a 5-star review from Tunde M.', time: '3 hours ago', read: false },
-  { id: 4, type: 'payment', icon: CreditCard, title: 'Payment Confirmed', desc: '₦4,500 payment for order ORD-2025-001 has been confirmed.', time: '1 day ago', read: true },
-  { id: 5, type: 'wishlist', icon: Heart, title: 'Wishlist Alert', desc: 'iPhone 13 Pro is back in stock!', time: '2 days ago', read: true },
-  { id: 6, type: 'announcement', icon: Megaphone, title: 'Platform Update', desc: 'UI Marketplace now supports digital product delivery!', time: '3 days ago', read: true },
-];
+const notifications: any[] = [];
 
 const Notifications = () => {
   const [items, setItems] = useState(notifications);
@@ -34,7 +27,14 @@ const Notifications = () => {
         </div>
 
         <div className="mt-6 space-y-2">
-          {items.map((n) => (
+          {items.length === 0 ? (
+            <div className="py-20 text-center">
+              <div className="h-16 w-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-300">
+                <Bell className="h-8 w-8" />
+              </div>
+              <p className="text-slate-500 font-medium italic text-sm">No notifications yet. We'll alert you here when something happens!</p>
+            </div>
+          ) : items.map((n) => (
             <div key={n.id} className={`flex items-start gap-3 rounded-xl border p-4 transition-colors ${
               n.read ? 'border-border bg-card' : 'border-primary/20 bg-primary-light'
             }`}>

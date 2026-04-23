@@ -100,51 +100,52 @@ const SellerDashboard = () => {
 
         {/* Financial & Alerts Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-          <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden group">
-            <div className="relative z-10">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="h-14 w-14 rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-lg">
-                  <Wallet className="h-7 w-7" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Available Balance</p>
-                  <p className="text-3xl font-black text-slate-900">₦24,500</p>
-                </div>
+          <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between group overflow-hidden relative">
+            <div className="flex items-start gap-6 relative z-10">
+              <div className="h-16 w-16 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-sm shadow-emerald-100/50">
+                <Wallet className="h-8 w-8" />
               </div>
-              <div className="flex items-center justify-between pt-6 border-t border-slate-50">
-                <p className="text-sm font-medium text-slate-500">Pending Clearance: <span className="text-slate-900 font-bold">₦5,000</span></p>
-                <Link to="/wallet">
-                  <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 rounded-xl shadow-lg shadow-emerald-100">
-                    Withdraw Funds
-                  </Button>
-                </Link>
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Available Balance</p>
+                <p className="text-3xl font-black text-slate-900">₦0</p>
               </div>
+            </div>
+            <div className="flex items-center justify-between pt-6 border-t border-slate-50 relative z-10">
+              <p className="text-sm font-medium text-slate-500">Pending Clearance: <span className="text-slate-900 font-bold">₦0</span></p>
+              <Link to="/wallet">
+                <Button className="bg-slate-100 hover:bg-slate-200 text-slate-400 font-bold px-8 rounded-xl cursor-not-allowed" disabled>
+                  Withdraw Funds
+                </Button>
+              </Link>
             </div>
             <div className="absolute -right-8 -bottom-8 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity">
               <Wallet className="h-48 w-48" />
             </div>
           </div>
 
-          <div className="bg-rose-50 p-8 rounded-3xl border border-rose-100 shadow-sm flex flex-col justify-between">
-            <div className="flex items-start gap-4">
-              <div className="h-12 w-12 rounded-xl bg-rose-500 flex items-center justify-center text-white shadow-md">
-                <AlertTriangle className="h-6 w-6" />
+          <div className="bg-slate-900 p-8 rounded-3xl text-white relative overflow-hidden group">
+            <div className="flex items-start gap-4 relative z-10">
+              <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center text-white shadow-md">
+                <BarChart3 className="h-6 w-6" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-rose-900">Inventory Management</h3>
-                <p className="text-sm font-medium text-rose-600/80 mt-1">2 of your listings are currently low on stock or out of date.</p>
+                <h3 className="text-lg font-bold">Store Performance</h3>
+                <p className="text-sm font-medium text-slate-400 mt-1">Your store is now active. Listings will appear in search results.</p>
               </div>
             </div>
-            <Link to="/dashboard/seller/products">
-              <Button variant="outline" className="mt-6 w-full border-rose-200 text-rose-700 hover:bg-rose-100 font-bold rounded-xl py-6">
-                Manage Inventory
+            <Link to="/dashboard/seller/products" className="relative z-10">
+              <Button variant="outline" className="mt-6 w-full border-white/20 text-white hover:bg-white/10 font-bold rounded-xl py-6">
+                Add New Listing
               </Button>
             </Link>
+            <div className="absolute -right-8 -bottom-8 opacity-10 group-hover:scale-110 transition-transform">
+              <Store className="h-40 w-40" />
+            </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {/* Main Sales Data */}
+          {/* Main Sales Data (Reset) */}
           <div className="lg:col-span-2 space-y-10">
             <section>
               <div className="flex items-center justify-between mb-6">
@@ -152,83 +153,49 @@ const SellerDashboard = () => {
                 <Link to="/dashboard/seller/orders" className="text-sm font-bold text-primary hover:underline">View All Orders</Link>
               </div>
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                {recentOrders.length > 0 ? (
-                  <div className="divide-y divide-slate-50">
-                    {recentOrders.map((order) => (
-                      <div key={order.id} className="p-5 flex items-center justify-between hover:bg-slate-50 transition-colors">
-                        <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400">
-                            <ShoppingCart className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <p className="font-bold text-slate-900 leading-none mb-1">{order.item}</p>
-                            <p className="text-xs font-medium text-slate-400">Order #{order.id} • Buyer: {order.buyer}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-6">
-                          <p className="font-bold text-slate-900">₦{order.amount.toLocaleString()}</p>
-                          <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusColors[order.status]}`}>
-                            {order.status}
-                          </span>
-                          <ChevronRight className="h-5 w-5 text-slate-300" />
-                        </div>
-                      </div>
-                    ))}
+                <div className="p-12 text-center">
+                  <div className="h-20 w-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                    <ShoppingCart className="h-10 w-10 text-slate-200" />
                   </div>
-                ) : (
-                  <div className="p-12 text-center">
-                    <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <ShoppingCart className="h-8 w-8 text-slate-300" />
-                    </div>
-                    <p className="text-slate-500 font-medium italic">No recent sales yet. New orders will appear here.</p>
-                  </div>
-                )}
+                  <h3 className="text-lg font-bold text-slate-900 mb-2">No Sales Yet</h3>
+                  <p className="text-slate-500 font-medium max-w-xs mx-auto">
+                    Your store is live! New orders will appear here as students browse your listings.
+                  </p>
+                </div>
               </div>
             </section>
           </div>
 
-          {/* Right Sidebar */}
+          {/* Right Sidebar (Reset) */}
           <div className="space-y-10">
             <section>
               <h2 className="text-xl font-bold text-slate-900 mb-6">Top Performers</h2>
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden p-6 space-y-6">
-                {topProducts.length > 0 ? (
-                  topProducts.map((product, i) => (
-                    <div key={product.name} className="flex items-center gap-4">
-                      <span className="text-2xl font-black text-slate-100">{i + 1}</span>
-                      <div className="flex-1">
-                        <p className="text-sm font-bold text-slate-900 leading-none mb-1">{product.name}</p>
-                        <p className="text-xs font-medium text-slate-400">{product.sales} sales • ₦{product.revenue.toLocaleString()}</p>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-6">
-                    <BarChart3 className="h-10 w-10 text-slate-100 mx-auto mb-2" />
-                    <p className="text-xs font-bold text-slate-300 uppercase tracking-widest">No data available</p>
-                  </div>
-                )}
+                <div className="text-center py-6">
+                  <BarChart3 className="h-10 w-10 text-slate-100 mx-auto mb-2" />
+                  <p className="text-xs font-bold text-slate-300 uppercase tracking-widest">No data available</p>
+                </div>
               </div>
             </section>
 
             <section 
               onClick={() => setProfileModalOpen(true)}
-              className="bg-slate-900 rounded-3xl p-8 text-white relative overflow-hidden group cursor-pointer"
+              className="bg-white border border-slate-100 rounded-3xl p-8 text-slate-900 relative overflow-hidden group cursor-pointer shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="relative z-10">
                 <h3 className="text-lg font-bold mb-2">Store Health</h3>
                 <div className="flex items-center justify-between text-xs font-bold text-slate-400 mb-2">
-                  <span className="uppercase tracking-widest">COMPLETION</span>
-                  <span className="text-primary">35%</span>
+                  <span className="uppercase tracking-widest text-slate-300">COMPLETION</span>
+                  <span className="text-rose-500">0%</span>
                 </div>
-                <div className="h-2 w-full bg-white/10 rounded-full mb-6">
-                  <div className="h-full w-[35%] bg-primary rounded-full"></div>
+                <div className="h-2 w-full bg-slate-100 rounded-full mb-6">
+                  <div className="h-full w-[0%] bg-rose-500 rounded-full"></div>
                 </div>
-                <Button className="w-full bg-white text-slate-900 hover:bg-slate-100 font-bold rounded-xl">
-                  Improve Profile
+                <Button className="w-full bg-slate-900 text-white hover:bg-slate-800 font-bold rounded-xl">
+                  Complete Profile
                 </Button>
               </div>
-              <div className="absolute -right-6 -bottom-6 opacity-10 group-hover:scale-110 transition-transform">
+              <div className="absolute -right-6 -bottom-6 opacity-[0.03] group-hover:scale-110 transition-transform text-slate-900">
                 <BadgeCheck className="h-40 w-40" />
               </div>
             </section>

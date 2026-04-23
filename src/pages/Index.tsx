@@ -101,11 +101,11 @@ const Index = () => {
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 border-y border-slate-100 py-12">
             <div className="text-center">
-              <h3 className="text-4xl font-bold text-slate-900 mb-2">1.5k+</h3>
+              <h3 className="text-4xl font-bold text-slate-900 mb-2">0</h3>
               <p className="text-slate-500 font-medium tracking-wide uppercase text-xs">Verified Students</p>
             </div>
             <div className="text-center">
-              <h3 className="text-4xl font-bold text-slate-900 mb-2">450+</h3>
+              <h3 className="text-4xl font-bold text-slate-900 mb-2">0</h3>
               <p className="text-slate-500 font-medium tracking-wide uppercase text-xs">Daily Listings</p>
             </div>
             <div className="text-center">
@@ -236,34 +236,14 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Testimonials (Reset) */}
       <section className="py-24 bg-white">
         <div className="container mx-auto px-6 text-center">
-          <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-16">People are trading on the net</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { name: "Adewale T.", role: "400L Medicine", text: "Finally a place where I don't have to worry about WhatsApp scams. The escrow system is a game changer." },
-              { name: "Folake A.", role: "300L Arts", text: "Sold my old calculus textbooks within 2 hours of listing. The campus delivery was so smooth." },
-              { name: "Ibrahim K.", role: "200L Tech", text: "The cleanest UI I've seen for a campus app. Everything just works exactly how it's supposed to." }
-            ].map((item, i) => (
-              <motion.div 
-                key={i}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                className="p-8 rounded-2xl border border-slate-100 bg-slate-50 text-left"
-              >
-                <div className="flex gap-1 text-primary mb-6">
-                  {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-current" />)}
-                </div>
-                <p className="text-slate-700 text-lg mb-8 leading-relaxed italic">"{item.text}"</p>
-                <div>
-                  <p className="font-bold text-slate-900">{item.name}</p>
-                  <p className="text-slate-500 text-sm font-medium">{item.role}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-8">Trusted by UI Students</h2>
+          <p className="text-lg text-slate-500 max-w-2xl mx-auto">
+            Join the growing community of students buying and selling securely on the net. 
+            Real reviews from real transactions will appear here soon.
+          </p>
         </div>
       </section>
 

@@ -8,23 +8,19 @@ import { useProducts } from '@/hooks/api/useProducts';
 const SellerStore = () => {
   const { data: products = [] } = useProducts();
   const seller = {
-    name: "Adebayo's Store",
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop',
-    tagline: 'Quality textbooks and study materials',
-    faculty: 'Science',
-    department: 'Chemistry',
-    memberSince: 'January 2024',
-    rating: 4.8,
-    totalOrders: 156,
-    responseTime: '< 1 hour',
+    name: "Campus Store",
+    avatar: '',
+    tagline: 'Your campus shopping destination',
+    faculty: 'General',
+    department: '',
+    memberSince: '2024',
+    rating: 0,
+    totalOrders: 0,
+    responseTime: '-',
   };
 
-  const storeProducts = products.filter((p) => p.seller === 'Adebayo O.');
-  const reviews = [
-    { name: 'Tunde M.', rating: 5, text: 'Great seller! Book was exactly as described. Fast response.', date: '2025-06-28' },
-    { name: 'Amina S.', rating: 4, text: 'Good condition textbook. Pickup was smooth.', date: '2025-06-20' },
-    { name: 'Chidi E.', rating: 5, text: 'Very reliable. Bought 3 books from this seller.', date: '2025-06-15' },
-  ];
+  const storeProducts: any[] = [];
+  const reviews: any[] = [];
 
   return (
     <Layout>
