@@ -19,12 +19,9 @@ import {
   Trash2, UserCheck, UserX, FileText, Bell, LogOut
 } from 'lucide-react';
 
-// Live data arrays (to be hydrated via Supabase later)
-const pendingProducts: any[] = [];
-const pendingSellers: any[] = [];
-const allUsers: any[] = [];
-const reportedItems: any[] = [];
-const recentTransactions: any[] = [];
+// Placeholder for local state if needed
+const INITIAL_USERS: any[] = [];
+const INITIAL_REPORTS: any[] = [];
 
 const ADMIN_CREDENTIALS = { email: 'admin@ui.edu.ng', password: 'Admin@2025' };
 
@@ -52,9 +49,11 @@ const Admin = () => {
 
   const products = productsQuery.data || [];
   const sellers = sellersQuery.data || [];
-  const reports = reportsQuery.data || [];
-  const recentTransactions = transactionsQuery.data || [];
+  const reportsData = reportsQuery.data || [];
+  const transactionsData = transactionsQuery.data || [];
   
+  const [users, setUsers] = useState<any[]>([]);
+  const [activeReports, setActiveReports] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
   const [selectedSeller, setSelectedSeller] = useState<any | null>(null);
@@ -179,12 +178,12 @@ const Admin = () => {
   };
 
   const stats = {
-    totalUsers: allUsers.length,
-    activeUsers: allUsers.filter(u => u.status === 'active').length,
-    totalSellers: allUsers.filter(u => u.role === 'seller' || u.role === 'both').length,
+    totalUsers: users.length,
+    activeUsers: users.filter((u: any) => u.status === 'active').length,
+    totalSellers: users.filter((u: any) => u.role === 'seller' || u.role === 'both').length,
     pendingProducts: products.length,
     pendingSellers: sellers.length,
-    pendingReports: reports.filter(r => r.status === 'pending').length,
+    pendingReports: reportsData.filter((r: any) => r.status === 'pending').length,
     totalRevenue: 12500000,
     monthlyGrowth: 23.5,
     totalTransactions: 1247,
@@ -288,7 +287,7 @@ const Admin = () => {
                 <DollarSign className="h-4 w-4" /> Transactions
               </TabsTrigger>
               <TabsTrigger value="reports" className="gap-1 text-xs sm:text-sm">
-                <Flag className="h-4 w-4" /> Reports <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-[10px]">{reports.filter(r => r.status === 'pending').length}</Badge>
+                <Flag className="h-4 w-4" /> Reports <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-[10px]">{reportsData.filter((r: any) => r.status === 'pending').length}</Badge>
               </TabsTrigger>
               <TabsTrigger value="settings" className="gap-1 text-xs sm:text-sm">
                 <Settings className="h-4 w-4" /> Settings
@@ -486,7 +485,7 @@ const Admin = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {recentTransactions.map(tx => (
+                        {transactionsData.map((tx: any) => (
                           <TableRow key={tx.id}>
                             <TableCell className="font-mono text-xs text-muted-foreground">{tx.id}</TableCell>
                             <TableCell className="font-medium text-foreground">{tx.product}</TableCell>
@@ -518,14 +517,14 @@ const Admin = () => {
                   <CardDescription>Handle reported products, users, and policy violations.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {reports.length === 0 ? (
+                  {reportsData.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 text-center">
                       <CheckCircle className="mb-3 h-12 w-12 text-[#2563EB]/30" />
                       <p className="font-medium text-foreground">No open reports</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {reports.map(report => (
+                      {reportsData.map((report: any) => (
                         <div key={report.id} className="flex flex-col gap-3 rounded-xl border border-border p-4 sm:flex-row sm:items-center sm:justify-between">
                           <div>
                             <div className="flex items-center gap-2">
