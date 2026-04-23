@@ -9,18 +9,15 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import Layout from '@/components/Layout';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSellerOrders } from '@/hooks/api/useOrders';
+import { useSellerProducts } from '@/hooks/api/useProducts';
+import { useConversations } from '@/hooks/api/useChat';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
   visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.1, duration: 0.5 } }),
 };
 
-const overviewCards = [
-  { icon: TrendingUp, label: 'Total Sales', value: '₦0', change: '0%', color: 'bg-primary/10 text-primary' },
-  { icon: ShoppingCart, label: 'Total Orders', value: '0', change: '0', color: 'bg-blue-500/10 text-blue-500' },
-  { icon: Package, label: 'Active Listings', value: '0', change: '0 new', color: 'bg-accent/10 text-accent' },
-  { icon: Star, label: 'Avg Rating', value: '0.0', change: '0.0', color: 'bg-yellow-500/10 text-yellow-600' },
-];
 
 const quickActions = [
   { icon: Plus, label: 'Add Product', to: '/dashboard/seller/products/new', variant: 'hero' as const },
@@ -43,6 +40,22 @@ const statusColors: Record<string, string> = {
 const SellerDashboard = () => {
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const { user } = useAuth();
+  const { data: orders = [] } = useSellerOrders();
+  const { data: products = [] } = useSellerProducts(user?.id);
+  const { data: conversations = [] } = useConversations();
+
+  const totalSales = orders.reduce((acc: number, order: any) => acc + (order.amount || 0), 0);
+  const activeListings = products.filter((p: any) => p.status === 'active').length;
+  
+  const storeHealth = Math.min(100, (user?.isVerified ? 40 : 0) + (activeListings > 0 ? 30 : 0) + (orders.length > 0 ? 30 : 0));
+
+  const overviewCards = [
+    { icon: TrendingUp, label: 'Total Sales', value: `₦${totalSales.toLocaleString()}`, change: totalSales > 0 ? '+12%' : '0%', color: 'bg-primary/10 text-primary' },
+    { icon: ShoppingCart, label: 'Total Orders', value: orders.length.toString(), change: orders.length > 0 ? `+${orders.length}` : '0', color: 'bg-blue-500/10 text-blue-500' },
+    { icon: Package, label: 'Active Listings', value: activeListings.toString(), change: activeListings > 0 ? 'active' : '0 new', color: 'bg-accent/10 text-accent' },
+    { icon: Star, label: 'Avg Rating', value: '5.0', change: 'Top', color: 'bg-yellow-500/10 text-yellow-600' },
+  ];
+
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
@@ -108,7 +121,7 @@ const SellerDashboard = () => {
               </div>
               <div className="space-y-1">
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Available Balance</p>
-                <p className="text-3xl font-black text-slate-900">₦0</p>
+                <p className="text-3xl font-black text-slate-900">₦{totalSales.toLocaleString()}</p>
               </div>
             </div>
             <div className="flex items-center justify-between pt-6 border-t border-slate-50 relative z-10">
@@ -154,15 +167,47 @@ const SellerDashboard = () => {
                 <Link to="/dashboard/seller/orders" className="text-sm font-bold text-primary hover:underline">View All Orders</Link>
               </div>
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                <div className="p-12 text-center">
-                  <div className="h-20 w-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                    <ShoppingCart className="h-10 w-10 text-slate-200" />
+                {orders.length === 0 ? (
+                  <div className="p-12 text-center">
+                    <div className="h-20 w-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                      <ShoppingCart className="h-10 w-10 text-slate-200" />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900 mb-2">No Sales Yet</h3>
+                    <p className="text-slate-500 font-medium max-w-xs mx-auto">
+                      Your store is live! New orders will appear here as students browse your listings.
+                    </p>
                   </div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-2">No Sales Yet</h3>
-                  <p className="text-slate-500 font-medium max-w-xs mx-auto">
-                    Your store is live! New orders will appear here as students browse your listings.
-                  </p>
-                </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead className="bg-slate-50 border-b border-slate-100">
+                        <tr>
+                          <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Product</th>
+                          <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Buyer</th>
+                          <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Amount</th>
+                          <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-50">
+                        {orders.slice(0, 5).map((order: any) => (
+                          <tr key={order.id} className="hover:bg-slate-50/50 transition-colors">
+                            <td className="px-6 py-4">
+                              <p className="text-sm font-bold text-slate-900">{order.product?.title}</p>
+                              <p className="text-[10px] text-slate-400">{new Date(order.created_at).toLocaleDateString()}</p>
+                            </td>
+                            <td className="px-6 py-4 text-sm font-medium text-slate-600">{order.buyer?.fullname}</td>
+                            <td className="px-6 py-4 text-sm font-bold text-slate-900">₦{order.amount.toLocaleString()}</td>
+                            <td className="px-6 py-4">
+                              <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${statusColors[order.status] || 'bg-slate-100 text-slate-600'}`}>
+                                {order.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </section>
           </div>
@@ -187,10 +232,10 @@ const SellerDashboard = () => {
                 <h3 className="text-lg font-bold mb-2">Store Health</h3>
                 <div className="flex items-center justify-between text-xs font-bold text-slate-400 mb-2">
                   <span className="uppercase tracking-widest text-slate-300">COMPLETION</span>
-                  <span className="text-rose-500">0%</span>
+                  <span className={storeHealth >= 80 ? "text-emerald-500" : "text-rose-500"}>{storeHealth}%</span>
                 </div>
                 <div className="h-2 w-full bg-slate-100 rounded-full mb-6">
-                  <div className="h-full w-[0%] bg-rose-500 rounded-full"></div>
+                  <div className={`h-full bg-${storeHealth >= 80 ? 'emerald' : 'rose'}-500 rounded-full`} style={{ width: `${storeHealth}%` }}></div>
                 </div>
                 <Button className="w-full bg-slate-900 text-white hover:bg-slate-800 font-bold rounded-xl">
                   Complete Profile

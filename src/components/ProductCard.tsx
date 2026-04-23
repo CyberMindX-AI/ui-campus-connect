@@ -9,9 +9,9 @@ const ProductCard = ({ product }: { product: Product }) => (
   >
     <div className="relative aspect-[4/3] overflow-hidden bg-slate-50">
       <img 
-        src={product.image} 
+        src={product.images?.[0] || '/placeholder.svg'} 
         alt={product.title} 
-        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" 
+        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110 bg-slate-100" 
         loading="lazy" 
       />
       <button
@@ -20,7 +20,7 @@ const ProductCard = ({ product }: { product: Product }) => (
       >
         <Heart className="h-4.5 w-4.5 text-slate-400 hover:text-rose-500 transition-colors" />
       </button>
-      {product.negotiable && (
+      {product.is_negotiable && (
         <span className="absolute left-3 top-3 rounded-lg bg-emerald-500 px-2.5 py-1 text-[10px] font-bold text-white uppercase tracking-wider shadow-sm">
           Negotiable
         </span>
@@ -29,8 +29,8 @@ const ProductCard = ({ product }: { product: Product }) => (
 
     <div className="p-5">
       <div className="flex items-center gap-2 mb-3">
-        <img src={product.sellerAvatar} alt={product.seller} className="h-6 w-6 rounded-full border border-slate-100 object-cover" />
-        <span className="text-xs font-bold text-slate-900">{product.seller}</span>
+        <img src={product.sellerAvatar || '/placeholder.svg'} alt={product.seller || 'Seller'} className="h-6 w-6 rounded-full border border-slate-100 object-cover" />
+        <span className="text-xs font-bold text-slate-900">{product.seller || 'Verified Seller'}</span>
       </div>
 
       <h3 className="line-clamp-2 text-sm font-bold text-slate-900 mb-4 h-10 group-hover:text-primary transition-colors leading-tight">
@@ -38,15 +38,13 @@ const ProductCard = ({ product }: { product: Product }) => (
       </h3>
 
       <div className="flex items-center gap-1 mb-4">
-        <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-        <span className="text-xs font-bold text-slate-900">{product.rating}</span>
-        <span className="text-xs font-medium text-slate-400">({product.reviews})</span>
+        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{product.condition}</span>
       </div>
 
       <div className="pt-4 border-t border-slate-50 flex items-center justify-between">
         <div className="flex items-center gap-1 text-slate-400">
           <MapPin className="h-3.5 w-3.5" />
-          <span className="text-[11px] font-bold uppercase tracking-tight truncate max-w-[80px]">{product.location}</span>
+          <span className="text-[11px] font-bold uppercase tracking-tight truncate max-w-[80px]">{product.pickup_location || 'Campus'}</span>
         </div>
         <p className="font-bold text-lg text-slate-900 leading-none">₦{product.price.toLocaleString()}</p>
       </div>

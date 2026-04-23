@@ -9,8 +9,28 @@ export const productsService = {
       .select(`
         *,
         seller_profile:profiles!seller_id(fullname, avatar_url)
-      `);
+      `)
+      .eq('status', 'active');
     
+    if (error) throw error;
+    
+    return (data || []).map(p => ({
+      ...p,
+      seller: p.seller_profile?.fullname || 'Unknown Seller',
+      sellerAvatar: p.seller_profile?.avatar_url || ''
+    }));
+  },
+  
+  getSellerProducts: async (sellerId: string): Promise<Product[]> => {
+    const { data, error } = await supabase
+      .from('products')
+      .select(`
+        *,
+        seller_profile:profiles!seller_id(fullname, avatar_url)
+      `)
+      .eq('seller_id', sellerId)
+      .order('created_at', { ascending: false });
+      
     if (error) throw error;
     
     return (data || []).map(p => ({

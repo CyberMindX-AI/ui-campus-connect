@@ -25,6 +25,11 @@ export const useAdminData = () => {
     queryFn: adminService.getTransactions,
   });
 
+  const users = useQuery({
+    queryKey: ['admin', 'users'],
+    queryFn: adminService.getUsers,
+  });
+
   const approveProduct = useMutation({
     mutationFn: adminService.approveProduct,
     onSuccess: () => {
@@ -55,6 +60,7 @@ export const useAdminData = () => {
     sellers,
     reports,
     transactions,
+    users,
     approveProduct: approveProduct.mutate,
     rejectProduct: rejectProduct.mutate,
     approveSeller: approveSeller.mutate,

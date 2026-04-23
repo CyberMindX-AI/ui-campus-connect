@@ -7,6 +7,9 @@ import ProductCard from '@/components/ProductCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCategories } from '@/hooks/api/useMarket';
 import { useProducts } from '@/hooks/api/useProducts';
+import { useBuyerOrders } from '@/hooks/api/useOrders';
+import { useWishlist } from '@/hooks/api/useWishlist';
+import { useConversations } from '@/hooks/api/useChat';
 
 const statusColors: Record<string, string> = {
   Delivered: 'bg-green-100 text-green-700',
@@ -21,6 +24,12 @@ const BuyerDashboard = () => {
   const { user, isAuthenticated } = useAuth();
   const { data: products = [] } = useProducts();
   const { data: categories = [] } = useCategories();
+  const { data: orders = [] } = useBuyerOrders();
+  const { data: wishlist = [] } = useWishlist();
+  const { data: conversations = [] } = useConversations();
+
+  const totalSpent = orders.reduce((acc: number, order: any) => acc + (order.amount || 0), 0);
+  const activeOrders = orders.filter((o: any) => o.status !== 'Completed' && o.status !== 'Cancelled').length;
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -72,10 +81,10 @@ const BuyerDashboard = () => {
         {/* Stats Row (Reset to 0) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
           {[
-            { label: "Active Orders", value: "0", icon: ShoppingBag, color: "text-blue-600", bg: "bg-blue-50" },
-            { label: "Messages", value: "0", icon: MessageSquare, color: "text-purple-600", bg: "bg-purple-50" },
-            { label: "Wishlist Items", value: "0", icon: Heart, color: "text-rose-600", bg: "bg-rose-50" },
-            { label: "Total Spent", value: "₦0", icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-50" }
+            { label: "Active Orders", value: activeOrders.toString(), icon: ShoppingBag, color: "text-blue-600", bg: "bg-blue-50" },
+            { label: "Messages", value: conversations.length.toString(), icon: MessageSquare, color: "text-purple-600", bg: "bg-purple-50" },
+            { label: "Wishlist Items", value: wishlist.length.toString(), icon: Heart, color: "text-rose-600", bg: "bg-rose-50" },
+            { label: "Total Spent", value: `₦${totalSpent.toLocaleString()}`, icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-50" }
           ].map((stat, i) => (
             <motion.div 
               key={stat.label} 

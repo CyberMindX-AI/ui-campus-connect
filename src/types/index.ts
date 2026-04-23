@@ -10,20 +10,23 @@ export interface AuthUser {
 
 export interface Product {
   id: string;
+  seller_id: string;
   title: string;
-  price: number;
-  image: string;
-  seller: string;
-  sellerAvatar: string;
-  rating: number;
-  reviews: number;
-  condition: 'New' | 'Like New' | 'Used';
-  category: string;
-  location: string;
   description: string;
+  price: number;
+  category: string;
+  condition: string;
   images: string[];
-  negotiable: boolean;
-  delivery: string[];
+  status: 'pending' | 'active' | 'rejected' | 'inactive';
+  created_at?: string;
+  quantity: number;
+  delivery_options: string[];
+  pickup_location: string;
+  tags: string[];
+  is_negotiable: boolean;
+  // Derived fields for UI
+  seller?: string;
+  sellerAvatar?: string;
 }
 
 export interface Category {

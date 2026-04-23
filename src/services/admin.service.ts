@@ -56,5 +56,14 @@ export const adminService = {
       .order('created_at', { ascending: false });
     if (error) throw error;
     return data;
+  },
+
+  getUsers: async () => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data;
   }
 };

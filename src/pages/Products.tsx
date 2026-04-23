@@ -9,7 +9,7 @@ import { useProducts } from '@/hooks/api/useProducts';
 import { useCategories } from '@/hooks/api/useMarket';
 
 const conditions = ['New', 'Like New', 'Used'];
-const sortOptions = ['Newest', 'Price: Low-High', 'Price: High-Low', 'Most Popular', 'Highest Rated'];
+const sortOptions = ['Newest', 'Price: Low-High', 'Price: High-Low'];
 
 const Products = () => {
   const { data: products = [] } = useProducts();
@@ -46,12 +46,6 @@ const Products = () => {
         break;
       case 'Price: High-Low':
         result = [...result].sort((a, b) => b.price - a.price);
-        break;
-      case 'Most Popular':
-        result = [...result].sort((a, b) => b.reviews - a.reviews);
-        break;
-      case 'Highest Rated':
-        result = [...result].sort((a, b) => b.rating - a.rating);
         break;
     }
 

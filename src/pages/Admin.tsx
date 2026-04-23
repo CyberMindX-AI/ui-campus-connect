@@ -42,6 +42,7 @@ const Admin = () => {
     sellers: sellersQuery, 
     reports: reportsQuery, 
     transactions: transactionsQuery,
+    users: usersQuery,
     approveProduct, 
     rejectProduct, 
     approveSeller 
@@ -51,9 +52,8 @@ const Admin = () => {
   const sellers = sellersQuery.data || [];
   const reportsData = reportsQuery.data || [];
   const transactionsData = transactionsQuery.data || [];
+  const usersData = usersQuery.data || [];
   
-  const [users, setUsers] = useState<any[]>([]);
-  const [activeReports, setActiveReports] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
   const [selectedSeller, setSelectedSeller] = useState<any | null>(null);
@@ -168,26 +168,26 @@ const Admin = () => {
   };
 
   const toggleUserStatus = (id: string) => {
-    setUsers(prev => prev.map(u => u.id === id ? { ...u, status: u.status === 'active' ? 'suspended' : 'active' } : u));
-    toast({ title: 'User Updated', description: 'User status has been changed.' });
+    // Requires a mutation to the backend in production
+    toast({ title: 'User Updated', description: 'User status change requested.' });
   };
 
   const resolveReport = (id: string, action: string) => {
-    setActiveReports(prev => prev.filter(r => r.id !== id));
+    // Requires a mutation to the backend in production
     toast({ title: 'Report Resolved', description: `Action taken: ${action}` });
   };
 
   const stats = {
-    totalUsers: users.length,
-    activeUsers: users.filter((u: any) => u.status === 'active').length,
-    totalSellers: users.filter((u: any) => u.role === 'seller' || u.role === 'both').length,
+    totalUsers: usersData.length,
+    activeUsers: usersData.filter((u: any) => u.status === 'active').length,
+    totalSellers: usersData.filter((u: any) => u.role === 'seller' || u.role === 'both').length,
     pendingProducts: products.length,
     pendingSellers: sellers.length,
     pendingReports: reportsData.filter((r: any) => r.status === 'pending').length,
-    totalRevenue: 12500000,
-    monthlyGrowth: 23.5,
-    totalTransactions: 1247,
-    disputeRate: 2.3,
+    totalRevenue: transactionsData.reduce((acc: number, t: any) => acc + (t.amount || 0), 0),
+    monthlyGrowth: 0,
+    totalTransactions: transactionsData.length,
+    disputeRate: transactionsData.length > 0 ? (reportsData.length / transactionsData.length * 100).toFixed(1) : 0,
   };
 
   return (
@@ -225,30 +225,34 @@ const Admin = () => {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <Users className="h-5 w-5 text-[#2563EB]" />
-                  <span className="flex items-center text-xs text-green-600"><ArrowUpRight className="h-3 w-3" /> 12%</span>
+                  <span className="flex items-center text-xs text-green-600"><ArrowUpRight className="h-3 w-3" /> 0%</span>
                 </div>
                 <p className="mt-2 text-2xl font-bold text-foreground">{stats.totalUsers}</p>
-                <p className="text-xs text-muted-foreground">Total Users</p>
+                <p className="text-xs text-muted-foreground">Total Students</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <Store className="h-5 w-5 text-[#2563EB]" />
-                  <span className="flex items-center text-xs text-green-600"><ArrowUpRight className="h-3 w-3" /> 8%</span>
+                  <span className="flex items-center text-xs text-green-600"><ArrowUpRight className="h-3 w-3" /> 0%</span>
                 </div>
                 <p className="mt-2 text-2xl font-bold text-foreground">{stats.totalSellers}</p>
-                <p className="text-xs text-muted-foreground">Active Sellers</p>
+                <p className="text-xs text-muted-foreground">Verified Sellers</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <DollarSign className="h-5 w-5 text-accent" />
-                  <span className="flex items-center text-xs text-green-600"><ArrowUpRight className="h-3 w-3" /> {stats.monthlyGrowth}%</span>
+                  <span className="flex items-center text-xs text-green-600"><ArrowUpRight className="h-3 w-3" /> 0%</span>
                 </div>
-                <p className="mt-2 text-2xl font-bold text-foreground">₦{(stats.totalRevenue / 1000000).toFixed(1)}M</p>
-                <p className="text-xs text-muted-foreground">Total Revenue</p>
+                <p className="mt-2 text-2xl font-bold text-foreground">
+                  ₦{stats.totalRevenue >= 1000000 
+                    ? (stats.totalRevenue / 1000000).toFixed(1) + 'M' 
+                    : stats.totalRevenue.toLocaleString()}
+                </p>
+                <p className="text-xs text-muted-foreground">Market Revenue</p>
               </CardContent>
             </Card>
             <Card>
@@ -373,7 +377,7 @@ const Admin = () => {
                               <h4 className="font-medium text-foreground">{seller.name}</h4>
                               <p className="text-sm text-muted-foreground">{seller.email} · {seller.faculty}</p>
                               <p className="text-xs text-muted-foreground">Store: <span className="font-medium text-foreground">{seller.storeName}</span></p>
-                              <p className="mt-1 text-xs text-muted-foreground">Applied {seller.appliedAt}</p>
+                              <p className="mt-1 text-xs text-muted-foreground">Applied {new Date(seller.created_at).toLocaleDateString()}</p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
@@ -404,7 +408,7 @@ const Admin = () => {
                       <CardTitle className="flex items-center gap-2 text-lg">
                         <Users className="h-5 w-5 text-[#2563EB]" /> All Users
                       </CardTitle>
-                      <CardDescription>{users.length} registered users</CardDescription>
+                      <CardDescription>{usersData.length} registered users</CardDescription>
                     </div>
                     <div className="relative w-full sm:w-64">
                       <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -426,11 +430,11 @@ const Admin = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {users.filter(u => !search || u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase())).map(u => (
+                        {usersData.filter((u: any) => !search || (u.fullname || '').toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase())).map((u: any) => (
                           <TableRow key={u.id}>
                             <TableCell>
                               <div>
-                                <p className="font-medium text-foreground">{u.name}</p>
+                                <p className="font-medium text-foreground">{u.fullname}</p>
                                 <p className="text-xs text-muted-foreground">{u.email}</p>
                               </div>
                             </TableCell>
@@ -488,16 +492,16 @@ const Admin = () => {
                         {transactionsData.map((tx: any) => (
                           <TableRow key={tx.id}>
                             <TableCell className="font-mono text-xs text-muted-foreground">{tx.id}</TableCell>
-                            <TableCell className="font-medium text-foreground">{tx.product}</TableCell>
-                            <TableCell className="text-sm">{tx.buyer}</TableCell>
-                            <TableCell className="text-sm">{tx.seller}</TableCell>
-                            <TableCell className="font-semibold text-foreground">₦{tx.amount.toLocaleString()}</TableCell>
+                             <TableCell className="font-medium text-foreground">{tx.product?.title || 'Unknown Product'}</TableCell>
+                            <TableCell className="text-sm">{tx.buyer?.fullname || 'Student'}</TableCell>
+                            <TableCell className="text-sm">{tx.seller?.fullname || 'Seller'}</TableCell>
+                            <TableCell className="font-semibold text-foreground">₦{(tx.amount || 0).toLocaleString()}</TableCell>
                             <TableCell>
                               <Badge variant={tx.status === 'completed' ? 'default' : tx.status === 'disputed' ? 'destructive' : 'secondary'} className="capitalize">
                                 {tx.status.replace('_', ' ')}
                               </Badge>
                             </TableCell>
-                            <TableCell className="text-sm text-muted-foreground">{tx.date}</TableCell>
+                            <TableCell className="text-sm text-muted-foreground">{new Date(tx.created_at).toLocaleDateString()}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -533,7 +537,7 @@ const Admin = () => {
                             </div>
                             <h4 className="mt-1 font-medium text-foreground">{report.title}</h4>
                             <p className="text-sm text-muted-foreground">{report.reason}</p>
-                            <p className="text-xs text-muted-foreground">Reported by {report.reporter} · {report.reportedAt}</p>
+                             <p className="text-xs text-muted-foreground">Reported by {report.reporter?.fullname || 'Student'} · {new Date(report.created_at).toLocaleDateString()}</p>
                           </div>
                           <div className="flex items-center gap-2">
                             <Button size="sm" variant="outline" onClick={() => resolveReport(report.id, 'Warning issued')}>

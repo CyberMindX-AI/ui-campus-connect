@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import Layout from '@/components/Layout';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useMarketStats, useMarketFaqs } from '@/hooks/api/useMarket';
 
 const Index = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -20,7 +21,11 @@ const Index = () => {
     return <Navigate to={dest} replace />;
   }
 
-  const faqs = [
+  const { data: statsData } = useMarketStats();
+  const { data: faqsData = [] } = useMarketFaqs();
+
+  const stats = statsData || { totalListings: 0, totalSellers: 0, totalTransactions: 0 };
+  const displayFaqs = faqsData.length > 0 ? faqsData : [
     {
       q: "Is it exclusively for UI students?",
       a: "Absolutely. Every account is tied to a verified @ui.edu.ng email address. This ensures a closed, trusted ecosystem for all campus transactions."
@@ -101,16 +106,16 @@ const Index = () => {
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 border-y border-slate-100 py-12">
             <div className="text-center">
-              <h3 className="text-4xl font-bold text-slate-900 mb-2">0</h3>
-              <p className="text-slate-500 font-medium tracking-wide uppercase text-xs">Verified Students</p>
+              <h3 className="text-4xl font-bold text-slate-900 mb-2">{stats.totalSellers.toLocaleString()}</h3>
+              <p className="text-slate-500 font-medium tracking-wide uppercase text-xs">Verified Sellers</p>
             </div>
             <div className="text-center">
-              <h3 className="text-4xl font-bold text-slate-900 mb-2">0</h3>
-              <p className="text-slate-500 font-medium tracking-wide uppercase text-xs">Daily Listings</p>
+              <h3 className="text-4xl font-bold text-slate-900 mb-2">{stats.totalListings.toLocaleString()}</h3>
+              <p className="text-slate-500 font-medium tracking-wide uppercase text-xs">Active Listings</p>
             </div>
             <div className="text-center">
-              <h3 className="text-4xl font-bold text-slate-900 mb-2">100%</h3>
-              <p className="text-slate-500 font-medium tracking-wide uppercase text-xs">Secure Payments</p>
+              <h3 className="text-4xl font-bold text-slate-900 mb-2">{stats.totalTransactions.toLocaleString()}</h3>
+              <p className="text-slate-500 font-medium tracking-wide uppercase text-xs">Successful Trades</p>
             </div>
           </div>
         </div>
@@ -252,7 +257,7 @@ const Index = () => {
         <div className="container mx-auto px-6 max-w-3xl">
           <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-16 text-center">FAQ — built for the net</h2>
           <div className="space-y-4">
-            {faqs.map((faq, i) => (
+            {displayFaqs.map((faq, i) => (
               <div key={i} className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
                 <button 
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
@@ -282,7 +287,7 @@ const Index = () => {
           <div className="max-w-2xl mx-auto">
             <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-8">Ready to get started?</h2>
             <p className="text-lg text-slate-500 mb-12">
-              Join 1,500+ UI students trading securely on the net. 
+              Join {stats.totalSellers}+ UI students trading securely on the net. 
               Clear posts, secure payments, and verified campus logistics.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

@@ -9,6 +9,14 @@ export const useProducts = () => {
   });
 };
 
+export const useSellerProducts = (sellerId: string | undefined) => {
+  return useQuery({
+    queryKey: ['products', 'seller', sellerId],
+    queryFn: () => productsService.getSellerProducts(sellerId!),
+    enabled: !!sellerId,
+  });
+};
+
 export const useProduct = (id: string | undefined) => {
   return useQuery({
     queryKey: ['products', id],

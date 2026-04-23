@@ -7,6 +7,8 @@ import { Upload, X, Eye } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { useCategories } from '@/hooks/api/useMarket';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { useCreateProduct } from '@/hooks/api/useProducts';
 
 const conditions = ['New', 'Like New', 'Used (Good)', 'Used (Fair)', 'Refurbished'];
 const deliveryOptions = ['Campus Pickup', 'Hall Delivery', 'Digital Delivery'];
@@ -23,6 +25,8 @@ const CreateProduct = () => {
   const [delivery, setDelivery] = useState<string[]>(['Campus Pickup']);
   const [pickup, setPickup] = useState('');
   const [tags, setTags] = useState('');
+  const { user } = useAuth();
+  const { mutate: createProduct, isPending: isCreating } = useCreateProduct();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -35,8 +39,42 @@ const CreateProduct = () => {
       toast({ title: 'Please fill all required fields', variant: 'destructive' });
       return;
     }
-    toast({ title: 'Product published!', description: 'Your listing is now live.' });
-    navigate('/dashboard/seller');
+
+    if (!user) {
+      toast({ title: 'You must be logged in to post', variant: 'destructive' });
+      return;
+    }
+
+    createProduct({
+      title,
+      description,
+      category,
+      price: Number(price),
+      condition,
+      quantity: Number(quantity),
+      delivery_options: delivery,
+      pickup_location: pickup,
+      tags: tags.split(',').map(t => t.trim()),
+      seller_id: user.id,
+      status: 'pending',
+      is_negotiable: negotiable,
+      images: [] // To be handled with storage later
+    }, {
+      onSuccess: () => {
+        toast({ 
+          title: 'Listing Submitted!', 
+          description: 'Your product has been sent to the admin for review. It will be live once approved.' 
+        });
+        navigate('/dashboard/seller');
+      },
+      onError: (error: any) => {
+        toast({ 
+          title: 'Error creating listing', 
+          description: error.message, 
+          variant: 'destructive' 
+        });
+      }
+    });
   };
 
   const handleDraft = () => {
@@ -159,8 +197,10 @@ const CreateProduct = () => {
 
               <hr className="my-4 border-border" />
               <div className="space-y-2">
-                <Button variant="hero" className="w-full" onClick={handlePublish}>Publish Listing</Button>
-                <Button variant="outline" className="w-full" onClick={handleDraft}>Save as Draft</Button>
+                <Button variant="hero" className="w-full" onClick={handlePublish} disabled={isCreating}>
+                  {isCreating ? 'Submitting...' : 'Publish Listing'}
+                </Button>
+                <Button variant="outline" className="w-full" onClick={handleDraft} disabled={isCreating}>Save as Draft</Button>
               </div>
             </div>
           </div>
