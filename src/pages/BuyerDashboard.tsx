@@ -40,16 +40,16 @@ const BuyerDashboard = () => {
             </p>
           </div>
           
-          <div className="relative group">
-            <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">
-              <Search className="h-6 w-6 text-slate-400 group-focus-within:text-primary transition-colors" />
+          <div className="relative group max-w-2xl mx-auto">
+            <div className="absolute inset-y-0 left-4 sm:left-6 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 sm:h-6 sm:w-6 text-slate-400 group-focus-within:text-primary transition-colors" />
             </div>
             <input 
               type="text" 
-              placeholder="What are you looking for today? (e.g. 'Laptop', 'Jollof Rice')" 
-              className="w-full pl-16 pr-6 py-5 bg-white border-2 border-slate-100 rounded-2xl shadow-xl shadow-slate-200/50 focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none text-slate-900 text-lg placeholder:text-slate-400"
+              placeholder="Search e.g. 'Laptop'..." 
+              className="w-full pl-12 sm:pl-16 pr-4 sm:pr-6 py-4 sm:py-5 bg-white border-2 border-slate-100 rounded-xl sm:rounded-2xl shadow-xl shadow-slate-200/50 focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none text-slate-900 text-base sm:text-lg placeholder:text-slate-400"
             />
-            <button className="absolute right-3 top-2.5 bottom-2.5 px-8 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-lg">
+            <button className="hidden sm:block absolute right-3 top-2.5 bottom-2.5 px-8 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-lg">
               Search
             </button>
           </div>

@@ -63,11 +63,11 @@ const SellerDashboard = () => {
             </p>
           </div>
           
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             {quickActions.map((action) => (
-              <Link key={action.label} to={action.to}>
+              <Link key={action.label} to={action.to} className="flex-1 sm:flex-none">
                 <Button
-                  className={`${action.variant === 'hero' ? 'bg-slate-900 hover:bg-slate-800' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'} font-bold shadow-sm rounded-xl px-6`}
+                  className={`${action.variant === 'hero' ? 'bg-slate-900 hover:bg-slate-800' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'} font-bold shadow-sm rounded-xl px-4 sm:px-6 w-full text-xs sm:text-sm h-10 sm:h-11`}
                 >
                   <action.icon className="mr-2 h-4 w-4" /> {action.label}
                 </Button>

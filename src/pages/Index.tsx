@@ -59,9 +59,9 @@ const Index = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-5xl md:text-7xl font-bold tracking-tight text-slate-900 leading-[1.1] mb-8"
+              className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight text-slate-900 leading-[1.2] md:leading-[1.1] mb-8"
             >
-              Buy, Sell & Trade <br />
+              Buy, Sell & Trade <br className="hidden sm:block" />
               <span className="text-primary italic">Inside</span> the Net.
             </motion.h1>
 
