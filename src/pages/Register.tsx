@@ -31,10 +31,11 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard/buyer" replace />;
+    const dashboardPath = user?.role === 'seller' ? '/dashboard/seller' : '/dashboard/buyer';
+    return <Navigate to={dashboardPath} replace />;
   }
 
   const update = (field: string, value: string | boolean) => {

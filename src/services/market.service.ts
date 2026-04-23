@@ -5,7 +5,11 @@ export const marketService = {
   getStats: async (): Promise<MarketStats> => {
     const { data, error } = await supabase.from('market_stats').select('*').single();
     if (error) throw error;
-    return data;
+    return {
+      totalListings: data.total_listings,
+      totalSellers: data.total_sellers,
+      totalTransactions: data.total_transactions,
+    };
   },
   
   getFaqs: async (): Promise<FAQ[]> => {

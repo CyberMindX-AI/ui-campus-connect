@@ -16,14 +16,13 @@ const Login = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
   const { mutate: performLogin, isPending: loading } = useLogin(); 
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard/buyer" replace />;
+    const dashboardPath = user?.role === 'seller' ? '/dashboard/seller' : '/dashboard/buyer';
+    return <Navigate to={dashboardPath} replace />;
   }
-
-  const { user } = useAuth();
 
   const validate = () => {
     const errs: Record<string, string> = {};
@@ -46,7 +45,10 @@ const Login = () => {
         onSuccess: (data) => {
           login(data.user); // Sync Context if needed
           toast({ title: 'Welcome back!', description: 'You have signed in successfully.' });
-          navigate('/dashboard/buyer');
+          
+          // Dynamic redirection based on role
+          const dashboardPath = data.user.role === 'seller' ? '/dashboard/seller' : '/dashboard/buyer';
+          navigate(dashboardPath);
         },
         onError: (err: any) => {
           toast({ title: 'Login Failed', description: err.message || 'Invalid credentials.', variant: 'destructive' });

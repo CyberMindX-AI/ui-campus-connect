@@ -35,31 +35,48 @@ const BuyerDashboard = () => {
   return (
     <Layout>
       <div className="container mx-auto px-6 py-10 max-w-7xl">
-        {/* Top Section: Greeting & Search */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+        {/* Fiverr-Style Hero Search Section */}
+        <div className="mb-16 text-center max-w-3xl mx-auto space-y-8">
+          <div className="space-y-3">
+            <h1 className="text-4xl font-black text-slate-900 tracking-tight leading-tight md:text-5xl">
               {greeting}, {user?.fullname?.split(' ')[0] || 'Student'}
             </h1>
-            <p className="text-slate-500 font-medium">
-              What can we help you find on campus today?
+            <p className="text-lg text-slate-500 font-medium max-w-xl mx-auto">
+              Find everything you need for campus life, from textbooks to delicious meals.
             </p>
           </div>
           
-          <div className="relative w-full md:max-w-md">
-            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-slate-400" />
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">
+              <Search className="h-6 w-6 text-slate-400 group-focus-within:text-primary transition-colors" />
             </div>
             <input 
               type="text" 
-              placeholder="Search for textbooks, food, or services..." 
-              className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-xl shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none text-slate-900 placeholder:text-slate-400"
+              placeholder="What are you looking for today? (e.g. 'Laptop', 'Jollof Rice')" 
+              className="w-full pl-16 pr-6 py-5 bg-white border-2 border-slate-100 rounded-2xl shadow-xl shadow-slate-200/50 focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none text-slate-900 text-lg placeholder:text-slate-400"
             />
+            <button className="absolute right-3 top-2.5 bottom-2.5 px-8 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-lg">
+              Search
+            </button>
+          </div>
+
+          {/* Quick Browse Categories (Fiverr-style pills) */}
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
+            <span className="text-sm font-bold text-slate-400 mr-2">Popular:</span>
+            {categories.slice(0, 5).map((cat) => (
+              <Link 
+                key={cat.slug} 
+                to={`/products?category=${cat.slug}`}
+                className="px-5 py-2 bg-white border border-slate-100 rounded-full text-sm font-bold text-slate-600 hover:border-primary hover:text-primary hover:shadow-md transition-all"
+              >
+                {cat.name}
+              </Link>
+            ))}
           </div>
         </div>
 
-        {/* Stats Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        {/* Stats Row (More subtle, Fiverr-style) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
           {[
             { label: "Active Orders", value: "3", icon: ShoppingBag, color: "text-blue-600", bg: "bg-blue-50" },
             { label: "Messages", value: "8", icon: MessageSquare, color: "text-purple-600", bg: "bg-purple-50" },
@@ -71,16 +88,14 @@ const BuyerDashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow"
+              className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow flex items-center gap-4"
             >
-              <div className="flex items-center gap-4">
-                <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${stat.bg} ${stat.color}`}>
-                  <stat.icon className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-slate-400 uppercase tracking-wider">{stat.label}</p>
-                  <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
-                </div>
+              <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${stat.bg} ${stat.color}`}>
+                <stat.icon className="h-6 w-6" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{stat.label}</p>
+                <p className="text-xl font-bold text-slate-900">{stat.value}</p>
               </div>
             </motion.div>
           ))}

@@ -4,15 +4,39 @@ import { Product } from '@/types';
 
 export const productsService = {
   getProducts: async (): Promise<Product[]> => {
-    const { data, error } = await supabase.from('products').select('*');
+    const { data, error } = await supabase
+      .from('products')
+      .select(`
+        *,
+        seller_profile:profiles!seller_id(fullname, avatar_url)
+      `);
+    
     if (error) throw error;
-    return data || [];
+    
+    return (data || []).map(p => ({
+      ...p,
+      seller: p.seller_profile?.fullname || 'Unknown Seller',
+      sellerAvatar: p.seller_profile?.avatar_url || ''
+    }));
   },
 
   getProductById: async (id: string): Promise<Product> => {
-    const { data, error } = await supabase.from('products').select('*').eq('id', id).single();
+    const { data, error } = await supabase
+      .from('products')
+      .select(`
+        *,
+        seller_profile:profiles!seller_id(fullname, avatar_url)
+      `)
+      .eq('id', id)
+      .single();
+      
     if (error) throw error;
-    return data;
+    
+    return {
+      ...data,
+      seller: data.seller_profile?.fullname || 'Unknown Seller',
+      sellerAvatar: data.seller_profile?.avatar_url || ''
+    };
   },
 
   createProduct: async (productData: Partial<Product>): Promise<Product> => {
