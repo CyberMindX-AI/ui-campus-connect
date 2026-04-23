@@ -26,58 +26,95 @@ const MyOrders = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-6 sm:py-8">
-        <h1 className="font-heading text-xl font-bold text-foreground sm:text-2xl">My Orders</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{orders.length} total orders</p>
+      <div className="container mx-auto px-6 py-10 max-w-5xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Manage Orders</h1>
+          <p className="text-slate-500 font-medium mt-1">Track and manage your campus purchases</p>
+        </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">
+        {/* Professional Tab Switcher */}
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl w-fit mb-8 shadow-inner">
           {tabs.map((t) => (
-            <button key={t} onClick={() => setTab(t)}
-              className={`rounded-full px-3 py-1.5 text-sm font-medium transition-all ${
-                tab === t ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}>{t}</button>
+            <button 
+              key={t} 
+              onClick={() => setTab(t)}
+              className={`px-5 py-2 text-sm font-bold rounded-lg transition-all ${
+                tab === t 
+                  ? 'bg-white text-slate-900 shadow-sm' 
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              {t}
+            </button>
           ))}
         </div>
 
-        <div className="mt-6 space-y-4">
+        <div className="space-y-6">
           {filtered.map((order) => (
-            <div key={order.id} className="rounded-xl border border-border bg-card p-4 sm:p-5">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-3">
-                  <img src={order.image} alt={order.item} className="h-14 w-14 rounded-lg object-cover" />
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{order.item}</p>
-                    <p className="text-xs text-muted-foreground">{order.id} · {order.seller} · {order.date}</p>
+            <div key={order.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+              <div className="p-6">
+                <div className="flex flex-col md:flex-row gap-6">
+                  {/* Order Image & Main Info */}
+                  <div className="flex items-start gap-4 flex-1">
+                    <img src={order.image} alt={order.item} className="h-20 w-20 rounded-xl object-cover shadow-sm" />
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black text-primary uppercase tracking-widest">Order {order.id}</p>
+                      <h3 className="text-lg font-bold text-slate-900 leading-tight">{order.item}</h3>
+                      <p className="text-sm font-medium text-slate-400">Seller: <span className="text-slate-600 underline cursor-pointer">{order.seller}</span> • Purchased {order.date}</p>
+                    </div>
+                  </div>
+
+                  {/* Status & Price */}
+                  <div className="flex flex-row md:flex-col justify-between md:justify-center items-center md:items-end gap-4 min-w-[120px]">
+                    <p className="text-xl font-bold text-slate-900">₦{order.amount.toLocaleString()}</p>
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusColors[order.status]}`}>
+                      {order.status}
+                    </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-bold text-foreground">₦{order.amount.toLocaleString()}</span>
-                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[order.status]}`}>{order.status}</span>
+
+                {/* Professional Action Buttons */}
+                <div className="mt-6 pt-6 border-t border-slate-50 flex flex-wrap items-center gap-3">
+                  {order.status === 'Delivered' && (
+                    <>
+                      <Button className="bg-slate-900 text-white hover:bg-slate-800 text-xs font-bold px-4 h-9 gap-2">
+                        <Star className="h-3.5 w-3.5" /> Leave Review
+                      </Button>
+                      <Button variant="outline" className="border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-bold px-4 h-9 gap-2">
+                        <RefreshCw className="h-3.5 w-3.5" /> Reorder
+                      </Button>
+                    </>
+                  )}
+                  {order.status === 'Processing' && (
+                    <Button className="bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-bold px-4 h-9 gap-2 shadow-emerald-100 shadow-lg">
+                      <Package className="h-3.5 w-3.5" /> Confirm Receipt
+                    </Button>
+                  )}
+                  <Button variant="outline" className="border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-bold px-4 h-9 gap-2">
+                    <MessageCircle className="h-3.5 w-3.5" /> Message Seller
+                  </Button>
+                  {order.status !== 'Cancelled' && (
+                    <Button variant="ghost" className="text-slate-400 hover:text-rose-500 text-xs font-bold px-4 h-9 gap-2 transition-colors ml-auto">
+                      <AlertTriangle className="h-3.5 w-3.5" /> Raise Dispute
+                    </Button>
+                  )}
                 </div>
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {order.status === 'Delivered' && (
-                  <>
-                    <Button variant="hero" size="sm" className="text-xs gap-1"><Star className="h-3 w-3" /> Leave Review</Button>
-                    <Button variant="outline" size="sm" className="text-xs gap-1"><RefreshCw className="h-3 w-3" /> Reorder</Button>
-                  </>
-                )}
-                {order.status === 'Processing' && (
-                  <Button variant="hero" size="sm" className="text-xs gap-1"><Package className="h-3 w-3" /> Confirm Receipt</Button>
-                )}
-                <Button variant="outline" size="sm" className="text-xs gap-1"><MessageCircle className="h-3 w-3" /> Message Seller</Button>
-                {order.status !== 'Cancelled' && (
-                  <Button variant="outline" size="sm" className="text-xs gap-1"><AlertTriangle className="h-3 w-3" /> Raise Dispute</Button>
-                )}
-                <Button variant="outline" size="sm" className="text-xs gap-1"><Download className="h-3 w-3" /> Receipt</Button>
               </div>
             </div>
           ))}
+
           {filtered.length === 0 && (
-            <div className="py-12 text-center">
-              <Package className="mx-auto h-12 w-12 text-muted-foreground" />
-              <p className="mt-3 text-sm font-medium text-foreground">No orders found</p>
-              <Link to="/products"><Button variant="hero" size="sm" className="mt-3">Start Shopping</Button></Link>
+            <div className="py-20 text-center bg-white rounded-3xl border border-dashed border-slate-200">
+              <div className="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Package className="h-10 w-10 text-slate-300" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">No {tab.toLowerCase()} orders yet</h3>
+              <p className="text-slate-400 text-sm mt-1 mb-6">Looks like you haven't made any purchases in this category.</p>
+              <Link to="/products">
+                <Button className="bg-slate-900 text-white hover:bg-slate-800 font-bold px-8 py-6 rounded-xl">
+                  Start Shopping
+                </Button>
+              </Link>
             </div>
           )}
         </div>

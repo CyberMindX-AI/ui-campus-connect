@@ -1,24 +1,12 @@
 import { Link, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShoppingBag, MessageSquare, Heart, Package, TrendingUp, Clock, Star, ChevronRight } from 'lucide-react';
+import { ShoppingBag, MessageSquare, Heart, Package, TrendingUp, Star, ChevronRight, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCategories } from '@/hooks/api/useMarket';
 import { useProducts } from '@/hooks/api/useProducts';
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.1, duration: 0.5 } }),
-};
-
-const quickActions = [
-  { icon: ShoppingBag, label: 'Browse Products', to: '/products', color: 'bg-primary/10 text-primary' },
-  { icon: Package, label: 'My Orders', to: '/dashboard/buyer/orders', color: 'bg-accent/10 text-accent' },
-  { icon: MessageSquare, label: 'Messages', to: '/messages', color: 'bg-blue-500/10 text-blue-500' },
-  { icon: Heart, label: 'Wishlist', to: '/wishlist', color: 'bg-pink-500/10 text-pink-500' },
-];
 
 const recentOrders = [
   { id: 'ORD-2025-001', item: 'Organic Chemistry Textbook', seller: 'Adebayo O.', amount: 4500, status: 'Delivered', date: '2025-06-28' },
@@ -46,146 +34,146 @@ const BuyerDashboard = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-6 sm:py-8">
-        {/* Welcome Banner */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6 rounded-2xl bg-gradient-to-r from-primary to-primary-dark p-5 text-primary-foreground sm:mb-8 sm:p-8"
-        >
-          <h1 className="font-heading text-xl font-bold sm:text-2xl lg:text-3xl">
-            {greeting}, {user?.fullname?.split(' ')[0] || 'Student'}! 👋
-          </h1>
-          <p className="mt-1 text-sm text-primary-foreground/80 sm:text-base">
-            {new Date().toLocaleDateString('en-NG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-          </p>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <Link to="/products">
-              <Button size="sm" className="bg-white text-primary hover:bg-white/90">
-                <ShoppingBag className="mr-2 h-4 w-4" /> Start Shopping
-              </Button>
-            </Link>
+      <div className="container mx-auto px-6 py-10 max-w-7xl">
+        {/* Top Section: Greeting & Search */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+              {greeting}, {user?.fullname?.split(' ')[0] || 'Student'}
+            </h1>
+            <p className="text-slate-500 font-medium">
+              What can we help you find on campus today?
+            </p>
           </div>
-        </motion.div>
+          
+          <div className="relative w-full md:max-w-md">
+            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-slate-400" />
+            </div>
+            <input 
+              type="text" 
+              placeholder="Search for textbooks, food, or services..." 
+              className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-xl shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none text-slate-900 placeholder:text-slate-400"
+            />
+          </div>
+        </div>
 
-        {/* Quick Actions */}
-        <div className="mb-6 grid grid-cols-2 gap-3 sm:mb-8 sm:grid-cols-4 sm:gap-4">
-          {quickActions.map((action, i) => (
-            <motion.div key={action.label} custom={i} variants={fadeUp} initial="hidden" animate="visible">
-              <Link
-                to={action.to}
-                className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 text-center transition-all hover:border-primary/30 hover:shadow-md sm:p-5"
-              >
-                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${action.color} sm:h-12 sm:w-12`}>
-                  <action.icon className="h-5 w-5 sm:h-6 sm:w-6" />
+        {/* Stats Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          {[
+            { label: "Active Orders", value: "3", icon: ShoppingBag, color: "text-blue-600", bg: "bg-blue-50" },
+            { label: "Messages", value: "8", icon: MessageSquare, color: "text-purple-600", bg: "bg-purple-50" },
+            { label: "Wishlist Items", value: "12", icon: Heart, color: "text-rose-600", bg: "bg-rose-50" },
+            { label: "Total Spent", value: "₦47,500", icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-50" }
+          ].map((stat, i) => (
+            <motion.div 
+              key={stat.label} 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-center gap-4">
+                <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${stat.bg} ${stat.color}`}>
+                  <stat.icon className="h-6 w-6" />
                 </div>
-                <span className="text-xs font-medium text-foreground sm:text-sm">{action.label}</span>
-              </Link>
+                <div>
+                  <p className="text-sm font-bold text-slate-400 uppercase tracking-wider">{stat.label}</p>
+                  <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
+                </div>
+              </div>
             </motion.div>
           ))}
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3 lg:gap-8">
-          {/* Active Orders */}
-          <motion.div
-            custom={0} variants={fadeUp} initial="hidden" animate="visible"
-            className="lg:col-span-2"
-          >
-            <div className="rounded-xl border border-border bg-card">
-              <div className="flex items-center justify-between border-b border-border p-4 sm:p-5">
-                <h2 className="font-heading text-base font-semibold text-foreground sm:text-lg">Recent Orders</h2>
-                <Link to="/dashboard/buyer/orders" className="flex items-center gap-1 text-xs font-medium text-primary hover:underline sm:text-sm">
-                  View all <ChevronRight className="h-3 w-3" />
-                </Link>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          {/* Main Content Area */}
+          <div className="lg:col-span-2 space-y-12">
+            
+            {/* Active Orders Section */}
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-slate-900">Active Orders</h2>
+                <Link to="/dashboard/buyer/orders" className="text-sm font-bold text-primary hover:underline">Manage Orders</Link>
               </div>
-              <div className="divide-y divide-border">
-                {recentOrders.map((order) => (
-                  <div key={order.id} className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-foreground">{order.item}</p>
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        {order.id} · {order.seller} · {order.date}
-                      </p>
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                <div className="divide-y divide-slate-50">
+                  {recentOrders.map((order) => (
+                    <div key={order.id} className="p-5 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
+                      <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-xl bg-slate-100 flex items-center justify-center">
+                          <Package className="h-6 w-6 text-slate-400" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-slate-900 leading-none mb-1">{order.item}</p>
+                          <p className="text-xs font-medium text-slate-400">Order #{order.id} • Seller: {order.seller}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-6">
+                        <div className="text-right">
+                          <p className="font-bold text-slate-900">₦{order.amount.toLocaleString()}</p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase">{order.date}</p>
+                        </div>
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusColors[order.status]}`}>
+                          {order.status}
+                        </span>
+                        <ChevronRight className="h-5 w-5 text-slate-300" />
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-semibold text-foreground">₦{order.amount.toLocaleString()}</span>
-                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[order.status]}`}>
-                        {order.status}
-                      </span>
-                    </div>
-                  </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* Recommendations */}
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-slate-900">Inspired by your shopping</h2>
+                <Link to="/products" className="text-sm font-bold text-primary hover:underline">View All</Link>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {products.slice(0, 4).map((product) => (
+                  <ProductCard key={product.id} product={product} />
                 ))}
               </div>
-            </div>
-          </motion.div>
+            </section>
+          </div>
 
-          {/* Stats Sidebar */}
-          <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible" className="space-y-4">
-            <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
-              <h3 className="mb-3 text-sm font-semibold text-foreground">Your Activity</h3>
-              <div className="space-y-3">
-                {[
-                  { icon: Package, label: 'Total Orders', value: '12' },
-                  { icon: TrendingUp, label: 'Amount Spent', value: '₦47,500' },
-                  { icon: Star, label: 'Reviews Given', value: '8' },
-                  { icon: Clock, label: 'Member Since', value: 'Jan 2025' },
-                ].map((stat) => (
-                  <div key={stat.label} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <stat.icon className="h-4 w-4" />
-                      <span className="text-xs sm:text-sm">{stat.label}</span>
-                    </div>
-                    <span className="text-sm font-semibold text-foreground">{stat.value}</span>
-                  </div>
+          {/* Sidebar / Secondary Content */}
+          <div className="space-y-10">
+            {/* Quick Access Categories */}
+            <section>
+              <h2 className="text-xl font-bold text-slate-900 mb-6">Quick Categories</h2>
+              <div className="grid grid-cols-2 gap-3">
+                {categories.slice(0, 6).map((cat) => (
+                  <Link 
+                    key={cat.slug} 
+                    to={`/products?category=${cat.slug}`}
+                    className="flex flex-col items-center justify-center p-4 bg-white border border-slate-100 rounded-2xl hover:border-primary/30 hover:shadow-md transition-all text-center"
+                  >
+                    <span className="text-2xl mb-2">{cat.icon}</span>
+                    <span className="text-xs font-bold text-slate-900">{cat.name}</span>
+                  </Link>
                 ))}
               </div>
-            </div>
+            </section>
 
-            {/* Unread Messages */}
-            <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-foreground">Messages</h3>
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-accent-foreground">3</span>
+            {/* Profile Health / Trust Box */}
+            <section className="bg-slate-900 rounded-2xl p-6 text-white overflow-hidden relative">
+              <div className="relative z-10">
+                <h3 className="text-lg font-bold mb-2">Campus Trust Badge</h3>
+                <p className="text-slate-400 text-sm mb-4">Complete 5 successful transactions to earn your "Verified Buyer" badge.</p>
+                <div className="w-full bg-white/10 h-2 rounded-full mb-2">
+                  <div className="bg-primary h-full w-[60%] rounded-full"></div>
+                </div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">3 / 5 COMPLETED</p>
               </div>
-              <p className="mt-2 text-xs text-muted-foreground">You have 3 unread messages from sellers</p>
-              <Link to="/messages">
-                <Button variant="outline" size="sm" className="mt-3 w-full text-xs">Open Messages</Button>
-              </Link>
-            </div>
-          </motion.div>
+              <div className="absolute -bottom-6 -right-6 opacity-10">
+                <TrendingUp className="h-32 w-32" />
+              </div>
+            </section>
+          </div>
         </div>
-
-        {/* Category Quick Access */}
-        <motion.div custom={2} variants={fadeUp} initial="hidden" animate="visible" className="mt-6 sm:mt-8">
-          <h2 className="mb-4 font-heading text-base font-semibold text-foreground sm:text-lg">Browse by Category</h2>
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 sm:gap-3 lg:grid-cols-10">
-            {categories.map((cat) => (
-              <Link
-                key={cat.slug}
-                to={`/products?category=${cat.slug}`}
-                className="flex flex-col items-center gap-1.5 rounded-xl border border-border bg-card p-3 text-center transition-all hover:border-primary/30 hover:shadow-sm"
-              >
-                <span className="text-xl sm:text-2xl">{cat.icon}</span>
-                <span className="text-[10px] font-medium text-muted-foreground sm:text-xs">{cat.name}</span>
-              </Link>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Recommended Products */}
-        <motion.div custom={3} variants={fadeUp} initial="hidden" animate="visible" className="mt-6 sm:mt-8">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-heading text-base font-semibold text-foreground sm:text-lg">Recommended For You</h2>
-            <Link to="/products" className="flex items-center gap-1 text-xs font-medium text-primary hover:underline sm:text-sm">
-              See all <ChevronRight className="h-3 w-3" />
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-            {products.slice(0, 4).map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </motion.div>
       </div>
     </Layout>
   );
