@@ -21,78 +21,102 @@ export interface AuthResponse {
 }
 
 export const authService = {
-  login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
+  login: async (credentials: LoginCredentials): Promise<AuthUser> => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email: credentials.email,
       password: credentials.password || '',
     });
     if (error) throw error;
     
-    const { data: profile } = await supabase.from('profiles').select('is_verified').eq('id', data.user.id).single();
+    // Fetch profile to ensure we have the role and other metadata
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', data.user.id)
+      .single();
     
-    return {
-      user: {
+    if (profileError) {
+      console.warn('Profile not found, creating a default one...');
+      // Fallback: This shouldn't happen if the trigger is working, but just in case
+      const newUser = {
         id: data.user.id,
         email: data.user.email!,
         fullname: data.user.user_metadata?.fullname || 'Student',
         role: data.user.user_metadata?.role || 'buyer',
         faculty: data.user.user_metadata?.faculty || 'Unknown',
-        avatar: data.user.user_metadata?.avatar,
-        isVerified: profile?.is_verified || false,
-      },
-      token: data.session.access_token,
+        isVerified: false
+      };
+      return newUser;
+    }
+    
+    return {
+      id: profile.id,
+      email: profile.email,
+      fullname: profile.fullname,
+      role: profile.role,
+      faculty: profile.faculty,
+      isVerified: profile.is_verified,
+      avatar: profile.avatar_url,
     };
   },
 
-  register: async (userData: any): Promise<AuthResponse> => {
+  register: async (userData: any): Promise<AuthUser> => {
     const { data, error } = await supabase.auth.signUp({
       email: userData.email,
       password: userData.password,
-      options: { data: userData }
+      options: { 
+        data: {
+          fullname: userData.fullname,
+          role: userData.role,
+          faculty: userData.faculty
+        } 
+      }
     });
     if (error) throw error;
-    if (data.user) {
-      await supabase.from('profiles').insert([{
-        id: data.user.id,
-        fullname: userData.fullname || 'Student',
-        email: data.user.email!,
-        role: userData.role || 'buyer',
-        faculty: userData.faculty || 'Unknown',
-        status: 'active'
-      }]);
-    }
+    if (!data.user) throw new Error('Registration failed');
+
+    // We wait a brief moment for the DB trigger to create the profile
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', data.user.id)
+      .single();
 
     return {
-      user: {
-        id: data.user!.id,
-        email: data.user!.email!,
-        fullname: userData.fullname || 'Student',
-        role: userData.role || 'buyer',
-        faculty: userData.faculty || 'Unknown',
-        isVerified: false,
-      },
-      token: data.session!.access_token,
+      id: data.user.id,
+      email: data.user.email!,
+      fullname: userData.fullname || 'Student',
+      role: userData.role || 'buyer',
+      faculty: userData.faculty || 'Unknown',
+      isVerified: false,
     };
   },
 
   logout: async (): Promise<void> => {
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
   },
 
-  getCurrentUser: async (): Promise<AuthUser> => {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error || !user) throw new Error('Not logged in');
+  getCurrentUser: async (): Promise<AuthUser | null> => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return null;
     
-    const { data: profile } = await supabase.from('profiles').select('is_verified').eq('id', user.id).single();
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', session.user.id)
+      .single();
+
+    if (!profile) return null;
 
     return {
-      id: user.id,
-      email: user.email!,
-      fullname: user.user_metadata?.fullname || 'Student',
-      role: user.user_metadata?.role || 'buyer',
-      faculty: user.user_metadata?.faculty || 'Unknown',
-      avatar: user.user_metadata?.avatar,
-      isVerified: profile?.is_verified || false,
+      id: profile.id,
+      email: profile.email,
+      fullname: profile.fullname,
+      role: profile.role,
+      faculty: profile.faculty,
+      avatar: profile.avatar_url,
+      isVerified: profile.is_verified,
     };
   },
 };

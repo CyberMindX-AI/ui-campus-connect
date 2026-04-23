@@ -14,9 +14,7 @@ export const useLogin = () => {
 
   return useMutation({
     mutationFn: (credentials: LoginCredentials) => authService.login(credentials),
-    onSuccess: (data) => {
-      // Store token
-      localStorage.setItem('auth_token', data.token);
+    onSuccess: () => {
       // Invalidate and refetch the authUser query to trigger a re-render
       queryClient.invalidateQueries({ queryKey: ['authUser'] });
     },
@@ -29,10 +27,19 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: authService.logout,
     onSuccess: () => {
-      localStorage.removeItem('auth_token');
       // Clear the cache for the current user
       queryClient.setQueryData(['authUser'], null);
       queryClient.invalidateQueries();
+    },
+  });
+};
+export const useRegister = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (userData: any) => authService.register(userData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['authUser'] });
     },
   });
 };

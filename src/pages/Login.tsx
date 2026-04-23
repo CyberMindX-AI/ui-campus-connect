@@ -42,12 +42,12 @@ const Login = () => {
     performLogin(
       { email, password },
       {
-        onSuccess: (data) => {
-          login(data.user); // Sync Context if needed
+        onSuccess: (userData) => {
+          login(userData); // Sync Context
           toast({ title: 'Welcome back!', description: 'You have signed in successfully.' });
           
           // Dynamic redirection based on role
-          const dashboardPath = data.user.role === 'seller' ? '/dashboard/seller' : '/dashboard/buyer';
+          const dashboardPath = userData.role === 'seller' ? '/dashboard/seller' : '/dashboard/buyer';
           navigate(dashboardPath);
         },
         onError: (err: any) => {

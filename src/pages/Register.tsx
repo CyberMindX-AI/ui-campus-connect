@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRegister } from '@/hooks/api/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -57,6 +58,8 @@ const Register = () => {
     return errs;
   };
 
+  const { mutate: registerMutation } = useRegister();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const errs = validate();
@@ -64,12 +67,30 @@ const Register = () => {
     if (Object.keys(errs).length > 0) return;
 
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      login({ fullname: form.fullname, email: form.email, role, faculty: form.faculty });
-      toast({ title: 'Account created!', description: 'Welcome to UI Marketplace!' });
-      navigate(role === 'seller' ? '/dashboard/seller' : '/dashboard/buyer');
-    }, 1500);
+    registerMutation(
+      { 
+        email: form.email, 
+        password: form.password, 
+        fullname: form.fullname, 
+        role, 
+        faculty: form.faculty 
+      },
+      {
+        onSuccess: () => {
+          setLoading(false);
+          toast({ title: 'Account created!', description: 'Welcome to UI Marketplace!' });
+          navigate(role === 'seller' ? '/dashboard/seller' : '/dashboard/buyer');
+        },
+        onError: (error: any) => {
+          setLoading(false);
+          toast({ 
+            title: 'Registration failed', 
+            description: error.message || 'There was an error creating your account.', 
+            variant: 'destructive' 
+          });
+        }
+      }
+    );
   };
 
   const FieldError = ({ field }: { field: string }) =>
