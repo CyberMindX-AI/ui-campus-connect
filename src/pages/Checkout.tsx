@@ -156,7 +156,7 @@ const Checkout = () => {
             <div className="mt-4 space-y-3">
               {items.map((item) => (
                 <div key={item.product.id} className="flex items-center gap-3">
-                  <img src={item.product.image} alt={item.product.title} className="h-12 w-12 rounded-lg object-cover" />
+                  <img src={item.product.images?.[0] || '/placeholder.svg'} alt={item.product.title} className="h-12 w-12 rounded-lg object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
                   <div className="flex-1 min-w-0">
                     <p className="truncate text-sm font-medium text-foreground">{item.product.title}</p>
                     <p className="text-xs text-muted-foreground">{item.product.seller} x{item.qty}</p>

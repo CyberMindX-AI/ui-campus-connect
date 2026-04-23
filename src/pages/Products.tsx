@@ -33,7 +33,7 @@ const Products = () => {
   const filtered = useMemo(() => {
     let result = products.filter((p) => {
       const matchSearch = !search || p.title.toLowerCase().includes(search.toLowerCase()) || p.description.toLowerCase().includes(search.toLowerCase());
-      const matchCat = !selectedCategory || p.category.toLowerCase() === categories.find(c => c.slug === selectedCategory)?.name.toLowerCase();
+      const matchCat = !selectedCategory || p.category === selectedCategory;
       const matchCondition = selectedConditions.length === 0 || selectedConditions.includes(p.condition);
       const matchPriceMin = !priceMin || p.price >= Number(priceMin);
       const matchPriceMax = !priceMax || p.price <= Number(priceMax);
@@ -50,7 +50,7 @@ const Products = () => {
     }
 
     return result;
-  }, [search, selectedCategory, selectedConditions, priceMin, priceMax, sort]);
+  }, [products, search, selectedCategory, selectedConditions, priceMin, priceMax, sort]);
 
   const clearAllFilters = () => {
     setSearch('');
@@ -133,9 +133,7 @@ const Products = () => {
 
         {/* Filter Drawer - Premium look */}
         {showFilters && (
-          <motion.div 
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
+          <div 
             className="mb-10 bg-white border border-slate-100 rounded-3xl p-8 shadow-xl shadow-slate-200/40 relative overflow-hidden"
           >
             <div className="flex items-center justify-between mb-8">
@@ -194,7 +192,7 @@ const Products = () => {
                 </select>
               </div>
             </div>
-          </motion.div>
+          </div>
         )}
 
         {/* Product Grid */}

@@ -20,6 +20,39 @@ export interface AuthResponse {
   token: string;
 }
 
+// Get a public URL for an avatar stored in Supabase Storage
+export const getAvatarUrl = (path: string | null | undefined): string => {
+  if (!path) return '/placeholder.svg';
+  if (path.startsWith('http')) return path;
+  const { data } = supabase.storage.from('avatars').getPublicUrl(path);
+  return data.publicUrl;
+};
+
+// Upload an avatar to Supabase Storage and update the profile
+export const uploadAvatar = async (userId: string, file: File): Promise<string> => {
+  const ext = file.name.split('.').pop();
+  const fileName = `${userId}/avatar.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('avatars')
+    .upload(fileName, file, { upsert: true, contentType: file.type });
+
+  if (uploadError) throw uploadError;
+
+  const { data } = supabase.storage.from('avatars').getPublicUrl(fileName);
+  const publicUrl = data.publicUrl;
+
+  // Update profile avatar_url
+  const { error: updateError } = await supabase
+    .from('profiles')
+    .update({ avatar_url: fileName })
+    .eq('id', userId);
+
+  if (updateError) throw updateError;
+
+  return publicUrl;
+};
+
 export const authService = {
   login: async (credentials: LoginCredentials): Promise<AuthUser> => {
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -27,28 +60,26 @@ export const authService = {
       password: credentials.password || '',
     });
     if (error) throw error;
-    
+
     // Fetch profile to ensure we have the role and other metadata
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', data.user.id)
       .single();
-    
+
     if (profileError) {
-      console.warn('Profile not found, creating a default one...');
-      // Fallback: This shouldn't happen if the trigger is working, but just in case
-      const newUser = {
+      console.warn('Profile not found, using auth metadata...');
+      return {
         id: data.user.id,
         email: data.user.email!,
         fullname: data.user.user_metadata?.fullname || 'Student',
         role: data.user.user_metadata?.role || 'buyer',
         faculty: data.user.user_metadata?.faculty || 'Unknown',
-        isVerified: false
+        isVerified: false,
       };
-      return newUser;
     }
-    
+
     return {
       id: profile.id,
       email: profile.email,
@@ -56,7 +87,7 @@ export const authService = {
       role: profile.role,
       faculty: profile.faculty,
       isVerified: profile.is_verified,
-      avatar: profile.avatar_url,
+      avatar: getAvatarUrl(profile.avatar_url),
     };
   },
 
@@ -64,23 +95,16 @@ export const authService = {
     const { data, error } = await supabase.auth.signUp({
       email: userData.email,
       password: userData.password,
-      options: { 
+      options: {
         data: {
           fullname: userData.fullname,
           role: userData.role,
-          faculty: userData.faculty
-        } 
-      }
+          faculty: userData.faculty,
+        },
+      },
     });
     if (error) throw error;
     if (!data.user) throw new Error('Registration failed');
-
-    // We wait a brief moment for the DB trigger to create the profile
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', data.user.id)
-      .single();
 
     return {
       id: data.user.id,
@@ -98,9 +122,11 @@ export const authService = {
   },
 
   getCurrentUser: async (): Promise<AuthUser | null> => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (!session?.user) return null;
-    
+
     const { data: profile } = await supabase
       .from('profiles')
       .select('*')
@@ -115,8 +141,19 @@ export const authService = {
       fullname: profile.fullname,
       role: profile.role,
       faculty: profile.faculty,
-      avatar: profile.avatar_url,
+      avatar: getAvatarUrl(profile.avatar_url),
       isVerified: profile.is_verified,
     };
+  },
+
+  updateProfile: async (
+    userId: string,
+    updates: { fullname?: string; bio?: string }
+  ): Promise<void> => {
+    const { error } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', userId);
+    if (error) throw error;
   },
 };

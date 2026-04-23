@@ -319,10 +319,10 @@ const Admin = () => {
                       {products.map(product => (
                         <div key={product.id} className="flex flex-col gap-3 rounded-xl border border-border p-4 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between">
                           <div className="flex items-start gap-3">
-                            <img src={product.images[0]} alt="" className="h-16 w-16 rounded-lg border border-border bg-muted object-cover" />
+                            <img src={product.images?.[0] || '/placeholder.svg'} alt="" className="h-16 w-16 rounded-lg border border-border bg-muted object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
                             <div className="min-w-0">
                               <h4 className="font-medium text-foreground">{product.title}</h4>
-                              <p className="text-sm text-muted-foreground">by {product.seller}</p>
+                              <p className="text-sm text-muted-foreground">by {product.seller?.fullname || product.seller_id}</p>
                               <div className="mt-1 flex flex-wrap gap-1.5">
                                 <Badge variant="outline" className="text-[10px]">{product.category}</Badge>
                                 <Badge variant="outline" className="text-[10px]">{product.condition}</Badge>
@@ -627,7 +627,7 @@ const Admin = () => {
           </DialogHeader>
           {selectedProduct && (
             <div className="space-y-4">
-              <img src={selectedProduct.images[0]} alt="" className="h-48 w-full rounded-lg border border-border bg-muted object-cover" />
+              <img src={selectedProduct.images?.[0] || '/placeholder.svg'} alt="" className="h-48 w-full rounded-lg border border-border bg-muted object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
               <div>
                 <h3 className="text-lg font-semibold text-foreground">{selectedProduct.title}</h3>
                 <p className="text-2xl font-bold text-[#2563EB]">₦{selectedProduct.price.toLocaleString()}</p>

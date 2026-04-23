@@ -17,14 +17,19 @@ export interface Product {
   category: string;
   condition: string;
   images: string[];
-  status: 'pending' | 'active' | 'rejected' | 'inactive';
-  created_at?: string;
+  // DB column name is 'negotiable', not 'is_negotiable'
+  negotiable: boolean;
+  // DB column name is 'delivery' (array), not 'delivery_options'
+  delivery: string[];
+  // DB column name is 'location', not 'pickup_location'
+  location: string;
   quantity: number;
-  delivery_options: string[];
-  pickup_location: string;
   tags: string[];
-  is_negotiable: boolean;
-  // Derived fields for UI
+  rating: number;
+  reviews: number;
+  status: 'pending' | 'active' | 'rejected' | 'inactive' | 'available';
+  created_at?: string;
+  // Derived fields for UI (joined from profiles)
   seller?: string;
   sellerAvatar?: string;
 }

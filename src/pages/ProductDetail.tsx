@@ -75,9 +75,9 @@ const ProductDetail = () => {
           {/* Images */}
           <div>
             <div className="aspect-square overflow-hidden rounded-xl bg-muted">
-              <img src={product.images[selectedImage]} alt={product.title} className="h-full w-full object-cover" />
+              <img src={product.images?.[selectedImage] || '/placeholder.svg'} alt={product.title} className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
             </div>
-            {product.images.length > 1 && (
+            {(product.images?.length || 0) > 1 && (
               <div className="mt-3 flex gap-2">
                 {product.images.map((img, i) => (
                   <button
@@ -87,7 +87,7 @@ const ProductDetail = () => {
                       selectedImage === i ? 'border-primary' : 'border-border'
                     }`}
                   >
-                    <img src={img} alt="" className="h-full w-full object-cover" />
+                    <img src={img} alt="" className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
                   </button>
                 ))}
               </div>
@@ -113,12 +113,16 @@ const ProductDetail = () => {
             <p className="mt-2 font-heading text-3xl font-extrabold text-primary">₦{product.price.toLocaleString()}</p>
 
             <div className="mt-3 flex items-center gap-4 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Star className="h-4 w-4 fill-accent text-accent" /> {product.rating} ({product.reviews} reviews)
-              </span>
-              <span className="flex items-center gap-1">
-                <MapPin className="h-4 w-4" /> {product.location}
-              </span>
+              {(product.rating > 0 || product.reviews > 0) && (
+                <span className="flex items-center gap-1">
+                  <Star className="h-4 w-4 fill-accent text-accent" /> {product.rating} ({product.reviews} reviews)
+                </span>
+              )}
+              {product.location && (
+                <span className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4" /> {product.location}
+                </span>
+              )}
             </div>
 
             <div className="mt-3 inline-flex rounded-md bg-muted px-3 py-1.5 text-sm">
@@ -130,7 +134,7 @@ const ProductDetail = () => {
             {/* Delivery */}
             <div className="mt-5 space-y-2">
               <p className="text-sm font-medium text-foreground">Delivery Options</p>
-              {product.delivery.map((d) => (
+              {(product.delivery || []).map((d) => (
                 <div key={d} className="flex items-center gap-2 text-sm text-muted-foreground">
                   {d === 'Digital Delivery' ? <PackageIcon className="h-4 w-4 text-primary" /> : <Truck className="h-4 w-4 text-primary" />}
                   {d}
@@ -156,11 +160,11 @@ const ProductDetail = () => {
             {/* Seller card */}
             <div className="mt-6 rounded-xl border border-border bg-card p-4">
               <div className="flex items-center gap-3">
-                <img src={product.sellerAvatar} alt={product.seller} className="h-12 w-12 rounded-full object-cover" />
+                <img src={product.sellerAvatar || '/placeholder.svg'} alt={product.seller || 'Seller'} className="h-12 w-12 rounded-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
                 <div>
-                  <p className="font-medium text-card-foreground">{product.seller}</p>
+                  <p className="font-medium text-card-foreground">{product.seller || 'Campus Seller'}</p>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Star className="h-3 w-3 fill-accent text-accent" /> {product.rating} · {product.reviews} sales
+                    <Star className="h-3 w-3 fill-accent text-accent" /> {product.rating || 0} · {product.reviews || 0} sales
                   </div>
                 </div>
               </div>

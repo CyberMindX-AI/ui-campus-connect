@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, Shield, Bell, Store, Eye, Trash2, Camera } from 'lucide-react';
+import { User, Shield, Bell, Store, Eye, Trash2, Camera, Loader2 } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { uploadAvatar, authService } from '@/services/auth.service';
 
 const tabs = [
   { id: 'profile', label: 'Profile', icon: User },
@@ -18,13 +19,59 @@ const tabs = [
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState('profile');
-  const { user } = useAuth();
+  const { user, login } = useAuth();
   const { toast } = useToast();
   const [name, setName] = useState(user?.fullname || 'Student');
   const [bio, setBio] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatar || '');
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSave = () => {
-    toast({ title: 'Settings saved!', description: 'Your changes have been applied.' });
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user?.id) return;
+
+    // Validate file type and size
+    if (!file.type.startsWith('image/')) {
+      toast({ title: 'Invalid file', description: 'Please select an image file.', variant: 'destructive' });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: 'File too large', description: 'Avatar must be under 5MB.', variant: 'destructive' });
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      const publicUrl = await uploadAvatar(user.id, file);
+      setAvatarUrl(publicUrl);
+      // Update the auth context cache with the new avatar
+      login({ ...user, avatar: publicUrl });
+      toast({ title: 'Avatar updated!', description: 'Your profile picture has been changed.' });
+    } catch (error: any) {
+      toast({
+        title: 'Upload failed',
+        description: error.message || 'Could not upload avatar. Make sure the "avatars" storage bucket exists.',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!user?.id) return;
+    setSavingProfile(true);
+    try {
+      await authService.updateProfile(user.id, { fullname: name });
+      login({ ...user, fullname: name });
+      toast({ title: 'Settings saved!', description: 'Your changes have been applied.' });
+    } catch (error: any) {
+      toast({ title: 'Save failed', description: error.message, variant: 'destructive' });
+    } finally {
+      setSavingProfile(false);
+    }
   };
 
   return (
@@ -51,16 +98,43 @@ const Settings = () => {
               <div className="rounded-xl border border-border bg-card p-4 sm:p-6 space-y-6">
                 <div className="flex items-center gap-4">
                   <div className="relative">
-                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary text-2xl font-bold text-primary-foreground">
-                      {name.charAt(0)}
-                    </div>
-                    <button className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-accent text-accent-foreground">
-                      <Camera className="h-3 w-3" />
+                    {avatarUrl ? (
+                      <img
+                        src={avatarUrl}
+                        alt={name}
+                        className="h-20 w-20 rounded-full object-cover border-2 border-border"
+                        onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
+                      />
+                    ) : (
+                      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary text-2xl font-bold text-primary-foreground">
+                        {name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingAvatar}
+                      className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-accent text-accent-foreground hover:bg-accent/80 transition-colors disabled:opacity-50"
+                    >
+                      {uploadingAvatar ? <Loader2 className="h-3 w-3 animate-spin" /> : <Camera className="h-3 w-3" />}
                     </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={handleAvatarChange}
+                    />
                   </div>
                   <div>
                     <p className="font-medium text-foreground">{name}</p>
                     <p className="text-sm text-muted-foreground">{user?.email || 'student@ui.edu.ng'}</p>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="text-xs text-primary hover:underline mt-1"
+                      disabled={uploadingAvatar}
+                    >
+                      {uploadingAvatar ? 'Uploading...' : 'Change photo'}
+                    </button>
                   </div>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -79,7 +153,9 @@ const Settings = () => {
                     className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" rows={3}
                     placeholder="Tell others about yourself..." />
                 </div>
-                <Button variant="hero" onClick={handleSave}>Save Changes</Button>
+                <Button variant="hero" onClick={handleSave} disabled={savingProfile}>
+                  {savingProfile ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Saving...</> : 'Save Changes'}
+                </Button>
               </div>
             )}
 
@@ -95,7 +171,7 @@ const Settings = () => {
                     <div><Label htmlFor="newPw">New Password</Label><Input id="newPw" type="password" className="mt-1" /></div>
                     <div><Label htmlFor="confirmPw">Confirm Password</Label><Input id="confirmPw" type="password" className="mt-1" /></div>
                   </div>
-                  <Button variant="hero" onClick={handleSave}>Update Password</Button>
+                  <Button variant="hero" onClick={() => toast({ title: 'Password updated!' })}>Update Password</Button>
                 </div>
                 <hr className="border-border" />
                 <div>
@@ -122,7 +198,7 @@ const Settings = () => {
                     </div>
                   </div>
                 ))}
-                <Button variant="hero" onClick={handleSave}>Save Preferences</Button>
+                <Button variant="hero" onClick={() => toast({ title: 'Preferences saved!' })}>Save Preferences</Button>
               </div>
             )}
 
@@ -137,7 +213,7 @@ const Settings = () => {
                   <textarea id="returnPolicy" className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" rows={2} placeholder="Your return/exchange policy..." />
                 </div>
                 <div><Label htmlFor="pickup">Pickup Location</Label><Input id="pickup" className="mt-1" placeholder="e.g. Kuti Hall Room 205" /></div>
-                <Button variant="hero" onClick={handleSave}>Save Store Settings</Button>
+                <Button variant="hero" onClick={() => toast({ title: 'Store settings saved!' })}>Save Store Settings</Button>
               </div>
             )}
 
@@ -152,7 +228,7 @@ const Settings = () => {
                   <div><p className="text-sm font-medium text-foreground">Show Online Status</p><p className="text-xs text-muted-foreground">Let others see when you're online</p></div>
                   <input type="checkbox" defaultChecked className="accent-primary h-4 w-4" />
                 </div>
-                <Button variant="hero" onClick={handleSave}>Save Privacy Settings</Button>
+                <Button variant="hero" onClick={() => toast({ title: 'Privacy settings saved!' })}>Save Privacy Settings</Button>
               </div>
             )}
 

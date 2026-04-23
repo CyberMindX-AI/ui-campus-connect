@@ -1,6 +1,39 @@
 import { supabase } from '@/lib/supabase';
-
 import { Product } from '@/types';
+
+// Helper: get a Supabase Storage public URL for a given path
+export const getImageUrl = (path: string): string => {
+  if (!path) return '/placeholder.svg';
+  // Already a full URL (e.g. external or previously generated)
+  if (path.startsWith('http')) return path;
+  const { data } = supabase.storage.from('product-images').getPublicUrl(path);
+  return data.publicUrl;
+};
+
+// Upload one image to Supabase Storage and return the public URL
+export const uploadProductImage = async (
+  sellerId: string,
+  file: File
+): Promise<string> => {
+  const ext = file.name.split('.').pop();
+  const fileName = `${sellerId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from('product-images')
+    .upload(fileName, file, { upsert: false, contentType: file.type });
+
+  if (error) throw error;
+  return getImageUrl(fileName);
+};
+
+const mapProduct = (p: any): Product => ({
+  ...p,
+  images: Array.isArray(p.images) ? p.images.map(getImageUrl) : [],
+  seller: p.seller_profile?.fullname || 'Unknown Seller',
+  sellerAvatar: p.seller_profile?.avatar_url
+    ? getImageUrl(p.seller_profile.avatar_url)
+    : '/placeholder.svg',
+});
 
 export const productsService = {
   getProducts: async (): Promise<Product[]> => {
@@ -10,17 +43,13 @@ export const productsService = {
         *,
         seller_profile:profiles!seller_id(fullname, avatar_url)
       `)
-      .eq('status', 'active');
-    
+      .in('status', ['active', 'available'])
+      .order('created_at', { ascending: false });
+
     if (error) throw error;
-    
-    return (data || []).map(p => ({
-      ...p,
-      seller: p.seller_profile?.fullname || 'Unknown Seller',
-      sellerAvatar: p.seller_profile?.avatar_url || ''
-    }));
+    return (data || []).map(mapProduct);
   },
-  
+
   getSellerProducts: async (sellerId: string): Promise<Product[]> => {
     const { data, error } = await supabase
       .from('products')
@@ -30,14 +59,9 @@ export const productsService = {
       `)
       .eq('seller_id', sellerId)
       .order('created_at', { ascending: false });
-      
+
     if (error) throw error;
-    
-    return (data || []).map(p => ({
-      ...p,
-      seller: p.seller_profile?.fullname || 'Unknown Seller',
-      sellerAvatar: p.seller_profile?.avatar_url || ''
-    }));
+    return (data || []).map(mapProduct);
   },
 
   getProductById: async (id: string): Promise<Product> => {
@@ -49,24 +73,28 @@ export const productsService = {
       `)
       .eq('id', id)
       .single();
-      
+
     if (error) throw error;
-    
-    return {
-      ...data,
-      seller: data.seller_profile?.fullname || 'Unknown Seller',
-      sellerAvatar: data.seller_profile?.avatar_url || ''
-    };
+    return mapProduct(data);
   },
 
   createProduct: async (productData: Partial<Product>): Promise<Product> => {
-    const { data, error } = await supabase.from('products').insert([productData]).select().single();
+    const { data, error } = await supabase
+      .from('products')
+      .insert([productData])
+      .select()
+      .single();
     if (error) throw error;
     return data;
   },
-  
+
   updateProduct: async (id: string, productData: Partial<Product>): Promise<Product> => {
-    const { data, error } = await supabase.from('products').update(productData).eq('id', id).select().single();
+    const { data, error } = await supabase
+      .from('products')
+      .update(productData)
+      .eq('id', id)
+      .select()
+      .single();
     if (error) throw error;
     return data;
   },
@@ -74,5 +102,5 @@ export const productsService = {
   deleteProduct: async (id: string): Promise<void> => {
     const { error } = await supabase.from('products').delete().eq('id', id);
     if (error) throw error;
-  }
+  },
 };

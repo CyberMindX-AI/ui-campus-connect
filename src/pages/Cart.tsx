@@ -41,7 +41,7 @@ const Cart = () => {
               {items.map(({ product, qty }) => (
                 <div key={product.id} className="flex gap-6 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all relative group">
                   <Link to={`/products/${product.id}`} className="h-32 w-32 flex-shrink-0 overflow-hidden rounded-2xl bg-slate-50">
-                    <img src={product.image} alt={product.title} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <img src={product.images?.[0] || '/placeholder.svg'} alt={product.title} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
                   </Link>
                   <div className="flex flex-1 flex-col justify-between py-1">
                     <div className="flex justify-between items-start">

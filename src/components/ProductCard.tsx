@@ -20,7 +20,7 @@ const ProductCard = ({ product }: { product: Product }) => (
       >
         <Heart className="h-4.5 w-4.5 text-slate-400 hover:text-rose-500 transition-colors" />
       </button>
-      {product.is_negotiable && (
+      {product.negotiable && (
         <span className="absolute left-3 top-3 rounded-lg bg-emerald-500 px-2.5 py-1 text-[10px] font-bold text-white uppercase tracking-wider shadow-sm">
           Negotiable
         </span>
@@ -44,7 +44,7 @@ const ProductCard = ({ product }: { product: Product }) => (
       <div className="pt-4 border-t border-slate-50 flex items-center justify-between">
         <div className="flex items-center gap-1 text-slate-400">
           <MapPin className="h-3.5 w-3.5" />
-          <span className="text-[11px] font-bold uppercase tracking-tight truncate max-w-[80px]">{product.pickup_location || 'Campus'}</span>
+          <span className="text-[11px] font-bold uppercase tracking-tight truncate max-w-[80px]">{product.location || 'Campus'}</span>
         </div>
         <p className="font-bold text-lg text-slate-900 leading-none">₦{product.price.toLocaleString()}</p>
       </div>

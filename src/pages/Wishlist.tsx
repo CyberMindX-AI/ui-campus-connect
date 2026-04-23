@@ -53,14 +53,14 @@ const Wishlist = () => {
             {wishlistItems.map((product) => (
               <div key={product.id} className="flex gap-4 rounded-xl border border-border bg-card p-4">
                 <Link to={`/products/${product.id}`} className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-muted sm:h-24 sm:w-24">
-                  <img src={product.image} alt={product.title} className="h-full w-full object-cover" />
+                  <img src={product.images?.[0] || '/placeholder.svg'} alt={product.title} className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
                 </Link>
                 <div className="flex flex-1 flex-col justify-between min-w-0">
                   <div>
                     <Link to={`/products/${product.id}`} className="text-sm font-medium text-foreground hover:text-primary line-clamp-1">
                       {product.title}
                     </Link>
-                    <p className="mt-0.5 text-xs text-muted-foreground">{product.seller} · {product.location}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{product.seller} · {product.location || 'Campus'}</p>
                   </div>
                   <div className="flex items-center justify-between">
                     <p className="font-heading text-lg font-bold text-primary">₦{product.price.toLocaleString()}</p>
