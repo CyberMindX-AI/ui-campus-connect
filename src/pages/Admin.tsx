@@ -16,7 +16,7 @@ import {
   ShieldCheck, Users, Package, Store, AlertTriangle, TrendingUp,
   CheckCircle, XCircle, Eye, Ban, Search, BarChart, MessageSquare,
   Clock, DollarSign, Flag, Settings, Activity, ArrowUpRight, ArrowDownRight,
-  Trash2, UserCheck, UserX, FileText, Bell, LogOut
+  Trash2, UserCheck, UserX, FileText, Bell, LogOut, Loader2
 } from 'lucide-react';
 
 // Placeholder for local state if needed
