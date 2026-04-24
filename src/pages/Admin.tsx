@@ -43,10 +43,14 @@ const Admin = () => {
     reports: reportsQuery, 
     transactions: transactionsQuery,
     users: usersQuery,
-    approveProduct, 
-    rejectProduct, 
-    approveSeller 
+    approveProductMutation, 
+    rejectProductMutation, 
+    approveSellerMutation 
   } = useAdminData();
+
+  const approveProduct = approveProductMutation.mutateAsync;
+  const rejectProduct = rejectProductMutation.mutateAsync;
+  const approveSeller = approveSellerMutation.mutateAsync;
 
   const products = productsQuery.data || [];
   const sellers = sellersQuery.data || [];
@@ -147,25 +151,38 @@ const Admin = () => {
   }
 
   const handleApproveProduct = async (id: string) => {
-    await approveProduct(id);
-    setSelectedProduct(null);
+    try {
+      await approveProduct(id);
+      setSelectedProduct(null);
+      toast({ title: 'Success', description: 'Product has been approved and is now live.' });
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message || 'Failed to approve product.', variant: 'destructive' });
+    }
   };
 
   const handleRejectItem = async () => {
-    if (rejectType === 'product') {
-      await rejectProduct(rejectId);
-      setSelectedProduct(null);
-    } else {
-      // Logic for rejecting seller application can be added to adminService
+    try {
+      if (rejectType === 'product') {
+        await rejectProduct(rejectId);
+      } else {
+        // Implement rejectSeller if needed
+      }
       setShowRejectDialog(false);
+      setSelectedProduct(null);
+      toast({ title: 'Rejected', description: 'The item has been rejected.' });
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message || 'Failed to reject item.', variant: 'destructive' });
     }
-    setShowRejectDialog(false);
-    setRejectReason('');
   };
 
   const handleApproveSeller = async (id: string, userId: string) => {
-    await approveSeller({ applicationId: id, userId });
-    setSelectedSeller(null);
+    try {
+      await approveSeller({ applicationId: id, userId });
+      setSelectedSeller(null);
+      toast({ title: 'Seller Approved', description: 'The user has been granted seller status.' });
+    } catch (error) {
+      toast({ title: 'Error', description: 'Failed to approve seller.', variant: 'destructive' });
+    }
   };
 
   const toggleUserStatus = (id: string) => {
@@ -335,8 +352,14 @@ const Admin = () => {
                             <Button size="sm" variant="outline" onClick={() => setSelectedProduct(product)}>
                               <Eye className="mr-1 h-3 w-3" /> Review
                             </Button>
-                            <Button size="sm" className="bg-[#2563EB] text-white hover:bg-[#1D4ED8]" onClick={() => handleApproveProduct(product.id)}>
-                              <CheckCircle className="mr-1 h-3 w-3" /> Approve
+                            <Button 
+                              size="sm" 
+                              className="bg-[#2563EB] text-white hover:bg-[#1D4ED8]" 
+                              onClick={() => handleApproveProduct(product.id)}
+                              disabled={approveProductMutation.isPending}
+                            >
+                              {approveProductMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle className="mr-1 h-3 w-3" />} 
+                              Approve
                             </Button>
                             <Button size="sm" variant="destructive" onClick={() => { setRejectType('product'); setRejectId(product.id); setShowRejectDialog(true); }}>
                               <XCircle className="mr-1 h-3 w-3" /> Reject

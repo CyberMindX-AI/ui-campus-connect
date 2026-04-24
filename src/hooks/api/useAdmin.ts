@@ -62,8 +62,8 @@ export const useAdminData = () => {
     reports,
     transactions,
     users,
-    approveProduct: approveProduct.mutate,
-    rejectProduct: rejectProduct.mutate,
-    approveSeller: approveSeller.mutate,
+    approveProductMutation,
+    rejectProductMutation,
+    approveSellerMutation,
   };
 };
