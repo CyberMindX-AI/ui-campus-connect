@@ -27,7 +27,7 @@ export const useAdminData = () => {
 
   const users = useQuery({
     queryKey: ['admin', 'users'],
-    queryFn: adminService.getUsers,
+    queryFn: adminService.getAllUsers,
   });
 
   const approveProduct = useMutation({

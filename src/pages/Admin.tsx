@@ -61,6 +61,7 @@ const Admin = () => {
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [rejectType, setRejectType] = useState<'product' | 'seller'>('product');
   const [rejectId, setRejectId] = useState('');
+  const [selectedImageIdx, setSelectedImageIdx] = useState(0);
   const [platformSettings, setPlatformSettings] = useState({
     maintenanceMode: false,
     newRegistrations: true,
@@ -619,34 +620,93 @@ const Admin = () => {
       </div>
 
       {/* Product Review Dialog */}
-      <Dialog open={!!selectedProduct} onOpenChange={() => setSelectedProduct(null)}>
-        <DialogContent className="max-w-lg">
+      <Dialog open={!!selectedProduct} onOpenChange={(open) => { if (!open) { setSelectedProduct(null); setSelectedImageIdx(0); } }}>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Review Product</DialogTitle>
-            <DialogDescription>Review this product listing before approving.</DialogDescription>
+            <DialogTitle>Review Product Listing</DialogTitle>
+            <DialogDescription>Verify images and details before approving this listing.</DialogDescription>
           </DialogHeader>
           {selectedProduct && (
-            <div className="space-y-4">
-              <img src={selectedProduct.images?.[0] || '/placeholder.svg'} alt="" className="h-48 w-full rounded-lg border border-border bg-muted object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
-              <div>
-                <h3 className="text-lg font-semibold text-foreground">{selectedProduct.title}</h3>
-                <p className="text-2xl font-bold text-[#2563EB]">₦{selectedProduct.price.toLocaleString()}</p>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-3">
+                <div 
+                  className="aspect-square rounded-xl overflow-hidden border border-border bg-muted cursor-zoom-in group relative"
+                  onClick={() => window.open(selectedProduct.images?.[selectedImageIdx], '_blank')}
+                  title="Click to view full size"
+                >
+                  <img 
+                    src={selectedProduct.images?.[selectedImageIdx] || '/placeholder.svg'} 
+                    alt="" 
+                    className="h-full w-full object-cover transition-transform group-hover:scale-105" 
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                    <Search className="text-white opacity-0 group-hover:opacity-100 h-8 w-8" />
+                  </div>
+                </div>
+                
+                {/* Thumbnail Gallery */}
+                {(selectedProduct.images?.length || 0) > 1 && (
+                  <div className="flex flex-wrap gap-2">
+                    {selectedProduct.images.map((img: string, idx: number) => (
+                      <button 
+                        key={idx} 
+                        onClick={() => setSelectedImageIdx(idx)}
+                        className={`h-12 w-12 rounded-md overflow-hidden border-2 transition-all ${
+                          selectedImageIdx === idx ? 'border-primary' : 'border-transparent opacity-60 hover:opacity-100'
+                        }`}
+                      >
+                        <img src={img} alt="" className="h-full w-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <p className="text-[10px] text-center text-muted-foreground uppercase font-bold tracking-widest">
+                  Click main image to open original
+                </p>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div><span className="text-muted-foreground">Seller:</span> <span className="font-medium text-foreground">{selectedProduct.seller}</span></div>
-                <div><span className="text-muted-foreground">Category:</span> <span className="font-medium text-foreground">{selectedProduct.category}</span></div>
-                <div><span className="text-muted-foreground">Condition:</span> <span className="font-medium text-foreground">{selectedProduct.condition}</span></div>
-                <div><span className="text-muted-foreground">Submitted:</span> <span className="font-medium text-foreground">{selectedProduct.submittedAt}</span></div>
+
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-xl font-bold text-foreground">{selectedProduct.title}</h3>
+                  <p className="text-2xl font-black text-[#2563EB] mt-1">₦{selectedProduct.price.toLocaleString()}</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="bg-muted/50 p-2 rounded-lg">
+                    <p className="text-muted-foreground mb-0.5">Seller</p>
+                    <p className="font-bold">{selectedProduct.seller}</p>
+                  </div>
+                  <div className="bg-muted/50 p-2 rounded-lg">
+                    <p className="text-muted-foreground mb-0.5">Category</p>
+                    <p className="font-bold capitalize">{selectedProduct.category}</p>
+                  </div>
+                  <div className="bg-muted/50 p-2 rounded-lg">
+                    <p className="text-muted-foreground mb-0.5">Condition</p>
+                    <p className="font-bold">{selectedProduct.condition}</p>
+                  </div>
+                  <div className="bg-muted/50 p-2 rounded-lg">
+                    <p className="text-muted-foreground mb-0.5">Submitted</p>
+                    <p className="font-bold">{selectedProduct.submittedAt}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">Description</p>
+                  <div className="text-sm text-slate-600 max-h-32 overflow-y-auto pr-2 custom-scrollbar">
+                    {selectedProduct.description}
+                  </div>
+                </div>
+
+                <DialogFooter className="gap-2 pt-4">
+                  <Button variant="outline" className="flex-1" onClick={() => { setRejectType('product'); setRejectId(selectedProduct.id); setShowRejectDialog(true); }}>
+                    <XCircle className="mr-1 h-4 w-4" /> Reject
+                  </Button>
+                  <Button className="flex-1 bg-[#2563EB] text-white hover:bg-[#1D4ED8]" onClick={() => handleApproveProduct(selectedProduct.id)}>
+                    <CheckCircle className="mr-1 h-4 w-4" /> Approve
+                  </Button>
+                </DialogFooter>
               </div>
-              <p className="text-sm text-muted-foreground">{selectedProduct.description}</p>
-              <DialogFooter className="gap-2">
-                <Button variant="destructive" onClick={() => { setRejectType('product'); setRejectId(selectedProduct.id); setShowRejectDialog(true); }}>
-                  <XCircle className="mr-1 h-4 w-4" /> Reject
-                </Button>
-                <Button className="bg-[#2563EB] text-white" onClick={() => handleApproveProduct(selectedProduct.id)}>
-                  <CheckCircle className="mr-1 h-4 w-4" /> Approve
-                </Button>
-              </DialogFooter>
             </div>
           )}
         </DialogContent>
