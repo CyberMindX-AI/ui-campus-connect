@@ -4,10 +4,42 @@ export const adminService = {
   getPendingProducts: async () => {
     const { data, error } = await supabase
       .from('products')
-      .select('*, seller:profiles(*)')
-      .eq('status', 'pending');
+      .select(`
+        *,
+        seller_profile:profiles!seller_id(fullname, email, faculty)
+      `)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+    
     if (error) throw error;
-    return data;
+    
+    // Map data to match UI expectations
+    return (data || []).map(p => ({
+      ...p,
+      seller: p.seller_profile?.fullname || 'Unknown',
+      sellerEmail: p.seller_profile?.email,
+      submittedAt: new Date(p.created_at).toLocaleDateString()
+    }));
+  },
+
+  getPendingSellers: async () => {
+    const { data, error } = await supabase
+      .from('seller_applications')
+      .select(`
+        *,
+        profile:profiles!user_id(fullname, email, faculty)
+      `)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    
+    return (data || []).map(s => ({
+      ...s,
+      name: s.profile?.fullname || 'Unknown',
+      email: s.profile?.email,
+      faculty: s.profile?.faculty
+    }));
   },
 
   approveProduct: async (id: string) => {
@@ -26,24 +58,26 @@ export const adminService = {
     if (error) throw error;
   },
 
-  getPendingSellers: async () => {
-    const { data, error } = await supabase
-      .from('seller_applications')
-      .select('*, user:profiles(*)')
-      .eq('status', 'pending');
-    if (error) throw error;
-    return data;
-  },
-
   approveSeller: async (applicationId: string, userId: string) => {
-    await supabase.from('seller_applications').update({ status: 'approved' }).eq('id', applicationId);
-    await supabase.from('profiles').update({ role: 'seller', is_verified: true }).eq('id', userId);
+    // 1. Update application status
+    const { error: appError } = await supabase
+      .from('seller_applications')
+      .update({ status: 'approved' })
+      .eq('id', applicationId);
+    if (appError) throw appError;
+
+    // 2. Update user profile role
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({ role: 'seller' })
+      .eq('id', userId);
+    if (profileError) throw profileError;
   },
 
-  getReports: async () => {
+  getAllUsers: async () => {
     const { data, error } = await supabase
-      .from('reports')
-      .select('*, reporter:profiles(*)')
+      .from('profiles')
+      .select('*')
       .order('created_at', { ascending: false });
     if (error) throw error;
     return data;
@@ -52,16 +86,24 @@ export const adminService = {
   getTransactions: async () => {
     const { data, error } = await supabase
       .from('transactions')
-      .select('*, buyer:profiles!transactions_buyer_id_fkey(*), seller:profiles!transactions_seller_id_fkey(*), product:products(*)')
+      .select(`
+        *,
+        product:products(title),
+        buyer:profiles!transactions_buyer_id_fkey(fullname),
+        seller:profiles!transactions_seller_id_fkey(fullname)
+      `)
       .order('created_at', { ascending: false });
     if (error) throw error;
     return data;
   },
 
-  getUsers: async () => {
+  getReports: async () => {
     const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
+      .from('reports')
+      .select(`
+        *,
+        reporter:profiles!reporter_id(fullname)
+      `)
       .order('created_at', { ascending: false });
     if (error) throw error;
     return data;

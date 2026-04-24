@@ -1,285 +1,208 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import {
-  Plus, Package, MessageSquare, Wallet, TrendingUp, ShoppingCart,
-  Star, Eye, ChevronRight, AlertTriangle, BarChart, BadgeCheck, Store
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import Layout from '@/components/Layout';
 import { useAuth } from '@/contexts/AuthContext';
-import { useSellerOrders } from '@/hooks/api/useOrders';
+import { Navigate, Link } from 'react-router-dom';
+import { 
+  ShoppingBag, 
+  DollarSign, 
+  Package, 
+  TrendingUp, 
+  Plus, 
+  Search, 
+  ArrowUpRight, 
+  Clock, 
+  CheckCircle, 
+  MessageSquare,
+  Loader2,
+  Store
+} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import Layout from '@/components/Layout';
 import { useSellerProducts } from '@/hooks/api/useProducts';
-import { useConversations } from '@/hooks/api/useChat';
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.1, duration: 0.5 } }),
-};
-
-
-const quickActions = [
-  { icon: Plus, label: 'Add Product', to: '/dashboard/seller/products/new', variant: 'hero' as const },
-  { icon: Package, label: 'My Listings', to: '/dashboard/seller/products', variant: 'outline' as const },
-  { icon: MessageSquare, label: 'Messages', to: '/messages', variant: 'ghost' as const },
-  { icon: Wallet, label: 'Withdraw', to: '/wallet', variant: 'ghost' as const },
-];
-
-// Live data to be hydrated from backend:
-const recentOrders: any[] = [];
-const topProducts: any[] = [];
-
-const statusColors: Record<string, string> = {
-  New: 'bg-blue-100 text-blue-700',
-  Processing: 'bg-yellow-100 text-yellow-700',
-  Completed: 'bg-green-100 text-green-700',
-  Cancelled: 'bg-red-100 text-red-700',
-};
+import { useSellerOrders } from '@/hooks/api/useOrders';
 
 const SellerDashboard = () => {
-  const [profileModalOpen, setProfileModalOpen] = useState(false);
-  const { user } = useAuth();
-  const { data: orders = [] } = useSellerOrders();
-  const { data: products = [] } = useSellerProducts(user?.id);
-  const { data: conversations = [] } = useConversations();
-
-  const totalSales = orders.reduce((acc: number, order: any) => acc + (order.amount || 0), 0);
-  const activeListings = products.filter((p: any) => p.status === 'active').length;
+  const { user, isAuthenticated } = useAuth();
   
-  const storeHealth = Math.min(100, (user?.isVerified ? 40 : 0) + (activeListings > 0 ? 30 : 0) + (orders.length > 0 ? 30 : 0));
+  // Real-time data from hooks
+  const { data: products = [], isLoading: loadingProducts } = useSellerProducts(user?.id);
+  const { data: orders = [], isLoading: loadingOrders } = useSellerOrders();
 
-  const overviewCards = [
-    { icon: TrendingUp, label: 'Total Sales', value: `₦${totalSales.toLocaleString()}`, change: totalSales > 0 ? '+12%' : '0%', color: 'bg-primary/10 text-primary' },
-    { icon: ShoppingCart, label: 'Total Orders', value: orders.length.toString(), change: orders.length > 0 ? `+${orders.length}` : '0', color: 'bg-blue-500/10 text-blue-500' },
-    { icon: Package, label: 'Active Listings', value: activeListings.toString(), change: activeListings > 0 ? 'active' : '0 new', color: 'bg-accent/10 text-accent' },
-    { icon: Star, label: 'Avg Rating', value: '5.0', change: 'Top', color: 'bg-yellow-500/10 text-yellow-600' },
-  ];
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
 
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const stats = {
+    revenue: orders
+      .filter(o => o.status === 'completed')
+      .reduce((acc, o) => acc + (o.amount || 0), 0),
+    sales: orders.filter(o => o.status === 'completed').length,
+    activeListings: products.filter(p => p.status === 'active' || p.status === 'available').length,
+    pendingOrders: orders.filter(o => o.status === 'pending' || o.status === 'processing').length,
+  };
+
+  const isLoading = loadingProducts || loadingOrders;
 
   return (
     <Layout>
-      <div className="container mx-auto px-6 py-10 max-w-7xl">
-        {/* Professional Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
-              {greeting}, {user?.fullname?.split(' ')[0] || 'Seller'}
-              {user?.isVerified && (
-                <BadgeCheck className="h-6 w-6 text-blue-500 fill-blue-500/10" />
-              )}
-            </h1>
-            <p className="text-slate-500 font-medium">
-              Manage your campus business and track your store performance.
-            </p>
+      <div className="container mx-auto px-4 py-6 sm:py-8">
+        {/* Welcome Section */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
+          <div>
+            <h1 className="font-heading text-2xl font-bold text-slate-900">Seller Hub</h1>
+            <p className="text-slate-500 mt-1">Manage your store, products, and sales in one place.</p>
           </div>
-          
-          <div className="flex flex-wrap gap-2 sm:gap-3">
-            {quickActions.map((action) => (
-              <Link key={action.label} to={action.to} className="flex-1 sm:flex-none">
-                <Button
-                  variant={action.variant}
-                  className="font-bold shadow-sm rounded-xl px-4 sm:px-6 w-full text-xs sm:text-sm h-10 sm:h-11"
-                >
-                  <action.icon className="mr-2 h-4 w-4" /> {action.label}
-                </Button>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Business Overview Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {overviewCards.map((card, i) => (
-            <motion.div
-              key={card.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${card.color}`}>
-                  <card.icon className="h-5 w-5" />
-                </div>
-                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">{card.change}</span>
-              </div>
-              <p className="text-2xl font-black text-slate-900 leading-none">{card.value}</p>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">{card.label}</p>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Financial & Alerts Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-          <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between group overflow-hidden relative">
-            <div className="flex items-start gap-6 relative z-10">
-              <div className="h-16 w-16 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-sm shadow-emerald-100/50">
-                <Wallet className="h-8 w-8" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Available Balance</p>
-                <p className="text-3xl font-black text-slate-900">₦{totalSales.toLocaleString()}</p>
-              </div>
-            </div>
-            <div className="flex items-center justify-between pt-6 border-t border-slate-50 relative z-10">
-              <p className="text-sm font-medium text-slate-500">Pending Clearance: <span className="text-slate-900 font-bold">₦0</span></p>
-              <Link to="/wallet">
-                <Button className="bg-slate-100 hover:bg-slate-200 text-slate-400 font-bold px-8 rounded-xl cursor-not-allowed" disabled>
-                  Withdraw Funds
-                </Button>
-              </Link>
-            </div>
-            <div className="absolute -right-8 -bottom-8 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity">
-              <Wallet className="h-48 w-48" />
-            </div>
-          </div>
-
-          <div className="bg-slate-900 p-8 rounded-3xl text-white relative overflow-hidden group">
-            <div className="flex items-start gap-4 relative z-10">
-              <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center text-white shadow-md">
-                <BarChart className="h-6 w-6" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold">Store Performance</h3>
-                <p className="text-sm font-medium text-slate-400 mt-1">Your store is now active. Listings will appear in search results.</p>
-              </div>
-            </div>
-            <Link to="/dashboard/seller/products" className="relative z-10">
-              <Button variant="outline" className="mt-6 w-full border-white/20 text-white hover:bg-white/10 font-bold rounded-xl py-6">
-                Add New Listing
+          <div className="flex items-center gap-3">
+            <Link to="/dashboard/seller/products/new">
+              <Button variant="hero" className="gap-2 shadow-lg shadow-primary/20">
+                <Plus className="h-4 w-4" /> Add New Product
               </Button>
             </Link>
-            <div className="absolute -right-8 -bottom-8 opacity-10 group-hover:scale-110 transition-transform">
-              <Store className="h-40 w-40" />
+            <Link to={`/store/${user?.id}`}>
+              <Button variant="outline" className="gap-2">
+                <Store className="h-4 w-4" /> View My Store
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {isLoading ? (
+          <div className="flex h-64 items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <>
+            {/* Stats Overview */}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+              <Card className="border-none shadow-sm bg-primary text-white overflow-hidden relative">
+                <div className="absolute right-[-10px] top-[-10px] opacity-10">
+                  <DollarSign size={100} />
+                </div>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-bold uppercase tracking-wider opacity-80">Total Revenue</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-black">₦{stats.revenue.toLocaleString()}</div>
+                  <p className="text-xs mt-1 flex items-center opacity-80">
+                    <TrendingUp className="h-3 w-3 mr-1" /> Lifetime earnings
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-none shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-bold text-slate-400 uppercase tracking-wider">Total Sales</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-black text-slate-900">{stats.sales}</div>
+                  <p className="text-xs mt-1 text-emerald-600 font-bold flex items-center">
+                    <CheckCircle className="h-3 w-3 mr-1" /> Successful transactions
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-none shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-bold text-slate-400 uppercase tracking-wider">Active Listings</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-black text-slate-900">{stats.activeListings}</div>
+                  <p className="text-xs mt-1 text-primary font-bold flex items-center">
+                    <Package className="h-3 w-3 mr-1" /> Live in marketplace
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-none shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-bold text-slate-400 uppercase tracking-wider">Pending Orders</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-black text-slate-900">{stats.pendingOrders}</div>
+                  <p className="text-xs mt-1 text-orange-500 font-bold flex items-center">
+                    <Clock className="h-3 w-3 mr-1" /> Actions required
+                  </p>
+                </CardContent>
+              </Card>
             </div>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {/* Main Sales Data (Reset) */}
-          <div className="lg:col-span-2 space-y-10">
-            <section>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-slate-900">Recent Sales</h2>
-                <Link to="/dashboard/seller/orders" className="text-sm font-bold text-primary hover:underline">View All Orders</Link>
-              </div>
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                {orders.length === 0 ? (
-                  <div className="p-12 text-center">
-                    <div className="h-20 w-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                      <ShoppingCart className="h-10 w-10 text-slate-200" />
+            <div className="grid gap-8 lg:grid-cols-3">
+              {/* Recent Orders */}
+              <div className="lg:col-span-2 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-heading text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <ShoppingBag className="h-5 w-5 text-primary" /> Recent Orders
+                  </h2>
+                  <Link to="/dashboard/seller/orders" className="text-sm font-bold text-primary hover:underline">View All</Link>
+                </div>
+                
+                <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm">
+                  {orders.length === 0 ? (
+                    <div className="p-12 text-center">
+                      <ShoppingBag className="h-12 w-12 text-slate-200 mx-auto mb-3" />
+                      <p className="text-slate-500 font-medium">No orders yet. Keep sharing your listings!</p>
                     </div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-2">No Sales Yet</h3>
-                    <p className="text-slate-500 font-medium max-w-xs mx-auto">
-                      Your store is live! New orders will appear here as students browse your listings.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                      <thead className="bg-slate-50 border-b border-slate-100">
-                        <tr>
-                          <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Product</th>
-                          <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Buyer</th>
-                          <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Amount</th>
-                          <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-50">
-                        {orders.slice(0, 5).map((order: any) => (
-                          <tr key={order.id} className="hover:bg-slate-50/50 transition-colors">
-                            <td className="px-6 py-4">
-                              <p className="text-sm font-bold text-slate-900">{order.product?.title}</p>
-                              <p className="text-[10px] text-slate-400">{new Date(order.created_at).toLocaleDateString()}</p>
-                            </td>
-                            <td className="px-6 py-4 text-sm font-medium text-slate-600">{order.buyer?.fullname}</td>
-                            <td className="px-6 py-4 text-sm font-bold text-slate-900">₦{order.amount.toLocaleString()}</td>
-                            <td className="px-6 py-4">
-                              <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${statusColors[order.status] || 'bg-slate-100 text-slate-600'}`}>
-                                {order.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                  ) : (
+                    <div className="divide-y divide-slate-50">
+                      {orders.slice(0, 5).map((order) => (
+                        <div key={order.id} className="p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors">
+                          <div className="h-12 w-12 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0">
+                            <img 
+                              src={order.product?.images?.[0] || '/placeholder.svg'} 
+                              alt="" 
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-slate-900 truncate">{order.product?.title || 'Unknown Product'}</p>
+                            <p className="text-xs text-slate-500">Bought by {order.buyer?.fullname || 'Student'}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-black text-slate-900">₦{order.amount.toLocaleString()}</p>
+                            <p className={`text-[10px] font-bold uppercase tracking-tighter ${
+                              order.status === 'completed' ? 'text-emerald-500' : 'text-orange-500'
+                            }`}>{order.status}</p>
+                          </div>
+                          <Link to={`/dashboard/seller/orders`}>
+                             <Button variant="ghost" size="icon" className="rounded-full h-8 w-8"><ArrowUpRight size={14} /></Button>
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-            </section>
-          </div>
 
-          {/* Right Sidebar (Reset) */}
-          <div className="space-y-10">
-            <section>
-              <h2 className="text-xl font-bold text-slate-900 mb-6">Top Performers</h2>
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden p-6 space-y-6">
-                <div className="text-center py-6">
-                  <BarChart className="h-10 w-10 text-slate-100 mx-auto mb-2" />
-                  <p className="text-xs font-bold text-slate-300 uppercase tracking-widest">No data available</p>
+              {/* Quick Actions & Tips */}
+              <div className="space-y-6">
+                <div className="bg-slate-900 rounded-3xl p-6 text-white shadow-xl">
+                  <h3 className="font-heading text-lg font-bold mb-4 flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-primary" /> Sales Tip
+                  </h3>
+                  <p className="text-sm text-slate-300 leading-relaxed">
+                    Products with at least 3 high-quality images are 40% more likely to sell quickly on campus. Use natural lighting for best results!
+                  </p>
+                  <Button variant="hero" className="w-full mt-6 bg-primary hover:bg-primary/90 text-white border-none h-12 rounded-2xl">
+                    Share My Store
+                  </Button>
                 </div>
-              </div>
-            </section>
 
-            <section 
-              onClick={() => setProfileModalOpen(true)}
-              className="bg-white border border-slate-100 rounded-3xl p-8 text-slate-900 relative overflow-hidden group cursor-pointer shadow-sm hover:shadow-md transition-shadow"
-            >
-              <div className="relative z-10">
-                <h3 className="text-lg font-bold mb-2">Store Health</h3>
-                <div className="flex items-center justify-between text-xs font-bold text-slate-400 mb-2">
-                  <span className="uppercase tracking-widest text-slate-300">COMPLETION</span>
-                  <span className={storeHealth >= 80 ? "text-emerald-500" : "text-rose-500"}>{storeHealth}%</span>
+                <div className="space-y-3">
+                  <h3 className="font-heading text-sm font-bold text-slate-400 uppercase tracking-widest px-2">Quick Support</h3>
+                  <Link to="/messages" className="block p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <MessageSquare size={20} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">Message Buyers</p>
+                        <p className="text-xs text-slate-500">Check your recent chats</p>
+                      </div>
+                    </div>
+                  </Link>
                 </div>
-                <div className="h-2 w-full bg-slate-100 rounded-full mb-6">
-                  <div className={`h-full bg-${storeHealth >= 80 ? 'emerald' : 'rose'}-500 rounded-full`} style={{ width: `${storeHealth}%` }}></div>
-                </div>
-                <Button className="w-full bg-slate-900 text-white hover:bg-slate-800 font-bold rounded-xl">
-                  Complete Profile
-                </Button>
               </div>
-              <div className="absolute -right-6 -bottom-6 opacity-[0.03] group-hover:scale-110 transition-transform text-slate-900">
-                <BadgeCheck className="h-40 w-40" />
-              </div>
-            </section>
-          </div>
-        </div>
+            </div>
+          </>
+        )}
       </div>
-
-      <Dialog open={profileModalOpen} onOpenChange={setProfileModalOpen}>
-        <DialogContent className="sm:max-w-md rounded-3xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-slate-900">Complete Your Store Profile</DialogTitle>
-            <DialogDescription className="text-slate-500 font-medium">
-              Follow these steps to build trust and increase your campus visibility.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-6 pt-6">
-            {[
-              { id: 1, title: 'Add a Store Banner', desc: 'Personalize your storefront with high-quality images.' },
-              { id: 2, title: 'Verify Phone Number', desc: 'Mandatory for high-value items (over ₦50,000).' },
-              { id: 3, title: 'Create First Listing', desc: 'Start selling to 5,000+ students on campus.' },
-              { id: 4, title: 'Set Delivery Areas', desc: 'Specify which halls/faculties you deliver to.' }
-            ].map((step) => (
-              <div key={step.id} className="flex items-start gap-4">
-                <div className="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-900 font-bold shrink-0">{step.id}</div>
-                <div>
-                  <p className="text-sm font-bold text-slate-900">{step.title}</p>
-                  <p className="text-xs text-slate-400 font-medium mt-0.5">{step.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-8 flex justify-end">
-            <Button onClick={() => setProfileModalOpen(false)} className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-8 rounded-xl">
-              Get Started
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </Layout>
   );
 };
