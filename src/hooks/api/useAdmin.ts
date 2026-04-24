@@ -34,6 +34,7 @@ export const useAdminData = () => {
     mutationFn: adminService.approveProduct,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'products'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
       toast.success('Product approved');
     }
   });
