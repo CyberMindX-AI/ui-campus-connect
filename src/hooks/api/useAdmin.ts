@@ -30,7 +30,7 @@ export const useAdminData = () => {
     queryFn: adminService.getAllUsers,
   });
 
-  const approveProduct = useMutation({
+  const approveProductMutation = useMutation({
     mutationFn: adminService.approveProduct,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'products'] });
@@ -39,15 +39,16 @@ export const useAdminData = () => {
     }
   });
 
-  const rejectProduct = useMutation({
+  const rejectProductMutation = useMutation({
     mutationFn: adminService.rejectProduct,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'products'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
       toast.success('Product rejected');
     }
   });
 
-  const approveSeller = useMutation({
+  const approveSellerMutation = useMutation({
     mutationFn: ({ applicationId, userId }: { applicationId: string; userId: string }) => 
       adminService.approveSeller(applicationId, userId),
     onSuccess: () => {
