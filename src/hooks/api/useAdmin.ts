@@ -33,9 +33,14 @@ export const useAdminData = () => {
   const approveProductMutation = useMutation({
     mutationFn: adminService.approveProduct,
     onSuccess: () => {
+      // Invalidate admin queue
       queryClient.invalidateQueries({ queryKey: ['admin', 'products'] });
+      // Invalidate ALL product queries (marketplace, seller dashboard, details)
       queryClient.invalidateQueries({ queryKey: ['products'] });
-      toast.success('Product approved');
+      toast.success('Product approved — it is now live!');
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || 'Failed to approve product');
     }
   });
 
@@ -44,7 +49,10 @@ export const useAdminData = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'products'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
-      toast.success('Product rejected');
+      toast.success('Product rejected.');
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || 'Failed to reject product');
     }
   });
 

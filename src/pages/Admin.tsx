@@ -48,7 +48,6 @@ const Admin = () => {
     approveSellerMutation 
   } = useAdminData();
 
-  const [approvedIds, setApprovedIds] = useState<string[]>([]);
   const approveProduct = approveProductMutation.mutateAsync;
   const rejectProduct = rejectProductMutation.mutateAsync;
   const approveSeller = approveSellerMutation.mutateAsync;
@@ -67,6 +66,8 @@ const Admin = () => {
   const [rejectType, setRejectType] = useState<'product' | 'seller'>('product');
   const [rejectId, setRejectId] = useState('');
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
+  const [approvedIds, setApprovedIds] = useState<Set<string>>(new Set());
+  const [rejectedIds, setRejectedIds] = useState<Set<string>>(new Set());
   const [platformSettings, setPlatformSettings] = useState({
     maintenanceMode: false,
     newRegistrations: true,
@@ -152,16 +153,14 @@ const Admin = () => {
   }
 
   const handleApproveProduct = async (id: string) => {
+    // Optimistically mark as approved in UI immediately
+    setApprovedIds(prev => new Set(prev).add(id));
     try {
-      setApprovedIds(prev => [...prev, id]);
       await approveProduct(id);
       setSelectedProduct(null);
-      toast({ title: 'Success', description: 'Product has been approved and is now live.' });
     } catch (error: any) {
-      setApprovedIds(prev => prev.filter(item => item !== id));
-      toast({ title: 'Error', description: error.message || 'Failed to approve product.', variant: 'destructive' });
-    }
-  };
+      // Revert optimistic update on failure
+      setApprovedIds(prev => { const s = new Set(prev); s.delete(id); return s; });
       toast({ title: 'Error', description: error.message || 'Failed to approve product.', variant: 'destructive' });
     }
   };
@@ -169,14 +168,13 @@ const Admin = () => {
   const handleRejectItem = async () => {
     try {
       if (rejectType === 'product') {
+        setRejectedIds(prev => new Set(prev).add(rejectId));
         await rejectProduct(rejectId);
-      } else {
-        // Implement rejectSeller if needed
       }
       setShowRejectDialog(false);
       setSelectedProduct(null);
-      toast({ title: 'Rejected', description: 'The item has been rejected.' });
     } catch (error: any) {
+      setRejectedIds(prev => { const s = new Set(prev); s.delete(rejectId); return s; });
       toast({ title: 'Error', description: error.message || 'Failed to reject item.', variant: 'destructive' });
     }
   };
@@ -332,7 +330,7 @@ const Admin = () => {
                   <CardDescription>Review and approve product listings before they go live.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {products.filter(p => !approvedIds.includes(p.id)).length === 0 ? (
+                  {products.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 text-center">
                       <CheckCircle className="mb-3 h-12 w-12 text-[#2563EB]/30" />
                       <p className="font-medium text-foreground">All caught up!</p>
@@ -340,7 +338,7 @@ const Admin = () => {
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {products.filter(p => !approvedIds.includes(p.id)).map(product => (
+                      {products.map(product => (
                         <div key={product.id} className="flex flex-col gap-3 rounded-xl border border-border p-4 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between">
                           <div className="flex items-start gap-3">
                             <img src={product.images?.[0] || '/placeholder.svg'} alt="" className="h-16 w-16 rounded-lg border border-border bg-muted object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
@@ -355,21 +353,33 @@ const Admin = () => {
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Button size="sm" variant="outline" onClick={() => setSelectedProduct(product)}>
-                              <Eye className="mr-1 h-3 w-3" /> Review
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              className="bg-[#2563EB] text-white hover:bg-[#1D4ED8]" 
-                              onClick={() => handleApproveProduct(product.id)}
-                              disabled={approveProductMutation.isPending}
-                            >
-                              {approveProductMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle className="mr-1 h-3 w-3" />} 
-                              Approve
-                            </Button>
-                            <Button size="sm" variant="destructive" onClick={() => { setRejectType('product'); setRejectId(product.id); setShowRejectDialog(true); }}>
-                              <XCircle className="mr-1 h-3 w-3" /> Reject
-                            </Button>
+                            {approvedIds.has(product.id) ? (
+                              <span className="flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                                <CheckCircle className="h-3 w-3" /> Approved
+                              </span>
+                            ) : rejectedIds.has(product.id) ? (
+                              <span className="flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700">
+                                <XCircle className="h-3 w-3" /> Rejected
+                              </span>
+                            ) : (
+                              <>
+                                <Button size="sm" variant="outline" onClick={() => setSelectedProduct(product)}>
+                                  <Eye className="mr-1 h-3 w-3" /> Review
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  className="bg-[#2563EB] text-white hover:bg-[#1D4ED8]" 
+                                  onClick={() => handleApproveProduct(product.id)}
+                                  disabled={approveProductMutation.isPending}
+                                >
+                                  {approveProductMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle className="mr-1 h-3 w-3" />} 
+                                  Approve
+                                </Button>
+                                <Button size="sm" variant="destructive" onClick={() => { setRejectType('product'); setRejectId(product.id); setShowRejectDialog(true); }}>
+                                  <XCircle className="mr-1 h-3 w-3" /> Reject
+                                </Button>
+                              </>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -728,12 +738,29 @@ const Admin = () => {
                 </div>
 
                 <DialogFooter className="gap-2 pt-4">
-                  <Button variant="outline" className="flex-1" onClick={() => { setRejectType('product'); setRejectId(selectedProduct.id); setShowRejectDialog(true); }}>
-                    <XCircle className="mr-1 h-4 w-4" /> Reject
-                  </Button>
-                  <Button className="flex-1 bg-[#2563EB] text-white hover:bg-[#1D4ED8]" onClick={() => handleApproveProduct(selectedProduct.id)}>
-                    <CheckCircle className="mr-1 h-4 w-4" /> Approve
-                  </Button>
+                  {approvedIds.has(selectedProduct.id) ? (
+                    <div className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-emerald-100 py-3 text-sm font-bold text-emerald-700">
+                      <CheckCircle className="h-4 w-4" /> Listing Approved
+                    </div>
+                  ) : rejectedIds.has(selectedProduct.id) ? (
+                    <div className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-red-100 py-3 text-sm font-bold text-red-700">
+                      <XCircle className="h-4 w-4" /> Listing Rejected
+                    </div>
+                  ) : (
+                    <>
+                      <Button variant="outline" className="flex-1" onClick={() => { setRejectType('product'); setRejectId(selectedProduct.id); setShowRejectDialog(true); }}>
+                        <XCircle className="mr-1 h-4 w-4" /> Reject
+                      </Button>
+                      <Button 
+                        className="flex-1 bg-[#2563EB] text-white hover:bg-[#1D4ED8]" 
+                        onClick={() => handleApproveProduct(selectedProduct.id)}
+                        disabled={approveProductMutation.isPending}
+                      >
+                        {approveProductMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CheckCircle className="mr-1 h-4 w-4" />} 
+                        Approve
+                      </Button>
+                    </>
+                  )}
                 </DialogFooter>
               </div>
             </div>
