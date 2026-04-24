@@ -48,6 +48,7 @@ const Admin = () => {
     approveSellerMutation 
   } = useAdminData();
 
+  const [approvedIds, setApprovedIds] = useState<string[]>([]);
   const approveProduct = approveProductMutation.mutateAsync;
   const rejectProduct = rejectProductMutation.mutateAsync;
   const approveSeller = approveSellerMutation.mutateAsync;
@@ -152,10 +153,15 @@ const Admin = () => {
 
   const handleApproveProduct = async (id: string) => {
     try {
+      setApprovedIds(prev => [...prev, id]);
       await approveProduct(id);
       setSelectedProduct(null);
       toast({ title: 'Success', description: 'Product has been approved and is now live.' });
     } catch (error: any) {
+      setApprovedIds(prev => prev.filter(item => item !== id));
+      toast({ title: 'Error', description: error.message || 'Failed to approve product.', variant: 'destructive' });
+    }
+  };
       toast({ title: 'Error', description: error.message || 'Failed to approve product.', variant: 'destructive' });
     }
   };
@@ -326,7 +332,7 @@ const Admin = () => {
                   <CardDescription>Review and approve product listings before they go live.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {products.length === 0 ? (
+                  {products.filter(p => !approvedIds.includes(p.id)).length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 text-center">
                       <CheckCircle className="mb-3 h-12 w-12 text-[#2563EB]/30" />
                       <p className="font-medium text-foreground">All caught up!</p>
@@ -334,7 +340,7 @@ const Admin = () => {
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {products.map(product => (
+                      {products.filter(p => !approvedIds.includes(p.id)).map(product => (
                         <div key={product.id} className="flex flex-col gap-3 rounded-xl border border-border p-4 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between">
                           <div className="flex items-start gap-3">
                             <img src={product.images?.[0] || '/placeholder.svg'} alt="" className="h-16 w-16 rounded-lg border border-border bg-muted object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />

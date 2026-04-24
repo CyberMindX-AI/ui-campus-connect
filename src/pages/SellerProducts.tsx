@@ -43,7 +43,8 @@ const SellerProducts = () => {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'active': return <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-700">Active</span>;
+      case 'active': 
+      case 'available': return <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-700">Active</span>;
       case 'pending': return <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700">Pending Review</span>;
       case 'rejected': return <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-700">Rejected</span>;
       case 'inactive': return <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-700">Inactive</span>;
