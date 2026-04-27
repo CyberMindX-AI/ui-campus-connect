@@ -3,12 +3,13 @@ import { MarketStats, FAQ, Testimonial, Category } from '@/types';
 
 export const marketService = {
   getStats: async (): Promise<MarketStats> => {
-    const { data, error } = await supabase.from('market_stats').select('*').single();
+    const { data, error } = await supabase.from('market_stats').select('*').maybeSingle();
     if (error) throw error;
+    if (!data) return { totalListings: 0, totalSellers: 0, totalTransactions: 0 };
     return {
-      totalListings: data.total_listings,
-      totalSellers: data.total_sellers,
-      totalTransactions: data.total_transactions,
+      totalListings: data.total_listings || 0,
+      totalSellers: data.total_sellers || 0,
+      totalTransactions: data.total_transactions || 0,
     };
   },
   

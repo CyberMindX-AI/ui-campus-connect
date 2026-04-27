@@ -15,17 +15,16 @@ import { useMarketStats, useMarketFaqs } from '@/hooks/api/useMarket';
 const Index = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const { isAuthenticated, user } = useAuth();
+  const { data: statsData } = useMarketStats();
+  const { data: faqsData = [] } = useMarketFaqs();
 
   if (isAuthenticated) {
     const dest = user?.role === 'seller' ? '/dashboard/seller' : '/dashboard/buyer';
     return <Navigate to={dest} replace />;
   }
 
-  const { data: statsData } = useMarketStats();
-  const { data: faqsData = [] } = useMarketFaqs();
-
   const stats = statsData || { totalListings: 0, totalSellers: 0, totalTransactions: 0 };
-  const displayFaqs = faqsData.length > 0 ? faqsData : [
+  const displayFaqs = (Array.isArray(faqsData) && faqsData.length > 0) ? faqsData : [
     {
       q: "Is it exclusively for UI students?",
       a: "Absolutely. Every account is tied to a verified @ui.edu.ng email address. This ensures a closed, trusted ecosystem for all campus transactions."
