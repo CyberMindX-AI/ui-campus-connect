@@ -17,6 +17,10 @@ In the Supabase dashboard:
    - Name: `avatars`
    - **Public bucket**: ✅ YES (checked)
    - Click Create
+5. Create `student-ids` bucket:
+   - Name: `student-ids`
+   - **Public bucket**: ❌ NO (unchecked) - Private for Admin review
+   - Click Create
 
 ## Step 3: Add Storage Policies (SQL Editor)
 
@@ -26,6 +30,7 @@ Run the following SQL in the Supabase SQL Editor:
 -- Product Images Bucket Policies
 INSERT INTO storage.buckets (id, name, public) VALUES ('product-images', 'product-images', true) ON CONFLICT DO NOTHING;
 INSERT INTO storage.buckets (id, name, public) VALUES ('avatars', 'avatars', true) ON CONFLICT DO NOTHING;
+INSERT INTO storage.buckets (id, name, public) VALUES ('student-ids', 'student-ids', false) ON CONFLICT DO NOTHING;
 
 -- Allow anyone to read product images
 CREATE POLICY "Product images are publicly accessible"
@@ -64,6 +69,17 @@ USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1
 CREATE POLICY "Users can delete their own avatar"
 ON storage.objects FOR DELETE
 USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
+
+-- Student ID Bucket Policies
+-- Allow owners to upload their own ID
+CREATE POLICY "Users can upload their own student ID"
+ON storage.objects FOR INSERT
+WITH CHECK (bucket_id = 'student-ids' AND auth.role() = 'authenticated');
+
+-- Allow owners and admins to view student IDs
+CREATE POLICY "Owners and admins can view student IDs"
+ON storage.objects FOR SELECT
+USING (bucket_id = 'student-ids' AND (auth.uid()::text = (storage.foldername(name))[1] OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')));
 ```
 
 ## Step 4: Verify Environment Variables

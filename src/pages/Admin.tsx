@@ -16,8 +16,9 @@ import {
   ShieldCheck, Users, Package, Store, AlertTriangle, TrendingUp,
   CheckCircle, XCircle, Eye, Ban, Search, BarChart, MessageSquare,
   Clock, DollarSign, Flag, Settings, Activity, ArrowUpRight, ArrowDownRight,
-  Trash2, UserCheck, UserX, FileText, Bell, LogOut, Loader2
+  Trash2, UserCheck, UserX, FileText, Bell, LogOut, Loader2, Mail, CreditCard, Shield
 } from 'lucide-react';
+import { notificationService } from '@/services/notification.service';
 
 // Placeholder for local state if needed
 const INITIAL_USERS: any[] = [];
@@ -152,11 +153,21 @@ const Admin = () => {
     );
   }
 
-  const handleApproveProduct = async (id: string) => {
+  const handleApproveProduct = async (product: any) => {
+    const id = product.id;
     // Optimistically mark as approved in UI immediately
     setApprovedIds(prev => new Set(prev).add(id));
     try {
       await approveProduct(id);
+      
+      // Send notification to seller
+      await notificationService.sendNotification({
+        user_id: product.seller_id,
+        title: 'Product Approved! 🎉',
+        message: `Your product "${product.title}" has been approved and is now live on the marketplace.`,
+        type: 'success'
+      });
+
       setSelectedProduct(null);
     } catch (error: any) {
       // Revert optimistic update on failure
@@ -168,10 +179,21 @@ const Admin = () => {
   const handleRejectItem = async () => {
     try {
       if (rejectType === 'product') {
+        const product = products.find(p => p.id === rejectId);
         setRejectedIds(prev => new Set(prev).add(rejectId));
-        await rejectProduct(rejectId);
+        await rejectProduct({ id: rejectId, reason: rejectReason });
+
+        if (product) {
+          await notificationService.sendNotification({
+            user_id: product.seller_id,
+            title: 'Product Rejected ❌',
+            message: `Your product "${product.title}" was rejected. Reason: ${rejectReason}`,
+            type: 'error'
+          });
+        }
       }
       setShowRejectDialog(false);
+      setRejectReason('');
       setSelectedProduct(null);
     } catch (error: any) {
       setRejectedIds(prev => { const s = new Set(prev); s.delete(rejectId); return s; });
@@ -366,12 +388,12 @@ const Admin = () => {
                                 <Button size="sm" variant="outline" onClick={() => setSelectedProduct(product)}>
                                   <Eye className="mr-1 h-3 w-3" /> Review
                                 </Button>
-                                <Button 
-                                  size="sm" 
-                                  className="bg-[#2563EB] text-white hover:bg-[#1D4ED8]" 
-                                  onClick={() => handleApproveProduct(product.id)}
-                                  disabled={approveProductMutation.isPending}
-                                >
+                                  <Button 
+                                    size="sm" 
+                                    className="bg-[#2563EB] text-white hover:bg-[#1D4ED8]" 
+                                    onClick={() => handleApproveProduct(product)}
+                                    disabled={approveProductMutation.isPending}
+                                  >
                                   {approveProductMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle className="mr-1 h-3 w-3" />} 
                                   Approve
                                 </Button>
@@ -474,8 +496,23 @@ const Admin = () => {
                           <TableRow key={u.id}>
                             <TableCell>
                               <div>
-                                <p className="font-medium text-foreground">{u.fullname}</p>
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium text-foreground">{u.fullname}</p>
+                                  {u.badge_type && u.badge_type !== 'none' && (
+                                    <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100 text-[10px] py-0">
+                                      <Shield className="mr-1 h-3 w-3" /> {u.badge_type}
+                                    </Badge>
+                                  )}
+                                </div>
                                 <p className="text-xs text-muted-foreground">{u.email}</p>
+                                <div className="mt-1 flex gap-1">
+                                  <Badge variant={u.email_verified ? "outline" : "secondary"} className={u.email_verified ? "text-emerald-600 border-emerald-200 bg-emerald-50" : "text-slate-400"}>
+                                    <Mail className="mr-1 h-3 w-3" /> {u.email_verified ? 'Email Verified' : 'Email Unverified'}
+                                  </Badge>
+                                  <Badge variant={u.student_id_verified ? "outline" : "secondary"} className={u.student_id_verified ? "text-blue-600 border-blue-200 bg-blue-50" : "text-slate-400"}>
+                                    <CreditCard className="mr-1 h-3 w-3" /> {u.student_id_verified ? 'ID Verified' : 'ID Unverified'}
+                                  </Badge>
+                                </div>
                               </div>
                             </TableCell>
                             <TableCell>
@@ -488,6 +525,11 @@ const Admin = () => {
                             <TableCell className="text-sm">{u.totalOrders}</TableCell>
                             <TableCell className="text-right">
                               <div className="flex items-center justify-end gap-1">
+                                {u.student_id_url && (
+                                  <Button size="sm" variant="ghost" onClick={() => window.open(u.student_id_url, '_blank')} title="View Student ID">
+                                    <CreditCard className="h-4 w-4" />
+                                  </Button>
+                                )}
                                 <Button size="sm" variant="ghost" onClick={() => toggleUserStatus(u.id)}>
                                   {u.status === 'active' ? <Ban className="h-4 w-4 text-destructive" /> : <CheckCircle className="h-4 w-4 text-[#2563EB]" />}
                                 </Button>
@@ -753,7 +795,7 @@ const Admin = () => {
                       </Button>
                       <Button 
                         className="flex-1 bg-[#2563EB] text-white hover:bg-[#1D4ED8]" 
-                        onClick={() => handleApproveProduct(selectedProduct.id)}
+                        onClick={() => handleApproveProduct(selectedProduct)}
                         disabled={approveProductMutation.isPending}
                       >
                         {approveProductMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CheckCircle className="mr-1 h-4 w-4" />} 

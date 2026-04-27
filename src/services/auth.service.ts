@@ -9,9 +9,15 @@ export interface AuthUser {
   id?: string;
   fullname: string;
   email: string;
-  role: 'buyer' | 'seller' | 'both';
+  role: 'buyer' | 'seller' | 'both' | 'admin';
   faculty: string;
   avatar?: string;
+  nickname?: string;
+  accepted_terms?: boolean;
+  badge_type?: string;
+  student_id_verified?: boolean;
+  email_verified?: boolean;
+  student_id_url?: string;
   isVerified?: boolean;
 }
 
@@ -88,6 +94,12 @@ export const authService = {
       faculty: profile.faculty,
       isVerified: profile.is_verified,
       avatar: getAvatarUrl(profile.avatar_url),
+      nickname: profile.nickname,
+      accepted_terms: profile.accepted_terms,
+      badge_type: profile.badge_type,
+      student_id_verified: profile.student_id_verified,
+      email_verified: profile.email_verified,
+      student_id_url: profile.student_id_url,
     };
   },
 
@@ -100,6 +112,7 @@ export const authService = {
           fullname: userData.fullname,
           role: userData.role,
           faculty: userData.faculty,
+          accepted_terms: userData.accepted_terms || false,
         },
       },
     });
@@ -143,12 +156,18 @@ export const authService = {
       faculty: profile.faculty,
       avatar: getAvatarUrl(profile.avatar_url),
       isVerified: profile.is_verified,
+      nickname: profile.nickname,
+      accepted_terms: profile.accepted_terms,
+      badge_type: profile.badge_type,
+      student_id_verified: profile.student_id_verified,
+      email_verified: profile.email_verified,
+      student_id_url: profile.student_id_url,
     };
   },
 
   updateProfile: async (
     userId: string,
-    updates: { fullname?: string; bio?: string }
+    updates: { fullname?: string; bio?: string; nickname?: string }
   ): Promise<void> => {
     const { error } = await supabase
       .from('profiles')

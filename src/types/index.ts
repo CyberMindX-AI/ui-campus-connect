@@ -2,9 +2,15 @@ export interface AuthUser {
   id?: string;
   fullname: string;
   email: string;
-  role: 'buyer' | 'seller' | 'both';
+  role: 'buyer' | 'seller' | 'both' | 'admin';
   faculty: string;
   avatar?: string;
+  nickname?: string;
+  accepted_terms?: boolean;
+  badge_type?: string;
+  student_id_verified?: boolean;
+  email_verified?: boolean;
+  student_id_url?: string;
   isVerified?: boolean;
 }
 
@@ -28,6 +34,7 @@ export interface Product {
   rating: number;
   reviews: number;
   status: 'pending' | 'active' | 'rejected' | 'inactive' | 'available';
+  rejection_reason?: string;
   created_at?: string;
   // Derived fields for UI (joined from profiles)
   seller?: string;
@@ -57,4 +64,14 @@ export interface Testimonial {
 export interface FAQ {
   q: string;
   a: string;
+}
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  is_read: boolean;
+  created_at: string;
 }

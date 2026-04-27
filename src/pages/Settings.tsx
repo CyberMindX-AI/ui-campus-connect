@@ -22,6 +22,7 @@ const Settings = () => {
   const { user, login } = useAuth();
   const { toast } = useToast();
   const [name, setName] = useState(user?.fullname || 'Student');
+  const [nickname, setNickname] = useState(user?.nickname || '');
   const [bio, setBio] = useState('');
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar || '');
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -64,8 +65,8 @@ const Settings = () => {
     if (!user?.id) return;
     setSavingProfile(true);
     try {
-      await authService.updateProfile(user.id, { fullname: name });
-      login({ ...user, fullname: name });
+      await authService.updateProfile(user.id, { fullname: name, nickname: nickname });
+      login({ ...user, fullname: name, nickname: nickname });
       toast({ title: 'Settings saved!', description: 'Your changes have been applied.' });
     } catch (error: any) {
       toast({ title: 'Save failed', description: error.message, variant: 'destructive' });
@@ -146,6 +147,11 @@ const Settings = () => {
                     <Label htmlFor="faculty">Faculty</Label>
                     <Input id="faculty" value={user?.faculty || 'Science'} className="mt-1" readOnly />
                   </div>
+                </div>
+                <div>
+                  <Label htmlFor="nickname">Public Nickname (Optional)</Label>
+                  <Input id="nickname" value={nickname} onChange={(e) => setNickname(e.target.value)} className="mt-1" placeholder="e.g. Ade" />
+                  <p className="mt-1 text-xs text-muted-foreground">This is the name buyers will see on your listings.</p>
                 </div>
                 <div>
                   <Label htmlFor="bio">Bio</Label>

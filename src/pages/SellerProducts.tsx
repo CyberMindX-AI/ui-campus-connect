@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { Plus, Edit2, Trash2, Eye, ToggleLeft, ToggleRight, Package, Search } from 'lucide-react';
+import { Plus, Edit2, Trash2, Eye, ToggleLeft, ToggleRight, Package, Search, Headphones, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Layout from '@/components/Layout';
@@ -103,6 +103,12 @@ const SellerProducts = () => {
                   <p className="mt-1 text-xs text-slate-500 font-medium">
                     {product.category} · Stock: {product.quantity}
                   </p>
+                  {product.status === 'rejected' && product.rejection_reason && (
+                    <div className="mt-2 flex items-start gap-2 rounded-lg bg-red-50 p-2 text-xs text-red-700">
+                      <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                      <p><strong>Rejection Reason:</strong> {product.rejection_reason}</p>
+                    </div>
+                  )}
                 </div>
                 <p className="font-heading text-lg font-bold text-primary">₦{product.price.toLocaleString()}</p>
                 <div className="flex items-center gap-2">
@@ -123,6 +129,14 @@ const SellerProducts = () => {
                   </Link>
                   <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-rose-500 hover:bg-rose-50 hover:text-rose-600" onClick={() => handleDelete(product.id)}>
                     <Trash2 className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="ml-2 gap-1.5 h-9" 
+                    onClick={() => window.open('mailto:admin@ui.edu.ng?subject=Verification Support: ' + product.title)}
+                  >
+                    <Headphones className="h-3.5 w-3.5" /> Contact Admin
                   </Button>
                 </div>
                 </div>

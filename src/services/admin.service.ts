@@ -50,10 +50,13 @@ export const adminService = {
     if (error) throw error;
   },
 
-  rejectProduct: async (id: string) => {
+  rejectProduct: async (id: string, reason: string) => {
     const { error } = await supabase
       .from('products')
-      .update({ status: 'rejected' })
+      .update({ 
+        status: 'rejected',
+        rejection_reason: reason
+      })
       .eq('id', id);
     if (error) throw error;
   },
@@ -107,5 +110,29 @@ export const adminService = {
       .order('created_at', { ascending: false });
     if (error) throw error;
     return data;
+  },
+  
+  verifyEmail: async (userId: string) => {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ email_verified: true })
+      .eq('id', userId);
+    if (error) throw error;
+  },
+
+  verifyStudentId: async (userId: string) => {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ student_id_verified: true })
+      .eq('id', userId);
+    if (error) throw error;
+  },
+
+  assignBadge: async (userId: string, badgeType: string) => {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ badge_type: badgeType })
+      .eq('id', userId);
+    if (error) throw error;
   }
 };

@@ -3,9 +3,15 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
     fullname TEXT NOT NULL,
     email TEXT NOT NULL,
-    role TEXT CHECK (role IN ('buyer', 'seller', 'both')) DEFAULT 'buyer',
+    role TEXT CHECK (role IN ('buyer', 'seller', 'both', 'admin')) DEFAULT 'buyer',
     faculty TEXT DEFAULT 'Unknown',
     avatar_url TEXT,
+    nickname TEXT,
+    accepted_terms BOOLEAN DEFAULT FALSE,
+    badge_type TEXT DEFAULT 'none',
+    student_id_verified BOOLEAN DEFAULT FALSE,
+    email_verified BOOLEAN DEFAULT FALSE,
+    student_id_url TEXT,
     is_verified BOOLEAN DEFAULT FALSE,
     status TEXT DEFAULT 'active',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
@@ -39,6 +45,7 @@ CREATE TABLE IF NOT EXISTS public.products (
     quantity INTEGER DEFAULT 1,
     tags TEXT[] DEFAULT '{}',
     status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'active', 'rejected', 'inactive', 'available')),
+    rejection_reason TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -116,6 +123,17 @@ CREATE TABLE IF NOT EXISTS public.reports (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- 11. Create Notifications table
+CREATE TABLE IF NOT EXISTS public.notifications (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    type TEXT CHECK (type IN ('info', 'success', 'warning', 'error')) DEFAULT 'info',
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
 -- 11. Create Market Stats table
 CREATE TABLE IF NOT EXISTS public.market_stats (
     id INTEGER PRIMARY KEY DEFAULT 1,
@@ -146,13 +164,14 @@ CREATE TABLE IF NOT EXISTS public.testimonials (
 CREATE OR REPLACE FUNCTION public.handle_new_user() 
 RETURNS trigger AS $$
 BEGIN
-  INSERT INTO public.profiles (id, fullname, email, role, faculty)
+  INSERT INTO public.profiles (id, fullname, email, role, faculty, accepted_terms)
   VALUES (
     new.id, 
     COALESCE(new.raw_user_meta_data->>'fullname', 'Student'), 
     new.email, 
     COALESCE(new.raw_user_meta_data->>'role', 'buyer'),
-    COALESCE(new.raw_user_meta_data->>'faculty', 'Unknown')
+    COALESCE(new.raw_user_meta_data->>'faculty', 'Unknown'),
+    COALESCE((new.raw_user_meta_data->>'accepted_terms')::boolean, false)
   )
   ON CONFLICT (id) DO NOTHING;
   RETURN new;
@@ -172,6 +191,7 @@ ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.wishlist ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.conversations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
 -- Profiles policies
 CREATE POLICY "Public profiles are viewable by everyone." ON public.profiles FOR SELECT USING (true);
@@ -207,6 +227,11 @@ CREATE POLICY "Conversation participants can view messages." ON public.messages 
   EXISTS (SELECT 1 FROM public.conversations WHERE id = conversation_id AND (participant_1 = auth.uid() OR participant_2 = auth.uid()))
 );
 CREATE POLICY "Authenticated users can send messages." ON public.messages FOR INSERT WITH CHECK (auth.uid() = sender_id);
+
+-- Notifications policies
+CREATE POLICY "Users can view their own notifications." ON public.notifications FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "System/Admin can insert notifications." ON public.notifications FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can update their own notifications." ON public.notifications FOR UPDATE USING (auth.uid() = user_id);
 
 -- Initial Data Seed
 INSERT INTO public.categories (name, slug, icon) VALUES

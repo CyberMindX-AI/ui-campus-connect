@@ -73,7 +73,8 @@ const Register = () => {
         password: form.password, 
         fullname: form.fullname, 
         role, 
-        faculty: form.faculty 
+        faculty: form.faculty,
+        accepted_terms: form.terms
       },
       {
         onSuccess: () => {
@@ -201,7 +202,7 @@ const Register = () => {
                   onChange={(e) => update('terms', e.target.checked)}
                 />
                 <Label htmlFor="terms" className="text-sm font-normal leading-snug">
-                  I agree to the <Link to="/terms" className="text-primary hover:underline">Terms of Service</Link> and{' '}
+                  I agree to the <Link to="/terms" className="text-primary hover:underline">Terms of Service</Link>{role !== 'buyer' ? ', Seller T&Cs,' : ''} and{' '}
                   <Link to="/privacy" className="text-primary hover:underline">Community Guidelines</Link>
                 </Label>
               </div>

@@ -29,7 +29,7 @@ export const uploadProductImage = async (
 const mapProduct = (p: any): Product => ({
   ...p,
   images: Array.isArray(p.images) ? p.images.map(getImageUrl) : [],
-  seller: p.seller_profile?.fullname || 'Unknown Seller',
+  seller: p.seller_profile?.nickname || p.seller_profile?.fullname || 'Unknown Seller',
   sellerAvatar: p.seller_profile?.avatar_url
     ? getImageUrl(p.seller_profile.avatar_url)
     : '/placeholder.svg',
@@ -41,7 +41,7 @@ export const productsService = {
       .from('products')
       .select(`
         *,
-        seller_profile:profiles!seller_id(fullname, avatar_url)
+        seller_profile:profiles!seller_id(fullname, nickname, avatar_url)
       `)
       .in('status', ['active', 'available'])
       .order('created_at', { ascending: false });
@@ -55,7 +55,7 @@ export const productsService = {
       .from('products')
       .select(`
         *,
-        seller_profile:profiles!seller_id(fullname, avatar_url)
+        seller_profile:profiles!seller_id(fullname, nickname, avatar_url)
       `)
       .eq('seller_id', sellerId)
       .order('created_at', { ascending: false });
@@ -69,7 +69,7 @@ export const productsService = {
       .from('products')
       .select(`
         *,
-        seller_profile:profiles!seller_id(fullname, avatar_url)
+        seller_profile:profiles!seller_id(fullname, nickname, avatar_url)
       `)
       .eq('id', id)
       .single();

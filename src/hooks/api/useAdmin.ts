@@ -45,7 +45,7 @@ export const useAdminData = () => {
   });
 
   const rejectProductMutation = useMutation({
-    mutationFn: adminService.rejectProduct,
+    mutationFn: ({ id, reason }: { id: string; reason: string }) => adminService.rejectProduct(id, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'products'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
