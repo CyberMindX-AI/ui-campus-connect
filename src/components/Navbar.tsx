@@ -16,7 +16,7 @@ const Navbar = () => {
   const { cartCount } = useCart();
 
   const dashboardLink = user?.role === 'seller' ? '/dashboard/seller' : '/dashboard/buyer';
-  const sellerOnlyPaths = ['/wallet', '/dashboard/seller'];
+  const sellerOnlyPaths = ['/wallet', '/dashboard/seller', '/settings', '/notifications', '/messages'];
   const isSellerView = user?.role === 'seller'
     ? sellerOnlyPaths.some(p => location.pathname.startsWith(p))
     : location.pathname.startsWith('/dashboard/seller');
