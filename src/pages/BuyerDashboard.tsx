@@ -1,6 +1,6 @@
 import { Link, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShoppingBag, MessageSquare, Heart, Package, TrendingUp, Star, ChevronRight, Search } from 'lucide-react';
+import { ShoppingBag, MessageSquare, Heart, Package, TrendingUp, Star, ChevronRight, Search, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
