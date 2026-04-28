@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, Shield, Bell, Store, Eye, Trash2, Camera, Loader2 } from 'lucide-react';
+import { User, Shield, Bell, Store, Eye, Trash2, Camera, Loader2, Check, X, CreditCard } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';

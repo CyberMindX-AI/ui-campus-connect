@@ -16,7 +16,10 @@ const Navbar = () => {
   const { cartCount } = useCart();
 
   const dashboardLink = user?.role === 'seller' ? '/dashboard/seller' : '/dashboard/buyer';
-  const isSellerView = location.pathname.startsWith('/dashboard/seller');
+  const sellerOnlyPaths = ['/wallet', '/dashboard/seller'];
+  const isSellerView = user?.role === 'seller'
+    ? sellerOnlyPaths.some(p => location.pathname.startsWith(p))
+    : location.pathname.startsWith('/dashboard/seller');
 
   // If on a non-landing page and NOT authenticated (e.g. Login, Register)
   // show only the logo (absolute)
