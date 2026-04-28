@@ -35,9 +35,31 @@ const BuyerDashboard = () => {
     return <Navigate to="/login" replace />;
   }
 
+  if (user?.role === 'seller') {
+    return <Navigate to="/dashboard/seller" replace />;
+  }
+
   return (
     <Layout>
       <div className="container mx-auto px-6 py-10 max-w-7xl">
+        {!user?.student_id_verified && (
+          <div className="mb-8 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+                <Shield className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-amber-900">Verify your student identity</p>
+                <p className="text-xs text-amber-700">Upload your Student ID to unlock all features and build trust on the net.</p>
+              </div>
+            </div>
+            <Link to="/settings?tab=verification">
+              <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white border-none rounded-lg text-xs font-bold">
+                Verify Now
+              </Button>
+            </Link>
+          </div>
+        )}
         {/* Fiverr-Style Hero Search Section */}
         <div className="mb-16 text-center max-w-3xl mx-auto space-y-8">
           <div className="space-y-3">

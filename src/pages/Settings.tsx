@@ -13,6 +13,7 @@ const tabs = [
   { id: 'security', label: 'Security', icon: Shield },
   { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'store', label: 'Store', icon: Store },
+  { id: 'verification', label: 'Verification', icon: Shield },
   { id: 'privacy', label: 'Privacy', icon: Eye },
   { id: 'account', label: 'Account', icon: Trash2 },
 ];
@@ -25,9 +26,12 @@ const Settings = () => {
   const [nickname, setNickname] = useState(user?.nickname || '');
   const [bio, setBio] = useState('');
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar || '');
+  const [studentIdUrl, setStudentIdUrl] = useState(user?.student_id_url || '');
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingId, setUploadingId] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const idInputRef = useRef<HTMLInputElement>(null);
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -58,6 +62,25 @@ const Settings = () => {
       });
     } finally {
       setUploadingAvatar(false);
+    }
+  };
+
+  const handleIdUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user?.id) return;
+
+    setUploadingId(true);
+    try {
+      const publicUrl = await authService.uploadStudentId(user.id, file);
+      setStudentIdUrl(publicUrl);
+      // Update profile with ID URL
+      await authService.updateProfile(user.id, { student_id_url: publicUrl });
+      login({ ...user, student_id_url: publicUrl });
+      toast({ title: 'ID Uploaded!', description: 'Your Student ID has been submitted for verification.' });
+    } catch (error: any) {
+      toast({ title: 'Upload failed', description: error.message, variant: 'destructive' });
+    } finally {
+      setUploadingId(false);
     }
   };
 
@@ -220,6 +243,77 @@ const Settings = () => {
                 </div>
                 <div><Label htmlFor="pickup">Pickup Location</Label><Input id="pickup" className="mt-1" placeholder="e.g. Kuti Hall Room 205" /></div>
                 <Button variant="hero" onClick={() => toast({ title: 'Store settings saved!' })}>Save Store Settings</Button>
+              </div>
+            )}
+
+            {activeTab === 'verification' && (
+              <div className="rounded-xl border border-border bg-card p-4 sm:p-6 space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <Shield className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h2 className="font-heading text-lg font-semibold text-foreground">Account Verification</h2>
+                    <p className="text-sm text-muted-foreground">Verify your identity as a UI student</p>
+                  </div>
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="space-y-4">
+                    <div className="rounded-lg border border-border p-4">
+                      <h3 className="text-sm font-bold text-foreground mb-2">Email Verification</h3>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {user?.email_verified ? (
+                            <Check className="h-4 w-4 text-emerald-500" />
+                          ) : (
+                            <X className="h-4 w-4 text-slate-300" />
+                          )}
+                          <span className="text-sm font-medium">{user?.email_verified ? 'Verified' : 'Unverified'}</span>
+                        </div>
+                        {!user?.email_verified && (
+                          <Button size="sm" variant="outline">Verify Now</Button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="rounded-lg border border-border p-4">
+                      <h3 className="text-sm font-bold text-foreground mb-2">Student ID Verification</h3>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {user?.student_id_verified ? (
+                            <Check className="h-4 w-4 text-emerald-500" />
+                          ) : (
+                            <X className="h-4 w-4 text-slate-300" />
+                          )}
+                          <span className="text-sm font-medium">{user?.student_id_verified ? 'Verified' : 'Pending Review'}</span>
+                        </div>
+                        {!user?.student_id_verified && (
+                          <Button size="sm" variant="outline" onClick={() => idInputRef.current?.click()} disabled={uploadingId}>
+                            {uploadingId ? 'Uploading...' : studentIdUrl ? 'Re-upload ID' : 'Upload ID'}
+                          </Button>
+                        )}
+                        <input ref={idInputRef} type="file" className="sr-only" onChange={handleIdUpload} accept="image/*" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-50 rounded-xl p-4 flex flex-col items-center justify-center border-2 border-dashed border-slate-200">
+                    {studentIdUrl ? (
+                      <div className="space-y-3 w-full text-center">
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Submitted Document</p>
+                        <img src={studentIdUrl} alt="Student ID" className="max-h-32 mx-auto rounded-lg shadow-sm border border-border" />
+                        <p className="text-[10px] text-muted-foreground italic">Admin will review this document within 24 hours.</p>
+                      </div>
+                    ) : (
+                      <div className="text-center space-y-2">
+                        <CreditCard className="h-8 w-8 text-slate-300 mx-auto" />
+                        <p className="text-sm font-medium text-slate-500">No document uploaded</p>
+                        <p className="text-xs text-slate-400">Upload a clear photo of your UI Student ID card</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 

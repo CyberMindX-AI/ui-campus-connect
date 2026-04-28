@@ -28,6 +28,10 @@ const SellerDashboard = () => {
   const { data: orders = [], isLoading: loadingOrders } = useSellerOrders();
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+  
+  if (user?.role === 'buyer') {
+    return <Navigate to="/dashboard/buyer" replace />;
+  }
 
   const stats = {
     revenue: orders
@@ -43,6 +47,24 @@ const SellerDashboard = () => {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-6 sm:py-8">
+        {!user?.student_id_verified && (
+          <div className="mb-8 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+                <Shield className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-amber-900">Verification Required</p>
+                <p className="text-xs text-amber-700">You must verify your Student ID before you can list products.</p>
+              </div>
+            </div>
+            <Link to="/settings?tab=verification">
+              <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white border-none rounded-lg text-xs font-bold">
+                Verify Now
+              </Button>
+            </Link>
+          </div>
+        )}
         {/* Welcome Section */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
           <div>

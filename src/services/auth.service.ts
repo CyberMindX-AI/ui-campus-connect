@@ -167,12 +167,24 @@ export const authService = {
 
   updateProfile: async (
     userId: string,
-    updates: { fullname?: string; bio?: string; nickname?: string }
+    updates: { fullname?: string; bio?: string; nickname?: string; student_id_url?: string }
   ): Promise<void> => {
-    const { error } = await supabase
-      .from('profiles')
-      .update(updates)
-      .eq('id', userId);
+    const { error } = await supabase.from('profiles').update(updates).eq('id', userId);
     if (error) throw error;
+  },
+
+  uploadStudentId: async (userId: string, file: File): Promise<string> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${userId}-${Math.random()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('student-ids')
+      .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data } = supabase.storage.from('student-ids').getPublicUrl(filePath);
+    return data.publicUrl;
   },
 };
