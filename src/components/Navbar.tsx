@@ -55,7 +55,6 @@ const Navbar = () => {
               <Link to="/dashboard/seller" className="text-sm font-semibold text-primary">Store Overview</Link>
               <Link to="/dashboard/seller/products" className="text-sm font-semibold text-slate-500 hover:text-primary transition-colors">My Listings</Link>
               <Link to="/dashboard/seller/orders" className="text-sm font-semibold text-slate-500 hover:text-primary transition-colors">Orders</Link>
-              <Link to="/wallet" className="text-sm font-semibold text-slate-500 hover:text-primary transition-colors">Wallet</Link>
             </>
           ) : (
             <>
@@ -172,7 +171,6 @@ const Navbar = () => {
                   <Link to="/dashboard/seller" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Store Overview</Link>
                   <Link to="/dashboard/seller/products" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">My Listings</Link>
                   <Link to="/dashboard/seller/orders" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Manage Orders</Link>
-                  <Link to="/wallet" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Wallet</Link>
                 </>
               ) : (
                 <>
