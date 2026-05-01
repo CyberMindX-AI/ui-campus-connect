@@ -155,7 +155,6 @@ const Admin = () => {
 
   const handleApproveProduct = async (product: any) => {
     const id = product.id;
-    // Optimistically mark as approved in UI immediately
     setApprovedIds(prev => new Set(prev).add(id));
     try {
       await approveProduct(id);
@@ -163,14 +162,13 @@ const Admin = () => {
       // Send notification to seller
       await notificationService.sendNotification({
         user_id: product.seller_id,
-        title: 'Product Approved! 🎉',
+        title: 'Product Approved',
         message: `Your product "${product.title}" has been approved and is now live on the marketplace.`,
         type: 'success'
       });
 
       setSelectedProduct(null);
     } catch (error: any) {
-      // Revert optimistic update on failure
       setApprovedIds(prev => { const s = new Set(prev); s.delete(id); return s; });
       toast({ title: 'Error', description: error.message || 'Failed to approve product.', variant: 'destructive' });
     }
@@ -186,8 +184,19 @@ const Admin = () => {
         if (product) {
           await notificationService.sendNotification({
             user_id: product.seller_id,
-            title: 'Product Rejected ❌',
-            message: `Your product "${product.title}" was rejected. Reason: ${rejectReason}`,
+            title: 'Product Rejected',
+            message: `Your product "${product.title}" was rejected. Reason: ${rejectReason}. Please update and resubmit if applicable.`,
+            type: 'error'
+          });
+        }
+      } else if (rejectType === 'seller') {
+        // Find the seller application user_id
+        const sellerApp = sellers.find((s: any) => s.id === rejectId);
+        if (sellerApp) {
+          await notificationService.sendNotification({
+            user_id: sellerApp.user_id,
+            title: 'Seller Application Rejected',
+            message: `Your seller application has been rejected. Reason: ${rejectReason}. Please contact admin for more information.`,
             type: 'error'
           });
         }
@@ -195,6 +204,7 @@ const Admin = () => {
       setShowRejectDialog(false);
       setRejectReason('');
       setSelectedProduct(null);
+      setSelectedSeller(null);
     } catch (error: any) {
       setRejectedIds(prev => { const s = new Set(prev); s.delete(rejectId); return s; });
       toast({ title: 'Error', description: error.message || 'Failed to reject item.', variant: 'destructive' });
@@ -204,6 +214,13 @@ const Admin = () => {
   const handleApproveSeller = async (id: string, userId: string) => {
     try {
       await approveSeller({ applicationId: id, userId });
+      // Send approval notification to seller
+      await notificationService.sendNotification({
+        user_id: userId,
+        title: 'Seller Application Approved',
+        message: 'Congratulations! Your seller application has been approved. You can now list products on UI Marketplace.',
+        type: 'success'
+      });
       setSelectedSeller(null);
       toast({ title: 'Seller Approved', description: 'The user has been granted seller status.' });
     } catch (error) {
@@ -487,7 +504,7 @@ const Admin = () => {
                           <TableHead>Role</TableHead>
                           <TableHead>Faculty</TableHead>
                           <TableHead>Status</TableHead>
-                          <TableHead>Orders</TableHead>
+                  <TableHead>Orders</TableHead>
                           <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -496,8 +513,11 @@ const Admin = () => {
                           <TableRow key={u.id}>
                             <TableCell>
                               <div>
-                                <div className="flex items-center gap-2">
-                                  <p className="font-medium text-foreground">{u.fullname}</p>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <p className="font-medium text-foreground">
+                                    {u.fullname}
+                                    {u.nickname && <span className="text-muted-foreground font-normal"> ({u.nickname})</span>}
+                                  </p>
                                   {u.badge_type && u.badge_type !== 'none' && (
                                     <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100 text-[10px] py-0">
                                       <Shield className="mr-1 h-3 w-3" /> {u.badge_type}
@@ -505,13 +525,15 @@ const Admin = () => {
                                   )}
                                 </div>
                                 <p className="text-xs text-muted-foreground">{u.email}</p>
-                                <div className="mt-1 flex gap-1">
+                                <div className="mt-1 flex flex-wrap gap-1">
                                   <Badge variant={u.email_verified ? "outline" : "secondary"} className={u.email_verified ? "text-emerald-600 border-emerald-200 bg-emerald-50" : "text-slate-400"}>
                                     <Mail className="mr-1 h-3 w-3" /> {u.email_verified ? 'Email Verified' : 'Email Unverified'}
                                   </Badge>
-                                  <Badge variant={u.student_id_verified ? "outline" : "secondary"} className={u.student_id_verified ? "text-blue-600 border-blue-200 bg-blue-50" : "text-slate-400"}>
-                                    <CreditCard className="mr-1 h-3 w-3" /> {u.student_id_verified ? 'ID Verified' : 'ID Unverified'}
-                                  </Badge>
+                                  {(u.role === 'seller' || u.role === 'both') && (
+                                    <Badge variant={u.student_id_verified ? "outline" : "secondary"} className={u.student_id_verified ? "text-blue-600 border-blue-200 bg-blue-50" : "text-slate-400"}>
+                                      <CreditCard className="mr-1 h-3 w-3" /> {u.student_id_verified ? 'ID Verified' : 'ID Unverified'}
+                                    </Badge>
+                                  )}
                                 </div>
                               </div>
                             </TableCell>
@@ -524,17 +546,55 @@ const Admin = () => {
                             </TableCell>
                             <TableCell className="text-sm">{u.totalOrders}</TableCell>
                             <TableCell className="text-right">
-                              <div className="flex items-center justify-end gap-1">
+                              <div className="flex items-center justify-end gap-1 flex-wrap">
+                                {/* View Student ID */}
                                 {u.student_id_url && (
                                   <Button size="sm" variant="ghost" onClick={() => window.open(u.student_id_url, '_blank')} title="View Student ID">
                                     <CreditCard className="h-4 w-4" />
                                   </Button>
                                 )}
+                                {/* Verify Student ID - only for sellers */}
+                                {(u.role === 'seller' || u.role === 'both') && u.student_id_url && !u.student_id_verified && (
+                                  <Button size="sm" variant="outline" className="text-xs text-blue-600 border-blue-200 hover:bg-blue-50" onClick={async () => {
+                                    try {
+                                      const { adminService: svc } = await import('@/services/admin.service');
+                                      await svc.verifyStudentId(u.id);
+                                      await (await import('@/services/notification.service')).notificationService.sendNotification({
+                                        user_id: u.id,
+                                        title: 'Student ID Verified',
+                                        message: 'Your Student ID has been verified by admin. You can now list products.',
+                                        type: 'success'
+                                      });
+                                      toast({ title: 'ID Verified', description: `${u.fullname}'s Student ID is now verified.` });
+                                    } catch(e: any) { toast({ title: 'Error', description: e.message, variant: 'destructive' }); }
+                                  }}>
+                                    <UserCheck className="h-3 w-3 mr-1" /> Verify ID
+                                  </Button>
+                                )}
+                                {/* Assign Badge - only for sellers */}
+                                {(u.role === 'seller' || u.role === 'both') && (
+                                  <Select onValueChange={async (val) => {
+                                    try {
+                                      const { adminService: svc } = await import('@/services/admin.service');
+                                      await svc.assignBadge(u.id, val);
+                                      toast({ title: 'Badge Assigned', description: `${u.fullname} now has the "${val}" badge.` });
+                                    } catch(e: any) { toast({ title: 'Error', description: e.message, variant: 'destructive' }); }
+                                  }}>
+                                    <SelectTrigger className="h-7 w-[110px] text-[11px] border-amber-200 text-amber-700">
+                                      <SelectValue placeholder="Assign Badge" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="none">Remove Badge</SelectItem>
+                                      <SelectItem value="verified">Verified</SelectItem>
+                                      <SelectItem value="top-seller">Top Seller</SelectItem>
+                                      <SelectItem value="trusted">Trusted</SelectItem>
+                                      <SelectItem value="featured">Featured</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                )}
+                                {/* Ban/Unban */}
                                 <Button size="sm" variant="ghost" onClick={() => toggleUserStatus(u.id)}>
                                   {u.status === 'active' ? <Ban className="h-4 w-4 text-destructive" /> : <CheckCircle className="h-4 w-4 text-[#2563EB]" />}
-                                </Button>
-                                <Button size="sm" variant="ghost">
-                                  <MessageSquare className="h-4 w-4" />
                                 </Button>
                               </div>
                             </TableCell>

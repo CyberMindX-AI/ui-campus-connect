@@ -1,6 +1,6 @@
 import { Link, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShoppingBag, MessageSquare, Heart, Package, TrendingUp, Star, ChevronRight, Search, Shield } from 'lucide-react';
+import { ShoppingBag, MessageSquare, Heart, TrendingUp, ChevronRight, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
@@ -9,14 +9,6 @@ import { useCategories } from '@/hooks/api/useMarket';
 import { useProducts } from '@/hooks/api/useProducts';
 import { useBuyerOrders } from '@/hooks/api/useOrders';
 import { useWishlist } from '@/hooks/api/useWishlist';
-import { useConversations } from '@/hooks/api/useChat';
-
-const statusColors: Record<string, string> = {
-  Delivered: 'bg-green-100 text-green-700',
-  Processing: 'bg-yellow-100 text-yellow-700',
-  Pending: 'bg-muted text-muted-foreground',
-  Cancelled: 'bg-red-100 text-red-700',
-};
 
 const BuyerDashboard = () => {
   const hour = new Date().getHours();
@@ -26,7 +18,6 @@ const BuyerDashboard = () => {
   const { data: categories = [] } = useCategories();
   const { data: orders = [] } = useBuyerOrders();
   const { data: wishlist = [] } = useWishlist();
-  const { data: conversations = [] } = useConversations();
 
   const totalSpent = orders.reduce((acc: number, order: any) => acc + (order.amount || 0), 0);
   const activeOrders = orders.filter((o: any) => o.status !== 'Completed' && o.status !== 'Cancelled').length;
@@ -39,27 +30,14 @@ const BuyerDashboard = () => {
     return <Navigate to="/dashboard/seller" replace />;
   }
 
+  const handleContactAdmin = () => {
+    const message = `Hello Admin, I am a buyer on UI Marketplace and need assistance with a product or order.\n\nBuyer: ${user?.fullname || 'Unknown'}\nEmail: ${user?.email || ''}\n\nPlease help me. Thank you.`;
+    window.open(`https://wa.me/2348000000000?text=${encodeURIComponent(message)}`, '_blank');
+  };
+
   return (
     <Layout>
       <div className="container mx-auto px-6 py-10 max-w-7xl">
-        {!user?.student_id_verified && (
-          <div className="mb-8 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
-                <Shield className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-amber-900">Verify your student identity</p>
-                <p className="text-xs text-amber-700">Upload your Student ID to unlock all features and build trust on the net.</p>
-              </div>
-            </div>
-            <Link to="/settings?tab=verification">
-              <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white border-none rounded-lg text-xs font-bold">
-                Verify Now
-              </Button>
-            </Link>
-          </div>
-        )}
         {/* Fiverr-Style Hero Search Section */}
         <div className="mb-16 text-center max-w-3xl mx-auto space-y-8">
           <div className="space-y-3">
@@ -100,28 +78,40 @@ const BuyerDashboard = () => {
           </div>
         </div>
 
-        {/* Stats Row (Reset to 0) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+        {/* Stats Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-16">
           {[
-            { label: "Active Orders", value: activeOrders.toString(), icon: ShoppingBag, color: "text-blue-600", bg: "bg-blue-50" },
-            { label: "Messages", value: conversations.length.toString(), icon: MessageSquare, color: "text-purple-600", bg: "bg-purple-50" },
-            { label: "Wishlist Items", value: wishlist.length.toString(), icon: Heart, color: "text-rose-600", bg: "bg-rose-50" },
-            { label: "Total Spent", value: `₦${totalSpent.toLocaleString()}`, icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-50" }
+            { label: "Active Orders", value: activeOrders.toString(), icon: ShoppingBag, color: "text-blue-600", bg: "bg-blue-50", link: '/dashboard/buyer/orders' },
+            { label: "Wishlist Items", value: wishlist.length.toString(), icon: Heart, color: "text-rose-600", bg: "bg-rose-50", link: '/wishlist' },
+            { label: "Total Spent", value: `₦${totalSpent.toLocaleString()}`, icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-50", link: null }
           ].map((stat, i) => (
             <motion.div 
               key={stat.label} 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow flex items-center gap-4"
             >
-              <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${stat.bg} ${stat.color}`}>
-                <stat.icon className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{stat.label}</p>
-                <p className="text-xl font-bold text-slate-900">{stat.value}</p>
-              </div>
+              {stat.link ? (
+                <Link to={stat.link} className="flex items-center gap-4 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                  <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${stat.bg} ${stat.color}`}>
+                    <stat.icon className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{stat.label}</p>
+                    <p className="text-xl font-bold text-slate-900">{stat.value}</p>
+                  </div>
+                </Link>
+              ) : (
+                <div className="flex items-center gap-4 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                  <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${stat.bg} ${stat.color}`}>
+                    <stat.icon className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{stat.label}</p>
+                    <p className="text-xl font-bold text-slate-900">{stat.value}</p>
+                  </div>
+                </div>
+              )}
             </motion.div>
           ))}
         </div>
@@ -180,32 +170,18 @@ const BuyerDashboard = () => {
 
           {/* Sidebar / Secondary Content */}
           <div className="space-y-10">
-            {/* Quick Access Categories */}
-            <section>
-              <h2 className="text-xl font-bold text-slate-900 mb-6">Quick Categories</h2>
-              <div className="grid grid-cols-2 gap-3">
-                {categories.slice(0, 6).map((cat) => (
-                  <Link 
-                    key={cat.slug} 
-                    to={`/products?category=${cat.slug}`}
-                    className="flex flex-col items-center justify-center p-4 bg-white border border-slate-100 rounded-2xl hover:border-primary/30 hover:shadow-md transition-all text-center"
-                  >
-                    <span className="text-2xl mb-2">{cat.icon}</span>
-                    <span className="text-xs font-bold text-slate-900">{cat.name}</span>
-                  </Link>
-                ))}
-              </div>
-            </section>
-
-            {/* Profile Health / Trust Box */}
+            {/* Contact Admin */}
             <section className="bg-slate-900 rounded-2xl p-6 text-white overflow-hidden relative">
               <div className="relative z-10">
-                <h3 className="text-lg font-bold mb-2">Campus Trust Badge</h3>
-                <p className="text-slate-400 text-sm mb-4">Complete 5 successful transactions to earn your "Verified Buyer" badge.</p>
-                <div className="w-full bg-white/10 h-2 rounded-full mb-2">
-                  <div className="bg-primary h-full w-[60%] rounded-full"></div>
-                </div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">3 / 5 COMPLETED</p>
+                <h3 className="text-lg font-bold mb-2">Need Help?</h3>
+                <p className="text-slate-400 text-sm mb-4">Have a question about a product or seller? Contact the admin directly on WhatsApp for fast support.</p>
+                <Button
+                  onClick={handleContactAdmin}
+                  className="w-full bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl h-11 gap-2"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  Contact Admin on WhatsApp
+                </Button>
               </div>
               <div className="absolute -bottom-6 -right-6 opacity-10">
                 <TrendingUp className="h-32 w-32" />

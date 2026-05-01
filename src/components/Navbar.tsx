@@ -16,7 +16,7 @@ const Navbar = () => {
   const { cartCount } = useCart();
 
   const dashboardLink = user?.role === 'seller' ? '/dashboard/seller' : '/dashboard/buyer';
-  const sellerOnlyPaths = ['/wallet', '/dashboard/seller', '/settings', '/notifications', '/messages'];
+  const sellerOnlyPaths = ['/wallet', '/dashboard/seller', '/settings', '/notifications'];
   const isSellerView = user?.role === 'seller'
     ? sellerOnlyPaths.some(p => location.pathname.startsWith(p))
     : location.pathname.startsWith('/dashboard/seller');
@@ -76,9 +76,7 @@ const Navbar = () => {
                   {isAuthenticated && (
                     <Link to="/wishlist" className="text-sm font-semibold text-slate-500 hover:text-primary transition-colors">Wishlist</Link>
                   )}
-                  {isAuthenticated && (
-                    <Link to="/messages" className="text-sm font-semibold text-slate-500 hover:text-primary transition-colors">Messages</Link>
-                  )}
+
                   {isAuthenticated && !isLandingPage && (
                     <Link to={dashboardLink} className="text-sm font-semibold text-primary">Dashboard</Link>
                   )}
@@ -188,7 +186,6 @@ const Navbar = () => {
                       <Link to="/products" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Browse Products</Link>
                       <Link to="/categories" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Categories</Link>
                       <Link to="/wishlist" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Wishlist</Link>
-                      <Link to="/messages" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Messages</Link>
                       <Link to="/cart" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">Cart {cartCount > 0 && `(${cartCount})`}</Link>
                       {isAuthenticated && !isLandingPage && (
                         <Link to={dashboardLink} onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 text-sm font-bold text-primary hover:bg-muted">Dashboard</Link>

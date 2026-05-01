@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useWishlist } from '@/hooks/api/useWishlist';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -16,9 +17,10 @@ const ProductDetail = () => {
   const { data: allProducts = [] } = useProducts();
   const [selectedImage, setSelectedImage] = useState(0);
   const { addToCart } = useCart();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { toast } = useToast();
   const [added, setAdded] = useState(false);
+  const { data: wishlist = [], toggleWishlist } = useWishlist();
 
   if (isLoading) {
     return (
@@ -41,6 +43,8 @@ const ProductDetail = () => {
     );
   }
 
+  const isWishlisted = wishlist.some((w) => w.id === product.id);
+
   const handleAddToCart = () => {
     if (!isAuthenticated) {
       toast({ title: 'Please sign in', description: 'You need to be logged in to add items to cart.', variant: 'destructive' });
@@ -53,13 +57,23 @@ const ProductDetail = () => {
     setTimeout(() => setAdded(false), 2000);
   };
 
-  const handleMessageSeller = () => {
+  const handleWishlist = () => {
     if (!isAuthenticated) {
-      toast({ title: 'Please sign in', description: 'You need to be logged in to message sellers.', variant: 'destructive' });
+      toast({ title: 'Please sign in', description: 'You need to be logged in to save items.', variant: 'destructive' });
       navigate('/login');
       return;
     }
-    navigate('/messages');
+    toggleWishlist(product.id);
+  };
+
+  const handleContactAdmin = () => {
+    if (!isAuthenticated) {
+      toast({ title: 'Please sign in', description: 'You need to be logged in to contact about this product.', variant: 'destructive' });
+      navigate('/login');
+      return;
+    }
+    const message = `Hello Admin, I am interested in a product on UI Marketplace and need assistance.\n\nProduct: ${product.title}\nProduct ID: ${product.id}\nSeller: ${product.seller || 'Unknown'}\nPrice: ₦${product.price?.toLocaleString()}\n\nPlease help me connect with the seller or provide more details. Thank you.`;
+    window.open(`https://wa.me/2348000000000?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   const related = allProducts.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
@@ -103,8 +117,12 @@ const ProductDetail = () => {
                   <span className="ml-2 rounded-md bg-accent px-2 py-1 text-xs font-semibold text-accent-foreground">Negotiable</span>
                 )}
               </div>
-              <button className="flex h-9 w-9 items-center justify-center rounded-full border border-border transition-colors hover:bg-muted">
-                <Heart className="h-4 w-4 text-muted-foreground" />
+              <button
+                onClick={handleWishlist}
+                className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors hover:bg-muted ${isWishlisted ? 'border-rose-300 bg-rose-50' : 'border-border'}`}
+                title={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+              >
+                <Heart className={`h-4 w-4 transition-colors ${isWishlisted ? 'fill-rose-500 text-rose-500' : 'text-muted-foreground'}`} />
               </button>
             </div>
 
@@ -147,8 +165,8 @@ const ProductDetail = () => {
               <Button variant="hero" size="lg" className="flex-1 gap-2" onClick={handleAddToCart}>
                 {added ? <><Check className="h-4 w-4" /> Added!</> : <><ShoppingCart className="h-4 w-4" /> Add to Cart</>}
               </Button>
-              <Button variant="hero-outline" size="lg" className="gap-2" onClick={handleMessageSeller}>
-                <MessageCircle className="h-4 w-4" /> Message Seller
+              <Button variant="hero-outline" size="lg" className="gap-2" onClick={handleContactAdmin}>
+                <MessageCircle className="h-4 w-4" /> Contact Admin
               </Button>
             </div>
 

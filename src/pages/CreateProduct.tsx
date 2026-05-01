@@ -3,13 +3,14 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Upload, X, Eye, ImagePlus, Loader2 } from 'lucide-react';
+import { Upload, X, Eye, ImagePlus, Loader2, CheckCircle, MessageCircle, Package } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { useCategories } from '@/hooks/api/useMarket';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCreateProduct, useUpdateProduct, useProduct } from '@/hooks/api/useProducts';
 import { uploadProductImage } from '@/services/products.service';
+import { Link } from 'react-router-dom';
 
 const conditions = ['New', 'Like New', 'Used (Good)', 'Used (Fair)', 'Refurbished'];
 const deliveryOptions = ['Campus Pickup', 'Hall Delivery', 'Digital Delivery'];
@@ -44,6 +45,7 @@ const CreateProduct = () => {
   const { mutate: updateProduct, isPending: isUpdating } = useUpdateProduct();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [successProduct, setSuccessProduct] = useState<{ id: string; title: string } | null>(null);
 
   // Load existing product data if editing
   useEffect(() => {
@@ -162,9 +164,9 @@ const CreateProduct = () => {
       createProduct(
         productData as any,
         {
-          onSuccess: () => {
+          onSuccess: (created: any) => {
             toast({ title: 'Listing Submitted!', description: 'It will be live once approved.' });
-            navigate('/dashboard/seller/products');
+            setSuccessProduct({ id: created?.id || '', title: title });
           },
           onError: (error: any) => toast({ title: 'Creation failed', description: error.message, variant: 'destructive' })
         }
@@ -174,6 +176,37 @@ const CreateProduct = () => {
 
   if (isEditing && isLoadingProduct) {
     return <Layout><div className="flex h-96 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div></Layout>;
+  }
+
+  // Success screen after posting a new product
+  if (successProduct) {
+    const waMessage = `Hello Admin, I have just posted a product on UI Marketplace and would like to follow up for verification.\n\nProduct: ${successProduct.title}\nProduct ID: ${successProduct.id}\n\nPlease review my listing. Thank you.`;
+    const waUrl = `https://wa.me/2348000000000?text=${encodeURIComponent(waMessage)}`;
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-16 max-w-lg text-center">
+          <div className="flex items-center justify-center h-20 w-20 rounded-full bg-green-100 mx-auto mb-6">
+            <CheckCircle className="h-10 w-10 text-green-600" />
+          </div>
+          <h1 className="font-heading text-2xl font-bold text-foreground mb-2">Listing Submitted!</h1>
+          <p className="text-muted-foreground mb-8">Your product has been submitted and is pending admin review. You'll be notified once it's approved or rejected.</p>
+          <div className="space-y-3">
+            <a href={waUrl} target="_blank" rel="noopener noreferrer">
+              <Button className="w-full bg-green-500 hover:bg-green-600 text-white gap-2 h-12 text-base font-bold">
+                <MessageCircle className="h-5 w-5" />
+                Contact Admin on WhatsApp
+              </Button>
+            </a>
+            <Link to="/dashboard/seller/products">
+              <Button variant="outline" className="w-full gap-2 h-12">
+                <Package className="h-5 w-5" />
+                View My Listings
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </Layout>
+    );
   }
 
   return (

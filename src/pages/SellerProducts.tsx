@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { Plus, Edit2, Trash2, Eye, ToggleLeft, ToggleRight, Package, Search, Headphones, AlertCircle } from 'lucide-react';
+import { Plus, Edit2, Trash2, Eye, ToggleLeft, ToggleRight, Package, Search, MessageCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Layout from '@/components/Layout';
@@ -133,10 +133,13 @@ const SellerProducts = () => {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="ml-2 gap-1.5 h-9" 
-                    onClick={() => window.open('mailto:admin@ui.edu.ng?subject=Verification Support: ' + product.title)}
+                    className="ml-2 gap-1.5 h-9 border-green-200 text-green-700 hover:bg-green-50" 
+                    onClick={() => {
+                      const msg = `Hello Admin, I posted a product on UI Marketplace and need verification/assistance.\n\nProduct: ${product.title}\nProduct ID: ${product.id}\nStatus: ${product.status}\n\nPlease review. Thank you.`;
+                      window.open(`https://wa.me/2348000000000?text=${encodeURIComponent(msg)}`, '_blank');
+                    }}
                   >
-                    <Headphones className="h-3.5 w-3.5" /> Contact Admin
+                    <MessageCircle className="h-3.5 w-3.5" /> Contact Admin
                   </Button>
                 </div>
                 </div>

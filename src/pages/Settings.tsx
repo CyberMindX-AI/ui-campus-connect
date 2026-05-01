@@ -9,21 +9,22 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { uploadAvatar, authService } from '@/services/auth.service';
 
-const tabs = [
-  { id: 'profile', label: 'Profile', icon: User },
-  { id: 'security', label: 'Security', icon: Shield },
-  { id: 'notifications', label: 'Notifications', icon: Bell },
-  { id: 'store', label: 'Store', icon: Store },
-  { id: 'verification', label: 'Verification', icon: Shield },
-  { id: 'privacy', label: 'Privacy', icon: Eye },
-  { id: 'account', label: 'Account', icon: Trash2 },
-];
-
 const Settings = () => {
   const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'profile');
   const { user, login } = useAuth();
   const { toast } = useToast();
+
+  const isSeller = user?.role === 'seller' || user?.role === 'both';
+
+  const tabs = [
+    { id: 'profile', label: 'Profile', icon: User },
+    { id: 'security', label: 'Security', icon: Shield },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
+    ...(isSeller ? [{ id: 'store', label: 'Store', icon: Store }, { id: 'verification', label: 'Verification', icon: Shield }] : []),
+    { id: 'privacy', label: 'Privacy', icon: Eye },
+    { id: 'account', label: 'Account', icon: Trash2 },
+  ];
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'profile');
   const [name, setName] = useState(user?.fullname || 'Student');
   const [nickname, setNickname] = useState(user?.nickname || '');
   const [bio, setBio] = useState('');
