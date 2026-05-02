@@ -60,6 +60,7 @@ const Admin = () => {
   const transactionsData = transactionsQuery.data || [];
   const usersData = usersQuery.data || [];
   
+  const [processingId, setProcessingId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
   const [selectedSeller, setSelectedSeller] = useState<any | null>(null);
@@ -156,7 +157,7 @@ const Admin = () => {
 
   const handleApproveProduct = async (product: any) => {
     const id = product.id;
-    setApprovedIds(prev => new Set(prev).add(id));
+    setProcessingId(id);
     try {
       await approveProduct(id);
       
@@ -169,9 +170,11 @@ const Admin = () => {
       });
 
       setSelectedProduct(null);
+      toast({ title: '✅ Approved', description: `"${product.title}" is now live.` });
     } catch (error: any) {
-      setApprovedIds(prev => { const s = new Set(prev); s.delete(id); return s; });
       toast({ title: 'Error', description: error.message || 'Failed to approve product.', variant: 'destructive' });
+    } finally {
+      setProcessingId(null);
     }
   };
 
@@ -422,14 +425,23 @@ const Admin = () => {
                                     size="sm" 
                                     className="bg-[#2563EB] text-white hover:bg-[#1D4ED8]" 
                                     onClick={() => handleApproveProduct(product)}
-                                    disabled={approveProductMutation.isPending}
+                                    disabled={processingId === product.id}
                                   >
-                                  {approveProductMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle className="mr-1 h-3 w-3" />} 
-                                  Approve
-                                </Button>
-                                <Button size="sm" variant="destructive" onClick={() => { setRejectType('product'); setRejectId(product.id); setShowRejectDialog(true); }}>
-                                  <XCircle className="mr-1 h-3 w-3" /> Reject
-                                </Button>
+                                    {processingId === product.id ? (
+                                      <Loader2 className="h-3 w-3 animate-spin" />
+                                    ) : (
+                                      <CheckCircle className="mr-1 h-3 w-3" />
+                                    )} 
+                                    Approve
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant="destructive" 
+                                    onClick={() => { setRejectType('product'); setRejectId(product.id); setShowRejectDialog(true); }}
+                                    disabled={processingId === product.id}
+                                  >
+                                    <XCircle className="mr-1 h-3 w-3" /> Reject
+                                  </Button>
                               </>
                             )}
                           </div>

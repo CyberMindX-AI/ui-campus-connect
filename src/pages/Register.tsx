@@ -158,8 +158,8 @@ const Register = () => {
             </div>
             <div>
               <Label>I want to</Label>
-              <div className="mt-2 grid grid-cols-3 gap-2">
-                {(['buyer', 'seller', 'both'] as const).map((r) => (
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                {(['buyer', 'seller'] as const).map((r) => (
                   <button
                     key={r}
                     type="button"

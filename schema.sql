@@ -199,17 +199,19 @@ ALTER TABLE public.wishlist ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.conversations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.seller_applications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.reports ENABLE ROW LEVEL SECURITY;
 
 -- Profiles policies
 CREATE POLICY "Public profiles are viewable by everyone." ON public.profiles FOR SELECT USING (true);
-CREATE POLICY "Users can update their own profiles." ON public.profiles FOR UPDATE USING (auth.uid() = id);
-CREATE POLICY "Users can insert their own profile." ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "Users can update their own profiles." ON public.profiles FOR UPDATE USING (auth.uid() = id OR (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin');
+CREATE POLICY "Users can insert their own profile." ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id OR (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin');
 
 -- Products policies
 CREATE POLICY "Active products are viewable by everyone." ON public.products FOR SELECT USING (true);
 CREATE POLICY "Sellers can insert their own products." ON public.products FOR INSERT WITH CHECK (auth.uid() = seller_id);
-CREATE POLICY "Sellers can update their own products." ON public.products FOR UPDATE USING (auth.uid() = seller_id);
-CREATE POLICY "Sellers can delete their own products." ON public.products FOR DELETE USING (auth.uid() = seller_id);
+CREATE POLICY "Sellers can update their own products." ON public.products FOR UPDATE USING (auth.uid() = seller_id OR (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin');
+CREATE POLICY "Sellers can delete their own products." ON public.products FOR DELETE USING (auth.uid() = seller_id OR (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin');
 
 -- Categories policies
 CREATE POLICY "Categories are viewable by everyone." ON public.categories FOR SELECT USING (true);
@@ -235,10 +237,17 @@ CREATE POLICY "Conversation participants can view messages." ON public.messages 
 );
 CREATE POLICY "Authenticated users can send messages." ON public.messages FOR INSERT WITH CHECK (auth.uid() = sender_id);
 
--- Notifications policies
-CREATE POLICY "Users can view their own notifications." ON public.notifications FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "System/Admin can insert notifications." ON public.notifications FOR INSERT WITH CHECK (true);
 CREATE POLICY "Users can update their own notifications." ON public.notifications FOR UPDATE USING (auth.uid() = user_id);
+
+-- Seller Applications policies
+CREATE POLICY "Users can view their own applications." ON public.seller_applications FOR SELECT USING (auth.uid() = user_id OR (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin');
+CREATE POLICY "Users can insert their own applications." ON public.seller_applications FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Admins can manage all applications." ON public.seller_applications FOR ALL USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin');
+
+-- Reports policies
+CREATE POLICY "Users can view their own reports." ON public.reports FOR SELECT USING (auth.uid() = reporter_id OR (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin');
+CREATE POLICY "Authenticated users can create reports." ON public.reports FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Admins can manage all reports." ON public.reports FOR ALL USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin');
 
 -- Initial Data Seed
 INSERT INTO public.categories (name, slug, icon) VALUES
