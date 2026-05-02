@@ -12,6 +12,13 @@ export interface AuthUser {
   email_verified?: boolean;
   student_id_url?: string;
   isVerified?: boolean;
+  bio?: string;
+  store_name?: string;
+  store_description?: string;
+  return_policy?: string;
+  pickup_location?: string;
+  notification_prefs?: any;
+  privacy_settings?: any;
 }
 
 export interface Product {

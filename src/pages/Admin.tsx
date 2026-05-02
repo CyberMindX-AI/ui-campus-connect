@@ -255,15 +255,19 @@ const Admin = () => {
   const stats = {
     totalUsers: usersData.length,
     activeUsers: usersData.filter((u: any) => u.status === 'active').length,
-    totalSellers: usersData.filter((u: any) => u.role === 'seller' || u.role === 'both').length,
+    totalSellers: usersData.filter((u: any) => (u.role === 'seller' || u.role === 'both') && u.student_id_verified === true).length,
     pendingProducts: products.length,
     pendingSellers: sellers.length,
     pendingReports: reportsData.filter((r: any) => r.status === 'pending').length,
-    totalRevenue: transactionsData.reduce((acc: number, t: any) => acc + (t.amount || 0), 0),
+    totalRevenue: transactionsData.reduce((acc: number, t: any) => acc + (tx_amount(t)), 0),
     monthlyGrowth: 0,
     totalTransactions: transactionsData.length,
     disputeRate: transactionsData.length > 0 ? (reportsData.length / transactionsData.length * 100).toFixed(1) : 0,
   };
+
+  function tx_amount(tx: any) {
+    return tx.amount || 0;
+  }
 
   return (
     <>
@@ -319,15 +323,10 @@ const Admin = () => {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
-                  <DollarSign className="h-5 w-5 text-accent" />
-                  <span className="flex items-center text-xs text-green-600"><ArrowUpRight className="h-3 w-3" /> 0%</span>
+                  <ShieldCheck className="h-5 w-5 text-emerald-500" />
                 </div>
-                <p className="mt-2 text-2xl font-bold text-foreground">
-                  ₦{stats.totalRevenue >= 1000000 
-                    ? (stats.totalRevenue / 1000000).toFixed(1) + 'M' 
-                    : stats.totalRevenue.toLocaleString()}
-                </p>
-                <p className="text-xs text-muted-foreground">Market Revenue</p>
+                <p className="mt-2 text-2xl font-bold text-foreground">{stats.activeUsers}</p>
+                <p className="text-xs text-muted-foreground">Active Students</p>
               </CardContent>
             </Card>
             <Card>

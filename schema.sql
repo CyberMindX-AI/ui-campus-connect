@@ -14,6 +14,13 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     student_id_url TEXT,
     is_verified BOOLEAN DEFAULT FALSE,
     status TEXT DEFAULT 'active',
+    bio TEXT,
+    store_name TEXT,
+    store_description TEXT,
+    return_policy TEXT,
+    pickup_location TEXT,
+    notification_prefs JSONB DEFAULT '{"email": true, "push": true}'::jsonb,
+    privacy_settings JSONB DEFAULT '{"profileVisible": true, "showOnline": true}'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 

@@ -27,10 +27,20 @@ const Settings = () => {
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'profile');
   const [name, setName] = useState(user?.fullname || 'Student');
   const [nickname, setNickname] = useState(user?.nickname || '');
-  const [bio, setBio] = useState('');
+  const [bio, setBio] = useState(user?.bio || '');
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar || '');
   const [studentIdUrl, setStudentIdUrl] = useState(user?.student_id_url || '');
   const [signedIdUrl, setSignedIdUrl] = useState('');
+
+  // Store Settings
+  const [storeName, setStoreName] = useState(user?.store_name || '');
+  const [storeDesc, setStoreDesc] = useState(user?.store_description || '');
+  const [returnPolicy, setReturnPolicy] = useState(user?.return_policy || '');
+  const [pickup, setPickup] = useState(user?.pickup_location || '');
+
+  // Preferences
+  const [notifs, setNotifs] = useState(user?.notification_prefs || { email: true, push: true });
+  const [privacy, setPrivacy] = useState(user?.privacy_settings || { profileVisible: true, showOnline: true });
 
   // Fetch signed URL for student ID
   useEffect(() => {
@@ -113,8 +123,12 @@ const Settings = () => {
     if (!user?.id) return;
     setSavingProfile(true);
     try {
-      await authService.updateProfile(user.id, { fullname: name, nickname: nickname });
-      login({ ...user, fullname: name, nickname: nickname });
+      await authService.updateProfile(user.id, { 
+        fullname: name, 
+        nickname: nickname,
+        bio: bio
+      });
+      login({ ...user, fullname: name, nickname: nickname, bio: bio });
       toast({ title: 'Settings saved!', description: 'Your changes have been applied.' });
     } catch (error: any) {
       let msg = error.message;
@@ -243,35 +257,111 @@ const Settings = () => {
             {activeTab === 'notifications' && (
               <div className="rounded-xl border border-border bg-card p-4 sm:p-6 space-y-4">
                 <h2 className="font-heading text-lg font-semibold text-foreground">Notification Preferences</h2>
-                {['Order updates', 'New reviews', 'Payment confirmations', 'Wishlist alerts', 'Platform announcements'].map((pref) => (
-                  <div key={pref} className="flex items-center justify-between rounded-lg border border-border p-3">
-                    <span className="text-sm text-foreground">{pref}</span>
-                    <div className="flex gap-4">
-                      <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <input type="checkbox" defaultChecked className="accent-primary" /> Email
-                      </label>
-                      <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <input type="checkbox" defaultChecked className="accent-primary" /> Push
-                      </label>
-                    </div>
-                  </div>
-                ))}
-                <Button variant="hero" onClick={() => toast({ title: 'Preferences saved!' })}>Save Preferences</Button>
+                <div className="flex items-center justify-between rounded-lg border border-border p-3">
+                  <span className="text-sm text-foreground">Email Notifications</span>
+                  <input 
+                    type="checkbox" 
+                    checked={notifs.email} 
+                    onChange={(e) => setNotifs({ ...notifs, email: e.target.checked })}
+                    className="accent-primary h-4 w-4" 
+                  />
+                </div>
+                <div className="flex items-center justify-between rounded-lg border border-border p-3">
+                  <span className="text-sm text-foreground">Push Notifications</span>
+                  <input 
+                    type="checkbox" 
+                    checked={notifs.push} 
+                    onChange={(e) => setNotifs({ ...notifs, push: e.target.checked })}
+                    className="accent-primary h-4 w-4" 
+                  />
+                </div>
+                <Button 
+                  variant="hero" 
+                  onClick={async () => {
+                    if (!user?.id) return;
+                    try {
+                      await authService.updateProfile(user.id, { notification_prefs: notifs });
+                      login({ ...user, notification_prefs: notifs });
+                      toast({ title: 'Preferences saved!' });
+                    } catch (e) { toast({ title: 'Save failed', variant: 'destructive' }); }
+                  }}
+                >
+                  Save Preferences
+                </Button>
               </div>
             )}
 
             {activeTab === 'store' && (
               <div className="rounded-xl border border-border bg-card p-4 sm:p-6 space-y-4">
                 <h2 className="font-heading text-lg font-semibold text-foreground">Store Settings</h2>
-                <div><Label htmlFor="storeName">Store Name</Label><Input id="storeName" className="mt-1" placeholder="Your Store Name" /></div>
-                <div><Label htmlFor="storeDesc">Store Description</Label>
-                  <textarea id="storeDesc" className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" rows={3} placeholder="Describe your store..." />
+                <div>
+                  <Label htmlFor="storeName">Store Name</Label>
+                  <Input 
+                    id="storeName" 
+                    className="mt-1" 
+                    placeholder="Your Store Name" 
+                    value={storeName}
+                    onChange={(e) => setStoreName(e.target.value)}
+                  />
                 </div>
-                <div><Label htmlFor="returnPolicy">Return Policy</Label>
-                  <textarea id="returnPolicy" className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" rows={2} placeholder="Your return/exchange policy..." />
+                <div>
+                  <Label htmlFor="storeDesc">Store Description</Label>
+                  <textarea 
+                    id="storeDesc" 
+                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" 
+                    rows={3} 
+                    placeholder="Describe your store..." 
+                    value={storeDesc}
+                    onChange={(e) => setStoreDesc(e.target.value)}
+                  />
                 </div>
-                <div><Label htmlFor="pickup">Pickup Location</Label><Input id="pickup" className="mt-1" placeholder="e.g. Kuti Hall Room 205" /></div>
-                <Button variant="hero" onClick={() => toast({ title: 'Store settings saved!' })}>Save Store Settings</Button>
+                <div>
+                  <Label htmlFor="returnPolicy">Return Policy</Label>
+                  <textarea 
+                    id="returnPolicy" 
+                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" 
+                    rows={2} 
+                    placeholder="Your return/exchange policy..." 
+                    value={returnPolicy}
+                    onChange={(e) => setReturnPolicy(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="pickup">Pickup Location</Label>
+                  <Input 
+                    id="pickup" 
+                    className="mt-1" 
+                    placeholder="e.g. Kuti Hall Room 205" 
+                    value={pickup}
+                    onChange={(e) => setPickup(e.target.value)}
+                  />
+                </div>
+                <Button 
+                  variant="hero" 
+                  onClick={async () => {
+                    if (!user?.id) return;
+                    try {
+                      await authService.updateProfile(user.id, {
+                        store_name: storeName,
+                        store_description: storeDesc,
+                        return_policy: returnPolicy,
+                        pickup_location: pickup
+                      });
+                      login({
+                        ...user,
+                        store_name: storeName,
+                        store_description: storeDesc,
+                        return_policy: returnPolicy,
+                        pickup_location: pickup
+                      });
+                      toast({ title: 'Store settings saved!' });
+                    } catch (e) {
+                      toast({ title: 'Save failed', variant: 'destructive' });
+                    }
+                  }}
+                >
+                  Save Store Settings
+                </Button>
               </div>
             )}
 
@@ -350,14 +440,42 @@ const Settings = () => {
               <div className="rounded-xl border border-border bg-card p-4 sm:p-6 space-y-4">
                 <h2 className="font-heading text-lg font-semibold text-foreground">Privacy</h2>
                 <div className="flex items-center justify-between rounded-lg border border-border p-3">
-                  <div><p className="text-sm font-medium text-foreground">Profile Visibility</p><p className="text-xs text-muted-foreground">Allow other users to see your profile</p></div>
-                  <input type="checkbox" defaultChecked className="accent-primary h-4 w-4" />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Profile Visibility</p>
+                    <p className="text-xs text-muted-foreground">Allow other users to see your profile</p>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    checked={privacy.profileVisible} 
+                    onChange={(e) => setPrivacy({ ...privacy, profileVisible: e.target.checked })}
+                    className="accent-primary h-4 w-4" 
+                  />
                 </div>
                 <div className="flex items-center justify-between rounded-lg border border-border p-3">
-                  <div><p className="text-sm font-medium text-foreground">Show Online Status</p><p className="text-xs text-muted-foreground">Let others see when you're online</p></div>
-                  <input type="checkbox" defaultChecked className="accent-primary h-4 w-4" />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Show Online Status</p>
+                    <p className="text-xs text-muted-foreground">Let others see when you're online</p>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    checked={privacy.showOnline} 
+                    onChange={(e) => setPrivacy({ ...privacy, showOnline: e.target.checked })}
+                    className="accent-primary h-4 w-4" 
+                  />
                 </div>
-                <Button variant="hero" onClick={() => toast({ title: 'Privacy settings saved!' })}>Save Privacy Settings</Button>
+                <Button 
+                  variant="hero" 
+                  onClick={async () => {
+                    if (!user?.id) return;
+                    try {
+                      await authService.updateProfile(user.id, { privacy_settings: privacy });
+                      login({ ...user, privacy_settings: privacy });
+                      toast({ title: 'Privacy settings saved!' });
+                    } catch (e) { toast({ title: 'Save failed', variant: 'destructive' }); }
+                  }}
+                >
+                  Save Privacy Settings
+                </Button>
               </div>
             )}
 
