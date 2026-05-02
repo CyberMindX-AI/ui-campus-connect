@@ -194,15 +194,26 @@ export const authService = {
 
   getStudentIdUrl: async (path: string): Promise<string> => {
     if (!path) return '';
-    if (path.startsWith('http')) return path;
+    
+    // If it's a full Supabase URL, extract the path after 'student-ids/'
+    let filePath = path;
+    if (path.startsWith('http')) {
+      const parts = path.split('student-ids/');
+      if (parts.length > 1) {
+        filePath = parts[1];
+      } else {
+        // Not a student-id URL we recognize, return as is
+        return path;
+      }
+    }
     
     // For student IDs, we use signed URLs since the bucket is private
     const { data, error } = await supabase.storage
       .from('student-ids')
-      .createSignedUrl(path, 3600); // 1 hour expiry
+      .createSignedUrl(filePath, 3600); // 1 hour expiry
 
     if (error) {
-      console.error('Error generating signed URL:', error);
+      console.error('Error generating signed URL for:', filePath, error);
       return '';
     }
     return data.signedUrl;
