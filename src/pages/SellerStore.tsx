@@ -1,26 +1,63 @@
-import { Link } from 'react-router-dom';
-import { Star, MapPin, Clock, MessageCircle, Heart, ShieldCheck } from 'lucide-react';
+import { Link, useParams } from 'react-router-dom';
+import { Star, MapPin, Clock, MessageCircle, Heart, ShieldCheck, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
 import { useProducts } from '@/hooks/api/useProducts';
+import { getImageUrl } from '@/services/products.service';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
 
 const SellerStore = () => {
-  const { data: products = [] } = useProducts();
+  const { storeSlug } = useParams<{ storeSlug: string }>();
+  const { data: allProducts = [], isLoading: productsLoading } = useProducts();
+  const [sellerProfile, setSellerProfile] = useState<any>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!storeSlug) return;
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', storeSlug)
+          .single();
+        
+        if (data) setSellerProfile(data);
+      } catch (err) {
+        console.error('Error fetching seller profile:', err);
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+    fetchProfile();
+  }, [storeSlug]);
+
   const seller = {
-    name: "Campus Store",
-    avatar: '',
-    tagline: 'Your campus shopping destination',
-    faculty: 'General',
+    name: sellerProfile?.nickname || sellerProfile?.fullname || "Campus Store",
+    avatar: getImageUrl(sellerProfile?.avatar_url || ''),
+    tagline: sellerProfile?.bio || 'Your campus shopping destination',
+    faculty: sellerProfile?.faculty || 'General',
     department: '',
-    memberSince: '2024',
+    memberSince: sellerProfile?.created_at ? new Date(sellerProfile.created_at).getFullYear().toString() : '2024',
     rating: 0,
     totalOrders: 0,
     responseTime: '-',
   };
 
-  const storeProducts: any[] = [];
+  const storeProducts = allProducts.filter((p: any) => p.seller_id === storeSlug);
   const reviews: any[] = [];
+
+  if (profileLoading) {
+    return (
+      <Layout>
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -40,7 +77,16 @@ const SellerStore = () => {
               </div>
             </div>
             <div className="flex gap-2">
-              <Button size="sm" className="bg-white text-primary hover:bg-white/90 gap-1"><MessageCircle className="h-4 w-4" /> Message</Button>
+              <Button 
+                size="sm" 
+                className="bg-white text-primary hover:bg-white/90 gap-1"
+                onClick={() => {
+                  const msg = `Hello Admin, I'm interested in products from ${seller.name} on UI Marketplace.`;
+                  window.open(`https://wa.me/2348000000000?text=${encodeURIComponent(msg)}`, '_blank');
+                }}
+              >
+                <MessageCircle className="h-4 w-4" /> Contact Admin
+              </Button>
               <Button size="sm" variant="outline" className="border-white/30 text-white hover:bg-white/10 gap-1"><Heart className="h-4 w-4" /> Follow</Button>
             </div>
           </div>
@@ -65,11 +111,17 @@ const SellerStore = () => {
         {/* Products */}
         <div className="mt-8">
           <h2 className="font-heading text-lg font-semibold text-foreground">Products</h2>
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-            {(storeProducts.length > 0 ? storeProducts : products.slice(0, 4)).map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
+          {storeProducts.length === 0 ? (
+            <div className="mt-8 rounded-2xl border-2 border-dashed border-border p-12 text-center">
+              <p className="text-muted-foreground">This store hasn't published any products yet.</p>
+            </div>
+          ) : (
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+              {storeProducts.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Reviews */}

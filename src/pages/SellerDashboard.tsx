@@ -35,11 +35,9 @@ const SellerDashboard = () => {
   }
 
   const stats = {
-    revenue: orders
-      .filter(o => o.status === 'completed')
-      .reduce((acc, o) => acc + (o.amount || 0), 0),
     sales: orders.filter(o => o.status === 'completed').length,
     activeListings: products.filter(p => p.status === 'active' || p.status === 'available').length,
+    pendingProducts: products.filter(p => p.status === 'pending').length,
     pendingOrders: orders.filter(o => o.status === 'pending' || o.status === 'processing').length,
   };
 
@@ -94,21 +92,6 @@ const SellerDashboard = () => {
           <>
             {/* Stats Overview */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-              <Card className="border-none shadow-sm bg-primary text-white overflow-hidden relative">
-                <div className="absolute right-[-10px] top-[-10px] opacity-10">
-                  <DollarSign size={100} />
-                </div>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-bold uppercase tracking-wider opacity-80">Total Revenue</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-black">₦{stats.revenue.toLocaleString()}</div>
-                  <p className="text-xs mt-1 flex items-center opacity-80">
-                    <TrendingUp className="h-3 w-3 mr-1" /> Lifetime earnings
-                  </p>
-                </CardContent>
-              </Card>
-
               <Card className="border-none shadow-sm hover:shadow-md transition-shadow">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-bold text-slate-400 uppercase tracking-wider">Total Sales</CardTitle>
@@ -129,6 +112,18 @@ const SellerDashboard = () => {
                   <div className="text-3xl font-black text-slate-900">{stats.activeListings}</div>
                   <p className="text-xs mt-1 text-primary font-bold flex items-center">
                     <Package className="h-3 w-3 mr-1" /> Live in marketplace
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-none shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-bold text-slate-400 uppercase tracking-wider">Pending Approval</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-black text-slate-900">{stats.pendingProducts}</div>
+                  <p className="text-xs mt-1 text-amber-500 font-bold flex items-center">
+                    <Clock className="h-3 w-3 mr-1" /> Under review
                   </p>
                 </CardContent>
               </Card>
@@ -209,17 +204,22 @@ const SellerDashboard = () => {
 
                 <div className="space-y-3">
                   <h3 className="font-heading text-sm font-bold text-slate-400 uppercase tracking-widest px-2">Quick Support</h3>
-                  <Link to="/messages" className="block p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+                  <a 
+                    href="https://wa.me/2348000000000" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all group"
+                  >
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
                         <MessageSquare size={20} />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-slate-900">Message Buyers</p>
-                        <p className="text-xs text-slate-500">Check your recent chats</p>
+                        <p className="text-sm font-bold text-slate-900">Contact Support</p>
+                        <p className="text-xs text-slate-500">Get help via WhatsApp</p>
                       </div>
                     </div>
-                  </Link>
+                  </a>
                 </div>
               </div>
             </div>

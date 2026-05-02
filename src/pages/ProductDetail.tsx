@@ -186,7 +186,7 @@ const ProductDetail = () => {
                   </div>
                 </div>
               </div>
-              <Link to="/products">
+              <Link to={`/store/${product.seller_id}`}>
                 <Button variant="outline" size="sm" className="mt-3 w-full">View Store</Button>
               </Link>
             </div>
