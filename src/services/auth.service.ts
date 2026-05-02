@@ -175,16 +175,36 @@ export const authService = {
 
   uploadStudentId: async (userId: string, file: File): Promise<string> => {
     const fileExt = file.name.split('.').pop();
-    const fileName = `${userId}-${Math.random()}.${fileExt}`;
-    const filePath = `${fileName}`;
+    const fileName = `id-${Math.random()}.${fileExt}`;
+    const filePath = `${userId}/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
       .from('student-ids')
       .upload(filePath, file);
 
-    if (uploadError) throw uploadError;
+    if (uploadError) {
+      if (uploadError.message.includes('row-level security policy')) {
+        throw new Error('You do not have permission to upload documents. Please ensure you are logged in correctly.');
+      }
+      throw uploadError;
+    }
 
-    const { data } = supabase.storage.from('student-ids').getPublicUrl(filePath);
-    return data.publicUrl;
+    return filePath;
+  },
+
+  getStudentIdUrl: async (path: string): Promise<string> => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    
+    // For student IDs, we use signed URLs since the bucket is private
+    const { data, error } = await supabase.storage
+      .from('student-ids')
+      .createSignedUrl(path, 3600); // 1 hour expiry
+
+    if (error) {
+      console.error('Error generating signed URL:', error);
+      return '';
+    }
+    return data.signedUrl;
   },
 };

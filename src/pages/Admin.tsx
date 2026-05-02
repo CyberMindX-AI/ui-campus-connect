@@ -19,6 +19,7 @@ import {
   Trash2, UserCheck, UserX, FileText, Bell, LogOut, Loader2, Mail, CreditCard, Shield
 } from 'lucide-react';
 import { notificationService } from '@/services/notification.service';
+import { authService } from '@/services/auth.service';
 
 // Placeholder for local state if needed
 const INITIAL_USERS: any[] = [];
@@ -225,6 +226,19 @@ const Admin = () => {
       toast({ title: 'Seller Approved', description: 'The user has been granted seller status.' });
     } catch (error) {
       toast({ title: 'Error', description: 'Failed to approve seller.', variant: 'destructive' });
+    }
+  };
+
+  const handleViewId = async (path: string) => {
+    try {
+      const signedUrl = await authService.getStudentIdUrl(path);
+      if (signedUrl) {
+        window.open(signedUrl, '_blank');
+      } else {
+        toast({ title: 'Error', description: 'Could not generate access URL for ID.', variant: 'destructive' });
+      }
+    } catch (error) {
+      toast({ title: 'Error', description: 'Failed to fetch ID document.', variant: 'destructive' });
     }
   };
 
@@ -549,7 +563,7 @@ const Admin = () => {
                               <div className="flex items-center justify-end gap-1 flex-wrap">
                                 {/* View Student ID */}
                                 {u.student_id_url && (
-                                  <Button size="sm" variant="ghost" onClick={() => window.open(u.student_id_url, '_blank')} title="View Student ID">
+                                  <Button size="sm" variant="ghost" onClick={() => handleViewId(u.student_id_url)} title="View Student ID">
                                     <CreditCard className="h-4 w-4" />
                                   </Button>
                                 )}

@@ -246,15 +246,43 @@ INSERT INTO public.market_stats (id, total_listings, total_sellers, total_transa
 VALUES (1, 0, 0, 0)
 ON CONFLICT (id) DO NOTHING;
 
--- Storage bucket for product images (run in Supabase dashboard SQL editor)
+-- Storage buckets configuration
+-- Run these in the Supabase Dashboard SQL Editor to ensure buckets are created
 -- INSERT INTO storage.buckets (id, name, public) VALUES ('product-images', 'product-images', true) ON CONFLICT DO NOTHING;
 -- INSERT INTO storage.buckets (id, name, public) VALUES ('avatars', 'avatars', true) ON CONFLICT DO NOTHING;
+-- INSERT INTO storage.buckets (id, name, public) VALUES ('student-ids', 'student-ids', false) ON CONFLICT DO NOTHING;
 
--- Storage policies (run these in Supabase dashboard)
--- CREATE POLICY "Product images are publicly accessible." ON storage.objects FOR SELECT USING (bucket_id = 'product-images');
--- CREATE POLICY "Authenticated users can upload product images." ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'product-images' AND auth.role() = 'authenticated');
--- CREATE POLICY "Users can update their own product images." ON storage.objects FOR UPDATE USING (bucket_id = 'product-images' AND auth.uid()::text = (storage.foldername(name))[1]);
--- CREATE POLICY "Users can delete their own product images." ON storage.objects FOR DELETE USING (bucket_id = 'product-images' AND auth.uid()::text = (storage.foldername(name))[1]);
--- CREATE POLICY "Avatar images are publicly accessible." ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
--- CREATE POLICY "Authenticated users can upload avatars." ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.role() = 'authenticated');
--- CREATE POLICY "Users can update their own avatar." ON storage.objects FOR UPDATE USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
+-- Storage policies
+-- To be run in the Supabase SQL Editor
+
+-- 1. Product Images
+CREATE POLICY "Product images are publicly accessible." ON storage.objects FOR SELECT USING (bucket_id = 'product-images');
+CREATE POLICY "Authenticated users can upload product images." ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'product-images' AND auth.role() = 'authenticated');
+CREATE POLICY "Users can update their own product images." ON storage.objects FOR UPDATE USING (bucket_id = 'product-images' AND auth.uid()::text = (storage.foldername(name))[1]);
+CREATE POLICY "Users can delete their own product images." ON storage.objects FOR DELETE USING (bucket_id = 'product-images' AND auth.uid()::text = (storage.foldername(name))[1]);
+
+-- 2. Avatars
+CREATE POLICY "Avatar images are publicly accessible." ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
+CREATE POLICY "Authenticated users can upload avatars." ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.role() = 'authenticated');
+CREATE POLICY "Users can update their own avatar." ON storage.objects FOR UPDATE USING (bucket_id = 'avatars' AND (storage.foldername(name))[1] = auth.uid()::text);
+
+-- 3. Student IDs (Private, only admin and owner can see)
+CREATE POLICY "Admin can view all student IDs." ON storage.objects FOR SELECT USING (bucket_id = 'student-ids' AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin');
+CREATE POLICY "Users can view their own student ID." ON storage.objects FOR SELECT USING (
+  bucket_id = 'student-ids' AND (
+    (storage.foldername(name))[1] = auth.uid()::text OR 
+    name LIKE auth.uid()::text || '%'
+  )
+);
+CREATE POLICY "Users can upload their own student ID." ON storage.objects FOR INSERT WITH CHECK (
+  bucket_id = 'student-ids' AND (
+    (storage.foldername(name))[1] = auth.uid()::text OR 
+    name LIKE auth.uid()::text || '%'
+  )
+);
+CREATE POLICY "Users can update their own student ID." ON storage.objects FOR UPDATE USING (
+  bucket_id = 'student-ids' AND (
+    (storage.foldername(name))[1] = auth.uid()::text OR 
+    name LIKE auth.uid()::text || '%'
+  )
+);

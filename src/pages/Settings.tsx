@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +30,20 @@ const Settings = () => {
   const [bio, setBio] = useState('');
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar || '');
   const [studentIdUrl, setStudentIdUrl] = useState(user?.student_id_url || '');
+  const [signedIdUrl, setSignedIdUrl] = useState('');
+
+  // Fetch signed URL for student ID
+  useEffect(() => {
+    const fetchSignedUrl = async () => {
+      if (studentIdUrl) {
+        const url = await authService.getStudentIdUrl(studentIdUrl);
+        setSignedIdUrl(url);
+      } else {
+        setSignedIdUrl('');
+      }
+    };
+    fetchSignedUrl();
+  }, [studentIdUrl]);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingId, setUploadingId] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
@@ -58,9 +72,13 @@ const Settings = () => {
       login({ ...user, avatar: publicUrl });
       toast({ title: 'Avatar updated!', description: 'Your profile picture has been changed.' });
     } catch (error: any) {
+      let msg = error.message;
+      if (msg.includes('row-level security policy')) {
+        msg = 'Permission denied. Please log in again or contact admin if the problem persists.';
+      }
       toast({
         title: 'Upload failed',
-        description: error.message || 'Could not upload avatar. Make sure the "avatars" storage bucket exists.',
+        description: msg,
         variant: 'destructive',
       });
     } finally {
@@ -81,7 +99,11 @@ const Settings = () => {
       login({ ...user, student_id_url: publicUrl });
       toast({ title: 'ID Uploaded!', description: 'Your Student ID has been submitted for verification.' });
     } catch (error: any) {
-      toast({ title: 'Upload failed', description: error.message, variant: 'destructive' });
+      let msg = error.message;
+      if (msg.includes('row-level security policy')) {
+        msg = 'Permission denied. Make sure you are uploading your own identity document and that the system is configured correctly.';
+      }
+      toast({ title: 'Upload failed', description: msg, variant: 'destructive' });
     } finally {
       setUploadingId(false);
     }
@@ -95,7 +117,11 @@ const Settings = () => {
       login({ ...user, fullname: name, nickname: nickname });
       toast({ title: 'Settings saved!', description: 'Your changes have been applied.' });
     } catch (error: any) {
-      toast({ title: 'Save failed', description: error.message, variant: 'destructive' });
+      let msg = error.message;
+      if (msg.includes('row-level security policy')) {
+        msg = 'You do not have permission to update this profile.';
+      }
+      toast({ title: 'Save failed', description: msg, variant: 'destructive' });
     } finally {
       setSavingProfile(false);
     }
@@ -217,7 +243,7 @@ const Settings = () => {
             {activeTab === 'notifications' && (
               <div className="rounded-xl border border-border bg-card p-4 sm:p-6 space-y-4">
                 <h2 className="font-heading text-lg font-semibold text-foreground">Notification Preferences</h2>
-                {['New messages', 'Order updates', 'New reviews', 'Payment confirmations', 'Wishlist alerts', 'Platform announcements'].map((pref) => (
+                {['Order updates', 'New reviews', 'Payment confirmations', 'Wishlist alerts', 'Platform announcements'].map((pref) => (
                   <div key={pref} className="flex items-center justify-between rounded-lg border border-border p-3">
                     <span className="text-sm text-foreground">{pref}</span>
                     <div className="flex gap-4">
@@ -302,10 +328,10 @@ const Settings = () => {
                   </div>
 
                   <div className="bg-slate-50 rounded-xl p-4 flex flex-col items-center justify-center border-2 border-dashed border-slate-200">
-                    {studentIdUrl ? (
+                    {signedIdUrl ? (
                       <div className="space-y-3 w-full text-center">
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Submitted Document</p>
-                        <img src={studentIdUrl} alt="Student ID" className="max-h-32 mx-auto rounded-lg shadow-sm border border-border" />
+                        <img src={signedIdUrl} alt="Student ID" className="max-h-48 mx-auto rounded-lg shadow-sm border border-border" />
                         <p className="text-[10px] text-muted-foreground italic">Admin will review this document within 24 hours.</p>
                       </div>
                     ) : (

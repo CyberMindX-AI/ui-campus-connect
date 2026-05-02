@@ -62,8 +62,6 @@ const App = () => (
               <Route path="/dashboard/seller/products/new" element={<CreateProduct />} />
               <Route path="/dashboard/seller/products/:id/edit" element={<CreateProduct />} />
               <Route path="/store/:storeSlug" element={<SellerStore />} />
-              <Route path="/messages" element={<Messages />} />
-              <Route path="/messages/:conversationId" element={<Messages />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/wallet" element={<Wallet />} />
