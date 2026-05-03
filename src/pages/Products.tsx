@@ -1,12 +1,27 @@
 import { useState, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Search, SlidersHorizontal, X, BookOpen, Utensils, Laptop, Shirt, Wrench } from 'lucide-react';
+import { Search, SlidersHorizontal, X, BookOpen, Utensils, Laptop, Shirt, Wrench, LayoutGrid } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
 import { useProducts } from '@/hooks/api/useProducts';
 import { useCategories } from '@/hooks/api/useMarket';
+import type { LucideIcon } from 'lucide-react';
+
+const getCategoryIcon = (slug: string): LucideIcon => {
+  const s = slug.toLowerCase();
+  const map: Record<string, LucideIcon> = {
+    textbooks: BookOpen,
+    food: Utensils,
+    'food-drinks': Utensils,
+    electronics: Laptop,
+    fashion: Shirt,
+    'fashion-accessories': Shirt,
+    services: Wrench,
+  };
+  return map[s] || LayoutGrid;
+};
 
 const conditions = ['New', 'Like New', 'Used (Good)', 'Used (Fair)', 'Refurbished'];
 const sortOptions = ['Newest', 'Price: Low-High', 'Price: High-Low'];
@@ -127,11 +142,7 @@ const Products = () => {
               }`}
             >
               <div className="text-primary group-hover:scale-110 transition-transform">
-                {cat.slug === 'textbooks' && <BookOpen className="h-5 w-5" />}
-                {cat.slug === 'food' && <Utensils className="h-5 w-5" />}
-                {cat.slug === 'electronics' && <Laptop className="h-5 w-5" />}
-                {cat.slug === 'fashion' && <Shirt className="h-5 w-5" />}
-                {cat.slug === 'services' && <Wrench className="h-5 w-5" />}
+                {(() => { const Icon = getCategoryIcon(cat.slug); return <Icon className="h-5 w-5" />; })()}
               </div>
               {cat.name}
             </button>

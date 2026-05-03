@@ -39,15 +39,12 @@ export const productsService = {
   getProducts: async (): Promise<Product[]> => {
     const { data, error } = await supabase
       .from('products')
-      .select(`
-        *,
-        seller_profile:profiles(fullname, nickname, avatar_url)
-      `)
-      .or('status.eq.active,status.eq.available')
+      .select('*, seller_profile:profiles(fullname, nickname, avatar_url)')
+      .in('status', ['active', 'available'])
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching products:', error);
+      console.error('[getProducts] Error:', error.message, error.details);
       throw error;
     }
     return (data || []).map(mapProduct);

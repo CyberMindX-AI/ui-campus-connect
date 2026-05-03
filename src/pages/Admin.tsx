@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import { notificationService } from '@/services/notification.service';
 import { authService } from '@/services/auth.service';
+import { supabase } from '@/lib/supabase';
+import { useQueryClient } from '@tanstack/react-query';
 
 // Placeholder for local state if needed
 const INITIAL_USERS: any[] = [];
@@ -59,7 +61,7 @@ const Admin = () => {
   const reportsData = reportsQuery.data || [];
   const transactionsData = transactionsQuery.data || [];
   const usersData = usersQuery.data || [];
-  
+  const queryClient = useQueryClient();
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
@@ -159,23 +161,41 @@ const Admin = () => {
     const id = product.id;
     setProcessingId(id);
     try {
-      await approveProduct(id);
-      
-      // Optimistic UI update: mark as approved locally so it changes immediately
+      // Call Supabase directly for maximum reliability
+      const { error } = await supabase
+        .from('products')
+        .update({ status: 'active' })
+        .eq('id', id);
+
+      if (error) {
+        throw new Error(error.message || 'Database rejected the update. Check RLS policies.');
+      }
+
+      // Mark approved in UI immediately
       setApprovedIds(prev => new Set(prev).add(id));
-      
-      // Send notification to seller
-      await notificationService.sendNotification({
-        user_id: product.seller_id,
-        title: 'Product Approved',
-        message: `Your product "${product.title}" has been approved and is now live on the marketplace.`,
-        type: 'success'
-      });
+
+      // Refresh all product queries so buyer dashboard updates
+      await queryClient.invalidateQueries({ queryKey: ['products'] });
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'products'] });
+
+      // Notify seller
+      try {
+        await notificationService.sendNotification({
+          user_id: product.seller_id,
+          title: 'Product Approved',
+          message: `Your product "${product.title}" has been approved and is now live!`,
+          type: 'success'
+        });
+      } catch (_) { /* notification failure should not block approval */ }
 
       setSelectedProduct(null);
-      toast({ title: '✅ Approved', description: `"${product.title}" is now live.` });
+      toast({ title: 'Approved!', description: `"${product.title}" is now live on the marketplace.` });
     } catch (error: any) {
-      toast({ title: 'Error', description: error.message || 'Failed to approve product.', variant: 'destructive' });
+      toast({ 
+        title: 'Approval Failed', 
+        description: error.message, 
+        variant: 'destructive' 
+      });
     } finally {
       setProcessingId(null);
     }

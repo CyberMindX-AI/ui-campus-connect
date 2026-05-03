@@ -1,6 +1,21 @@
 import { Link, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShoppingBag, MessageSquare, Heart, TrendingUp, ChevronRight, Search } from 'lucide-react';
+import { ShoppingBag, MessageSquare, Heart, TrendingUp, ChevronRight, Search, BookOpen, Utensils, Laptop, Shirt, Wrench, LayoutGrid } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+
+const getCategoryIcon = (slug: string): LucideIcon => {
+  const s = slug.toLowerCase();
+  const map: Record<string, LucideIcon> = {
+    textbooks: BookOpen,
+    food: Utensils,
+    'food-drinks': Utensils,
+    electronics: Laptop,
+    fashion: Shirt,
+    'fashion-accessories': Shirt,
+    services: Wrench,
+  };
+  return map[s] || LayoutGrid;
+};
 import { Button } from '@/components/ui/button';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
@@ -128,7 +143,9 @@ const BuyerDashboard = () => {
                   className="flex items-center justify-between p-6 bg-white border border-slate-100 rounded-3xl shadow-sm hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-1 transition-all group"
                 >
                   <div className="flex items-center gap-4">
-                    <span className="text-3xl group-hover:scale-110 transition-transform">{cat.icon}</span>
+                    <div className="text-primary group-hover:scale-110 transition-transform">
+                      {(() => { const Icon = getCategoryIcon(cat.slug); return <Icon className="h-8 w-8" />; })()}
+                    </div>
                     <span className="font-bold text-slate-700">{cat.name}</span>
                   </div>
                   <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-primary transition-colors" />
