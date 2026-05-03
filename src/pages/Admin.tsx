@@ -161,6 +161,9 @@ const Admin = () => {
     try {
       await approveProduct(id);
       
+      // Optimistic UI update: mark as approved locally so it changes immediately
+      setApprovedIds(prev => new Set(prev).add(id));
+      
       // Send notification to seller
       await notificationService.sendNotification({
         user_id: product.seller_id,
