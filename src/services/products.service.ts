@@ -41,12 +41,15 @@ export const productsService = {
       .from('products')
       .select(`
         *,
-        seller_profile:profiles!seller_id(fullname, nickname, avatar_url)
+        seller_profile:profiles(fullname, nickname, avatar_url)
       `)
-      .in('status', ['active', 'available'])
+      .or('status.eq.active,status.eq.available')
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching products:', error);
+      throw error;
+    }
     return (data || []).map(mapProduct);
   },
 
