@@ -33,13 +33,14 @@ const mapProduct = (p: any): Product => ({
   sellerAvatar: p.seller_profile?.avatar_url
     ? getImageUrl(p.seller_profile.avatar_url)
     : '/placeholder.svg',
+  isVerified: p.seller_profile?.is_verified || false,
 });
 
 export const productsService = {
   getProducts: async (): Promise<Product[]> => {
     const { data, error } = await supabase
       .from('products')
-      .select('*, seller_profile:profiles(fullname, nickname, avatar_url)')
+      .select('*, seller_profile:profiles(fullname, nickname, avatar_url, is_verified)')
       .in('status', ['active', 'available'])
       .order('created_at', { ascending: false });
 
@@ -55,7 +56,7 @@ export const productsService = {
       .from('products')
       .select(`
         *,
-        seller_profile:profiles!seller_id(fullname, nickname, avatar_url)
+        seller_profile:profiles!seller_id(fullname, nickname, avatar_url, is_verified)
       `)
       .eq('seller_id', sellerId)
       .order('created_at', { ascending: false });
@@ -69,7 +70,7 @@ export const productsService = {
       .from('products')
       .select(`
         *,
-        seller_profile:profiles!seller_id(fullname, nickname, avatar_url)
+        seller_profile:profiles!seller_id(fullname, nickname, avatar_url, is_verified)
       `)
       .eq('id', id)
       .single();

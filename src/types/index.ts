@@ -46,6 +46,7 @@ export interface Product {
   // Derived fields for UI (joined from profiles)
   seller?: string;
   sellerAvatar?: string;
+  isVerified?: boolean;
 }
 
 export interface Category {

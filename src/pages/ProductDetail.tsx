@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, MessageCircle, Heart, Star, MapPin, Shield, ChevronLeft, Truck, Package as PackageIcon, Check } from 'lucide-react';
+import { ShoppingCart, MessageCircle, Heart, Star, MapPin, Shield, ChevronLeft, Truck, Package as PackageIcon, Check, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
@@ -180,7 +180,14 @@ const ProductDetail = () => {
               <div className="flex items-center gap-3">
                 <img src={product.sellerAvatar || '/placeholder.svg'} alt={product.seller || 'Seller'} className="h-12 w-12 rounded-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
                 <div>
-                  <p className="font-medium text-card-foreground">{product.seller || 'Campus Seller'}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-medium text-card-foreground">{product.seller || 'Campus Seller'}</p>
+                    {product.isVerified && (
+                      <div className="flex items-center justify-center h-4 w-4 rounded-full bg-blue-600 text-white shadow-sm" title="Verified Seller">
+                        <ShieldCheck className="h-2.5 w-2.5 fill-white" />
+                      </div>
+                    )}
+                  </div>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Star className="h-3 w-3 fill-accent text-accent" /> {product.rating || 0} · {product.reviews || 0} sales
                   </div>

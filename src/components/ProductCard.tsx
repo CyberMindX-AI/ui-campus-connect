@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart, MapPin } from 'lucide-react';
+import { Heart, MapPin, ShieldCheck } from 'lucide-react';
 import type { Product } from '@/types';
 import { useWishlist } from '@/hooks/api/useWishlist';
 import { useAuth } from '@/contexts/AuthContext';
@@ -52,7 +52,14 @@ const ProductCard = ({ product }: { product: Product }) => {
       <div className="p-5">
         <div className="flex items-center gap-2 mb-3">
           <img src={product.sellerAvatar || '/placeholder.svg'} alt={product.seller || 'Seller'} className="h-6 w-6 rounded-full border border-slate-100 object-cover" />
-          <span className="text-xs font-bold text-slate-900">{product.seller || 'Verified Seller'}</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-bold text-slate-900">{product.seller || 'Verified Seller'}</span>
+            {product.isVerified && (
+              <div className="flex items-center justify-center h-4 w-4 rounded-full bg-blue-600 text-white shadow-sm" title="Verified Seller">
+                <ShieldCheck className="h-2.5 w-2.5 fill-white" />
+              </div>
+            )}
+          </div>
         </div>
 
         <h3 className="line-clamp-2 text-sm font-bold text-slate-900 mb-4 h-10 group-hover:text-primary transition-colors leading-tight">

@@ -44,6 +44,7 @@ const SellerStore = () => {
     rating: 0,
     totalOrders: 0,
     responseTime: '-',
+    isVerified: sellerProfile?.is_verified || false,
   };
 
   const storeProducts = allProducts.filter((p: any) => p.seller_id === storeSlug);
@@ -67,7 +68,14 @@ const SellerStore = () => {
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
             <img src={seller.avatar} alt={seller.name} className="h-20 w-20 rounded-full border-4 border-white/20 object-cover" />
             <div className="flex-1">
-              <h1 className="font-heading text-xl font-bold sm:text-2xl">{seller.name}</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="font-heading text-xl font-bold sm:text-2xl">{seller.name}</h1>
+                {seller.isVerified && (
+                  <div className="flex items-center justify-center h-5 w-5 rounded-full bg-white text-primary shadow-sm" title="Verified Seller">
+                    <ShieldCheck className="h-3 w-3 fill-primary" />
+                  </div>
+                )}
+              </div>
               <p className="mt-1 text-sm text-primary-foreground/80">{seller.tagline}</p>
               <div className="mt-2 flex flex-wrap gap-3 text-sm text-primary-foreground/80">
                 <span className="flex items-center gap-1"><Star className="h-4 w-4 fill-current" /> {seller.rating}</span>
