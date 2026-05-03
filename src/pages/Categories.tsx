@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { useCategories } from '@/hooks/api/useMarket';
+import { BookOpen, Utensils, Laptop, Shirt, Wrench, LayoutGrid } from 'lucide-react';
 
 const Categories = () => {
   const { data: categories = [] } = useCategories();
@@ -24,8 +25,13 @@ const Categories = () => {
               to={`/products?category=${cat.slug}`}
               className="group bg-white p-10 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 hover:border-primary/20 transition-all text-center flex flex-col items-center gap-6"
             >
-              <div className="h-24 w-24 rounded-3xl bg-slate-50 flex items-center justify-center text-5xl group-hover:scale-110 group-hover:rotate-6 transition-transform">
-                {cat.icon}
+              <div className="h-24 w-24 rounded-3xl bg-slate-50 flex items-center justify-center text-primary group-hover:scale-110 group-hover:rotate-6 transition-transform">
+                {cat.slug === 'textbooks' && <BookOpen className="h-12 w-12" />}
+                {cat.slug === 'food' && <Utensils className="h-12 w-12" />}
+                {cat.slug === 'electronics' && <Laptop className="h-12 w-12" />}
+                {cat.slug === 'fashion' && <Shirt className="h-12 w-12" />}
+                {cat.slug === 'services' && <Wrench className="h-12 w-12" />}
+                {!['textbooks', 'food', 'electronics', 'fashion', 'services'].includes(cat.slug) && <LayoutGrid className="h-12 w-12" />}
               </div>
               <div className="space-y-1">
                 <h3 className="text-xl font-bold text-slate-900 group-hover:text-primary transition-colors">

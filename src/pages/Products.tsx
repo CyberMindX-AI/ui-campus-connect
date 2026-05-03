@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { Search, SlidersHorizontal, X, BookOpen, Utensils, Laptop, Shirt, Wrench } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import Layout from '@/components/Layout';
@@ -8,7 +8,7 @@ import ProductCard from '@/components/ProductCard';
 import { useProducts } from '@/hooks/api/useProducts';
 import { useCategories } from '@/hooks/api/useMarket';
 
-const conditions = ['New', 'Like New', 'Used'];
+const conditions = ['New', 'Like New', 'Used (Good)', 'Used (Fair)', 'Refurbished'];
 const sortOptions = ['Newest', 'Price: Low-High', 'Price: High-Low'];
 
 const Products = () => {
@@ -126,7 +126,14 @@ const Products = () => {
                   : 'bg-white border border-slate-100 text-slate-500 hover:border-primary hover:text-primary'
               }`}
             >
-              <span className="text-lg">{cat.icon}</span> {cat.name}
+              <div className="text-primary group-hover:scale-110 transition-transform">
+                {cat.slug === 'textbooks' && <BookOpen className="h-5 w-5" />}
+                {cat.slug === 'food' && <Utensils className="h-5 w-5" />}
+                {cat.slug === 'electronics' && <Laptop className="h-5 w-5" />}
+                {cat.slug === 'fashion' && <Shirt className="h-5 w-5" />}
+                {cat.slug === 'services' && <Wrench className="h-5 w-5" />}
+              </div>
+              {cat.name}
             </button>
           ))}
         </div>
