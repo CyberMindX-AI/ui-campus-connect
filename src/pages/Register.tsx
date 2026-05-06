@@ -80,7 +80,8 @@ const Register = () => {
         onSuccess: () => {
           setLoading(false);
           toast({ title: 'Account created!', description: 'Welcome to UI Marketplace!' });
-          navigate(role === 'seller' ? '/dashboard/seller' : '/dashboard/buyer');
+          // Redirect to terms page after signup to ensure they see the T&Cs (especially for sellers)
+          navigate('/terms?from=signup');
         },
         onError: (error: any) => {
           setLoading(false);

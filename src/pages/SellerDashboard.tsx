@@ -205,7 +205,7 @@ const SellerDashboard = () => {
                 <div className="space-y-3">
                   <h3 className="font-heading text-sm font-bold text-slate-400 uppercase tracking-widest px-2">Quick Support</h3>
                   <a 
-                    href="https://wa.me/2348000000000" 
+                    href="https://wa.me/2349167763926" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="block p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all group"

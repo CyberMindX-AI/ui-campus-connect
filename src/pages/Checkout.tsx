@@ -31,7 +31,7 @@ const Checkout = () => {
   const { toast } = useToast();
 
   const subtotal = items.reduce((s, i) => s + (i.product.price * i.qty), 0);
-  const fee = Math.round(subtotal * 0.05);
+  const fee = Math.round(subtotal * 0.10);
   const total = subtotal + fee;
 
   const handlePlaceOrder = async () => {
@@ -168,7 +168,7 @@ const Checkout = () => {
             <hr className="my-4 border-border" />
             <div className="space-y-2 text-sm">
               <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span className="text-foreground">₦{subtotal.toLocaleString()}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Service Fee (5%)</span><span className="text-foreground">₦{fee.toLocaleString()}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Service Fee (10%)</span><span className="text-foreground">₦{fee.toLocaleString()}</span></div>
               <hr className="border-border" />
               <div className="flex justify-between font-semibold"><span className="text-foreground">Total</span><span className="text-primary">₦{total.toLocaleString()}</span></div>
             </div>
@@ -179,4 +179,4 @@ const Checkout = () => {
   );
 };
 
-export default Checkout;
+export default Checkout;

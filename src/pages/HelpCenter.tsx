@@ -109,9 +109,11 @@ const HelpCenter = () => {
           <h2 className="mt-3 font-heading text-lg font-semibold text-foreground">Still need help?</h2>
           <p className="mt-1 text-sm text-muted-foreground">Our support team is available to assist you</p>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <Link to="/support">
-              <Button variant="hero">Contact Support</Button>
-            </Link>
+            <a href="https://wa.me/2349167763926" target="_blank" rel="noopener noreferrer">
+              <Button variant="hero" className="gap-2">
+                <MessageCircle className="h-4 w-4" /> WhatsApp Support
+              </Button>
+            </a>
             <a href="mailto:support@uimarketplace.ng">
               <Button variant="outline" className="gap-2">
                 <Mail className="h-4 w-4" /> Email Us

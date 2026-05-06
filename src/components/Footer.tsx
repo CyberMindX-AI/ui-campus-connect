@@ -29,6 +29,7 @@ const Footer = () => (
           <ul className="space-y-4 text-sm">
             <li><Link to="/help" className="hover:text-primary transition-colors">Help Center</Link></li>
             <li><Link to="/support" className="hover:text-primary transition-colors">Contact Support</Link></li>
+            <li><a href="tel:09167763926" className="hover:text-primary transition-colors">Admin: 09167763926</a></li>
             <li><Link to="/help" className="hover:text-primary transition-colors">Safety Tips</Link></li>
           </ul>
         </div>
