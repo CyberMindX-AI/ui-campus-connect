@@ -7,6 +7,7 @@ import Layout from '@/components/Layout';
 import { useSellerProducts, useDeleteProduct, useUpdateProduct } from '@/hooks/api/useProducts';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { ADMIN_WHATSAPP_NUMBER } from '@/lib/whatsapp';
 
 const SellerProducts = () => {
   const { user, isAuthenticated } = useAuth();
@@ -112,7 +113,6 @@ const SellerProducts = () => {
                 </div>
                 <p className="font-heading text-lg font-bold text-primary">₦{product.price.toLocaleString()}</p>
                 <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2">
                   <button
                     onClick={() => toggleStatus(product.id, product.status)}
                     className="text-slate-400 hover:text-primary transition-colors"
@@ -136,12 +136,11 @@ const SellerProducts = () => {
                     className="ml-2 gap-1.5 h-9 border-green-200 text-green-700 hover:bg-green-50" 
                     onClick={() => {
                       const msg = `Hello Admin, I posted a product on UI Marketplace and need verification/assistance.\n\nProduct: ${product.title}\nProduct ID: ${product.id}\nStatus: ${product.status}\n\nPlease review. Thank you.`;
-                      window.open(`https://wa.me/2348000000000?text=${encodeURIComponent(msg)}`, '_blank');
+                      window.open(`https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
                     }}
                   >
                     <MessageCircle className="h-3.5 w-3.5" /> Contact Admin
                   </Button>
-                </div>
                 </div>
               </div>
             ))}

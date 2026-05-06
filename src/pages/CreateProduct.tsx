@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCreateProduct, useUpdateProduct, useProduct } from '@/hooks/api/useProducts';
 import { uploadProductImage } from '@/services/products.service';
 import { Link } from 'react-router-dom';
+import { contactAdminAboutProduct } from '@/lib/whatsapp';
 
 const conditions = ['New', 'Like New', 'Used (Good)', 'Used (Fair)', 'Refurbished'];
 const deliveryOptions = ['Campus Pickup', 'Hall Delivery', 'Digital Delivery'];
@@ -180,8 +181,7 @@ const CreateProduct = () => {
 
   // Success screen after posting a new product
   if (successProduct) {
-    const waMessage = `Hello Admin, I have just posted a product on UI Marketplace and would like to follow up for verification.\n\nProduct: ${successProduct.title}\nProduct ID: ${successProduct.id}\n\nPlease review my listing. Thank you.`;
-    const waUrl = `https://wa.me/2348000000000?text=${encodeURIComponent(waMessage)}`;
+    const waUrl = contactAdminAboutProduct(successProduct.title, successProduct.id);
     return (
       <Layout>
         <div className="container mx-auto px-4 py-16 max-w-lg text-center">

@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import Layout from '@/components/Layout';
 import { useSellerProducts } from '@/hooks/api/useProducts';
 import { useSellerOrders } from '@/hooks/api/useOrders';
+import { ADMIN_WHATSAPP_NUMBER } from '@/lib/whatsapp';
 
 const SellerDashboard = () => {
   const { user, isAuthenticated } = useAuth();
@@ -205,7 +206,7 @@ const SellerDashboard = () => {
                 <div className="space-y-3">
                   <h3 className="font-heading text-sm font-bold text-slate-400 uppercase tracking-widest px-2">Quick Support</h3>
                   <a 
-                    href="https://wa.me/2349167763926" 
+                    href={`https://wa.me/${ADMIN_WHATSAPP_NUMBER}`} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="block p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all group"

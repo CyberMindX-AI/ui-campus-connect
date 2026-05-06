@@ -7,6 +7,7 @@ import { useProducts } from '@/hooks/api/useProducts';
 import { getImageUrl } from '@/services/products.service';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { ADMIN_WHATSAPP_NUMBER } from '@/lib/whatsapp';
 
 const SellerStore = () => {
   const { storeSlug } = useParams<{ storeSlug: string }>();
@@ -90,7 +91,7 @@ const SellerStore = () => {
                 className="bg-white text-primary hover:bg-white/90 gap-1"
                 onClick={() => {
                   const msg = `Hello Admin, I'm interested in products from ${seller.name} on UI Marketplace.`;
-                  window.open(`https://wa.me/2348000000000?text=${encodeURIComponent(msg)}`, '_blank');
+                  window.open(`https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
                 }}
               >
                 <MessageCircle className="h-4 w-4" /> Contact Admin

@@ -2,6 +2,15 @@ import { Link, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShoppingBag, MessageSquare, Heart, TrendingUp, ChevronRight, Search, BookOpen, Utensils, Laptop, Shirt, Wrench, LayoutGrid } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import Layout from '@/components/Layout';
+import ProductCard from '@/components/ProductCard';
+import { useAuth } from '@/contexts/AuthContext';
+import { useCategories } from '@/hooks/api/useMarket';
+import { useProducts } from '@/hooks/api/useProducts';
+import { useBuyerOrders } from '@/hooks/api/useOrders';
+import { useWishlist } from '@/hooks/api/useWishlist';
+import { ADMIN_WHATSAPP_NUMBER } from '@/lib/whatsapp';
 
 const getCategoryIcon = (slug: string): LucideIcon => {
   const s = slug.toLowerCase();
@@ -16,14 +25,6 @@ const getCategoryIcon = (slug: string): LucideIcon => {
   };
   return map[s] || LayoutGrid;
 };
-import { Button } from '@/components/ui/button';
-import Layout from '@/components/Layout';
-import ProductCard from '@/components/ProductCard';
-import { useAuth } from '@/contexts/AuthContext';
-import { useCategories } from '@/hooks/api/useMarket';
-import { useProducts } from '@/hooks/api/useProducts';
-import { useBuyerOrders } from '@/hooks/api/useOrders';
-import { useWishlist } from '@/hooks/api/useWishlist';
 
 const BuyerDashboard = () => {
   const hour = new Date().getHours();
@@ -47,7 +48,7 @@ const BuyerDashboard = () => {
 
   const handleContactAdmin = () => {
     const message = `Hello Admin, I am a buyer on UI Marketplace and need assistance with a product or order.\n\nBuyer: ${user?.fullname || 'Unknown'}\nEmail: ${user?.email || ''}\n\nPlease help me. Thank you.`;
-    window.open(`https://wa.me/2348000000000?text=${encodeURIComponent(message)}`, '_blank');
+    window.open(`https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   return (

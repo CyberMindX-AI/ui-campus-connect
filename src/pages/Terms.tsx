@@ -3,6 +3,7 @@ import { FileText, ShieldCheck, Users, AlertTriangle, DollarSign, Scale, Message
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { ADMIN_WHATSAPP_NUMBER } from '@/lib/whatsapp';
 
 const Terms = () => {
   const [searchParams] = useSearchParams();
@@ -170,7 +171,7 @@ const Terms = () => {
               <h2 className="font-heading text-lg font-semibold text-foreground">12. Contact</h2>
             </div>
             <p>
-              For questions about these terms, contact the admin via the in-app "Contact Admin" feature or through the support WhatsApp channel at <a href="tel:09167763926" className="text-primary font-bold">09167763926</a>. You can also email support@uimarketplace.ng.
+              For questions about these terms, contact the admin via the in-app "Contact Admin" feature or through the support WhatsApp channel at <a href={`tel:${ADMIN_WHATSAPP_NUMBER}`} className="text-primary font-bold">{ADMIN_WHATSAPP_NUMBER}</a>. You can also email support@uimarketplace.ng.
             </p>
           </section>
         </div>

@@ -4,6 +4,7 @@ import { Search, ChevronDown, MessageCircle, Mail, ShieldCheck, CreditCard, Pack
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import Layout from '@/components/Layout';
+import { ADMIN_WHATSAPP_NUMBER } from '@/lib/whatsapp';
 
 const helpCategories = [
   { icon: Users, title: 'Account & Registration', articles: [
@@ -109,7 +110,7 @@ const HelpCenter = () => {
           <h2 className="mt-3 font-heading text-lg font-semibold text-foreground">Still need help?</h2>
           <p className="mt-1 text-sm text-muted-foreground">Our support team is available to assist you</p>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <a href="https://wa.me/2349167763926" target="_blank" rel="noopener noreferrer">
+            <a href={`https://wa.me/${ADMIN_WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer">
               <Button variant="hero" className="gap-2">
                 <MessageCircle className="h-4 w-4" /> WhatsApp Support
               </Button>

@@ -9,6 +9,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useWishlist } from '@/hooks/api/useWishlist';
+import { ADMIN_WHATSAPP_NUMBER } from '@/lib/whatsapp';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -73,7 +74,7 @@ const ProductDetail = () => {
       return;
     }
     const message = `Hello Admin, I am interested in a product on UI Marketplace and need assistance.\n\nProduct: ${product.title}\nProduct ID: ${product.id}\nSeller: ${product.seller || 'Unknown'}\nPrice: ₦${product.price?.toLocaleString()}\n\nPlease help me connect with the seller or provide more details. Thank you.`;
-    window.open(`https://wa.me/2348000000000?text=${encodeURIComponent(message)}`, '_blank');
+    window.open(`https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   const related = allProducts.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
