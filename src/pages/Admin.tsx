@@ -83,6 +83,97 @@ const Admin = () => {
     emailNotifications: true,
   });
 
+  const [showAnnouncementDialog, setShowAnnouncementDialog] = useState(false);
+  const [announcement, setAnnouncement] = useState({ title: '', message: '', type: 'info' });
+  const [isSendingAnnouncement, setIsSendingAnnouncement] = useState(false);
+
+  const handleSendAnnouncement = async () => {
+    if (!announcement.title || !announcement.message) {
+      toast({ title: 'Missing fields', description: 'Please provide both a title and message.', variant: 'destructive' });
+      return;
+    }
+
+    setIsSendingAnnouncement(true);
+    try {
+      await notificationService.broadcastNotification({
+        title: announcement.title,
+        message: announcement.message,
+        type: announcement.type as any
+      });
+      toast({ title: 'Announcement Sent', description: 'The platform announcement has been broadcast to all users.' });
+      setShowAnnouncementDialog(false);
+      setAnnouncement({ title: '', message: '', type: 'info' });
+    } catch (error: any) {
+      toast({ title: 'Failed to send', description: error.message, variant: 'destructive' });
+    } finally {
+      setIsSendingAnnouncement(false);
+    }
+  };
+
+  const handleExportUsers = () => {
+    try {
+      if (usersData.length === 0) {
+        toast({ title: 'No data', description: 'There are no users to export.', variant: 'destructive' });
+        return;
+      }
+
+      const headers = ['ID', 'Full Name', 'Email', 'Role', 'Faculty', 'Status', 'Verified', 'Created At'];
+      const rows = usersData.map((u: any) => [
+        u.id,
+        u.fullname,
+        u.email,
+        u.role,
+        u.faculty,
+        u.status,
+        u.email_verified ? 'Yes' : 'No',
+        new Date(u.created_at).toLocaleDateString()
+      ]);
+
+      const csvContent = [headers, ...rows].map(e => e.join(',')).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `ui_marketplace_users_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({ title: 'Export Successful', description: 'User data has been exported to CSV.' });
+    } catch (error: any) {
+      toast({ title: 'Export Failed', description: error.message, variant: 'destructive' });
+    }
+  };
+
+  const handleClearCache = () => {
+    try {
+      // Clear session and local storage except for admin auth if we want to keep them logged in
+      const adminAuth = sessionStorage.getItem('ui_admin_auth');
+      sessionStorage.clear();
+      localStorage.clear();
+      if (adminAuth) sessionStorage.setItem('ui_admin_auth', adminAuth);
+      
+      // Invalidate all queries
+      queryClient.clear();
+      
+      toast({ title: 'Cache Cleared', description: 'All application cache and local storage have been cleared.' });
+      
+      // Reload to ensure fresh state
+      setTimeout(() => window.location.reload(), 1500);
+    } catch (error: any) {
+      toast({ title: 'Error', description: 'Failed to clear cache.', variant: 'destructive' });
+    }
+  };
+
+  const handleTogglePlatformSetting = (key: keyof typeof platformSettings, val: boolean) => {
+    setPlatformSettings(prev => ({ ...prev, [key]: val }));
+    toast({ 
+      title: 'Setting Updated', 
+      description: `${key.replace(/([A-Z])/g, ' $1')} has been ${val ? 'enabled' : 'disabled'}.` 
+    });
+  };
+
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (adminEmail === ADMIN_CREDENTIALS.email && adminPassword === ADMIN_CREDENTIALS.password) {
@@ -772,7 +863,7 @@ const Admin = () => {
                         </div>
                         <Switch
                           checked={platformSettings[setting.key] as boolean}
-                          onCheckedChange={(val) => setPlatformSettings(prev => ({ ...prev, [setting.key]: val }))}
+                          onCheckedChange={(val) => handleTogglePlatformSetting(setting.key, val)}
                         />
                       </div>
                     ))}
@@ -785,19 +876,19 @@ const Admin = () => {
                     <CardDescription>Common administrative actions.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <Button variant="outline" className="w-full justify-start gap-2">
-                      <Bell className="h-4 w-4" /> Send Platform Announcement
+                    <Button variant="outline" className="w-full justify-start gap-2 hover:bg-[#FACC15]/10" onClick={() => setShowAnnouncementDialog(true)}>
+                      <Bell className="h-4 w-4 text-[#FACC15]" /> Send Platform Announcement
                     </Button>
-                    <Button variant="outline" className="w-full justify-start gap-2">
-                      <FileText className="h-4 w-4" /> Export User Data (CSV)
+                    <Button variant="outline" className="w-full justify-start gap-2" onClick={handleExportUsers}>
+                      <FileText className="h-4 w-4 text-blue-500" /> Export User Data (CSV)
                     </Button>
-                    <Button variant="outline" className="w-full justify-start gap-2">
-                      <BarChart className="h-4 w-4" /> Generate Analytics Report
+                    <Button variant="outline" className="w-full justify-start gap-2" onClick={() => toast({ title: 'Coming Soon', description: 'Analytics reporting will be available in the next update.' })}>
+                      <BarChart className="h-4 w-4 text-emerald-500" /> Generate Analytics Report
                     </Button>
-                    <Button variant="outline" className="w-full justify-start gap-2">
-                      <MessageSquare className="h-4 w-4" /> View Support Tickets
+                    <Button variant="outline" className="w-full justify-start gap-2" onClick={() => toast({ title: 'Coming Soon', description: 'Support ticket system is under development.' })}>
+                      <MessageSquare className="h-4 w-4 text-purple-500" /> View Support Tickets
                     </Button>
-                    <Button variant="destructive" className="w-full justify-start gap-2">
+                    <Button variant="destructive" className="w-full justify-start gap-2" onClick={handleClearCache}>
                       <AlertTriangle className="h-4 w-4" /> Clear All Cache
                     </Button>
                   </CardContent>
@@ -976,6 +1067,59 @@ const Admin = () => {
             <Button variant="outline" onClick={() => setShowRejectDialog(false)}>Cancel</Button>
             <Button variant="destructive" onClick={handleRejectItem} disabled={!rejectReason.trim()}>
               Confirm Rejection
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Announcement Dialog */}
+      <Dialog open={showAnnouncementDialog} onOpenChange={setShowAnnouncementDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Send Platform Announcement</DialogTitle>
+            <DialogDescription>This message will be sent to ALL registered users on UI Marketplace.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Announcement Title</label>
+              <Input 
+                placeholder="e.g. Scheduled Maintenance" 
+                value={announcement.title} 
+                onChange={e => setAnnouncement(prev => ({ ...prev, title: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Message Content</label>
+              <Textarea 
+                placeholder="Details of the announcement..." 
+                value={announcement.message} 
+                onChange={e => setAnnouncement(prev => ({ ...prev, message: e.target.value }))}
+                rows={4}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Type</label>
+              <Select value={announcement.type} onValueChange={val => setAnnouncement(prev => ({ ...prev, type: val }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="info">Information (Blue)</SelectItem>
+                  <SelectItem value="warning">Warning (Yellow)</SelectItem>
+                  <SelectItem value="success">Success (Green)</SelectItem>
+                  <SelectItem value="error">Critical/Error (Red)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAnnouncementDialog(false)}>Cancel</Button>
+            <Button 
+              className="bg-[#2563EB] text-white hover:bg-[#1D4ED8]" 
+              onClick={handleSendAnnouncement}
+              disabled={isSendingAnnouncement || !announcement.title || !announcement.message}
+            >
+              {isSendingAnnouncement ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Bell className="mr-2 h-4 w-4" />}
+              Send to All Users
             </Button>
           </DialogFooter>
         </DialogContent>
