@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Menu, X, Search, Bell, User, LogOut, Settings, Package, Store } from 'lucide-react';
+import { ShoppingCart, Menu, X, Bell, LogOut, Settings, Package, Store } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
+import { useNotifications } from '@/hooks/api/useNotifications';
 import logo from '@/assets/logo.jpeg';
 
 const Navbar = () => {
@@ -14,6 +15,8 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
   const { cartCount } = useCart();
+  const { notifications } = useNotifications();
+  const unreadCount = (notifications.data || []).filter((n: any) => !n.is_read).length;
 
   const dashboardLink = user?.role === 'seller' ? '/dashboard/seller' : '/dashboard/buyer';
   const sellerOnlyPaths = ['/wallet', '/dashboard/seller', '/settings', '/notifications', '/store'];
@@ -89,9 +92,14 @@ const Navbar = () => {
         <div className="hidden items-center gap-4 md:flex">
           {isAuthenticated ? (
             <>
-              <Link to="/notifications">
+              <Link to="/notifications" className="relative">
                 <Button variant="ghost" size="icon" className="text-slate-500 hover:text-primary">
                   <Bell className="h-5 w-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
                 </Button>
               </Link>
               {!isSellerView && (

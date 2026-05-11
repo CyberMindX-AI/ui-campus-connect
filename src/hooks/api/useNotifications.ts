@@ -10,6 +10,7 @@ export const useNotifications = () => {
     queryKey: ['notifications', user?.id],
     queryFn: () => notificationService.getNotifications(user!.id!),
     enabled: !!user?.id,
+    refetchInterval: 15000, // Poll every 15 seconds for new notifications
   });
 
   const markAsReadMutation = useMutation({
@@ -19,8 +20,20 @@ export const useNotifications = () => {
     },
   });
 
+  const markAllAsReadMutation = useMutation({
+    mutationFn: async () => {
+      const unread = (notifications.data || []).filter((n: any) => !n.is_read);
+      await Promise.all(unread.map((n: any) => notificationService.markAsRead(n.id)));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
+    },
+  });
+
   return {
     notifications,
     markAsRead: markAsReadMutation.mutate,
+    markAllAsRead: markAllAsReadMutation.mutate,
+    unreadCount: (notifications.data || []).filter((n: any) => !n.is_read).length,
   };
 };
