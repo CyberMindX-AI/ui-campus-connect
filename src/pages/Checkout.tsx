@@ -72,17 +72,25 @@ const Checkout = () => {
     }
 
     if (!window.PaystackPop) {
-      toast({ title: 'Payment Error', description: 'Paystack SDK could not be loaded. Please refresh the page.', variant: 'destructive' });
+      toast({ title: 'Payment Error', description: 'Paystack SDK is still loading. Please wait a moment and try again.', variant: 'destructive' });
       return;
     }
 
-    const config = {
+    const paystackConfig = {
       key: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '',
       email: user?.email || "student@campus.edu",
       amount: total * 100, // Paystack works with kobo/cents
       ref: (new Date()).getTime().toString(),
-      // Ensure the popup is called at the top-level window if nested
-      container: 'root', // Optional: specify container
+      // Adding metadata can help track the origin
+      metadata: {
+        custom_fields: [
+          {
+            display_name: "Is Iframe",
+            variable_name: "is_iframe",
+            value: window.self !== window.top ? "yes" : "no"
+          }
+        ]
+      },
       callback: (response: any) => {
         handlePlaceOrder(response.reference);
       },
@@ -92,12 +100,13 @@ const Checkout = () => {
     };
 
     try {
-      // Use the PaystackPop directly for better control over iframe context
-      const paystack = new window.PaystackPop();
-      paystack.newTransaction(config);
+      // Use setup() instead of constructor to fix "is not a constructor" error
+      // and provide better compatibility with sandboxed environments
+      const handler = window.PaystackPop.setup(paystackConfig);
+      handler.openIframe();
     } catch (error) {
-      console.error('Paystack error:', error);
-      toast({ title: 'Payment Error', description: 'Failed to initialize payment popup.', variant: 'destructive' });
+      console.error('Paystack initialization error:', error);
+      toast({ title: 'Payment Error', description: 'Failed to start payment. Please refresh the page.', variant: 'destructive' });
     }
   };
 
