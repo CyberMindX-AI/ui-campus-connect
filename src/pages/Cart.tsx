@@ -9,7 +9,7 @@ const Cart = () => {
   const { items, updateQty, removeFromCart } = useCart();
 
   const subtotal = items.reduce((sum, i) => sum + i.product.price * i.qty, 0);
-  const fee = Math.round(subtotal * 0.05);
+  const fee = Math.round(subtotal * 0.10);
   const total = subtotal + fee;
 
   return (
@@ -85,7 +85,7 @@ const Cart = () => {
                   <span className="font-black text-slate-900">₦{subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
-                  <span className="font-bold text-slate-400 uppercase tracking-widest">Service Fee (5%)</span>
+                  <span className="font-bold text-slate-400 uppercase tracking-widest">Service Fee (10%)</span>
                   <span className="font-black text-slate-900">₦{fee.toLocaleString()}</span>
                 </div>
                 <div className="h-px bg-slate-100 w-full" />
