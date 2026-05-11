@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,16 +9,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { checkoutService } from '@/services/checkout.service';
 import { useToast } from '@/hooks/use-toast';
-
-// Remove usePaystackPayment as we'll use the global object for better iframe support
-// import { usePaystackPayment } from 'react-paystack';
-
-// Add type for Paystack global
-declare global {
-  interface Window {
-    PaystackPop: any;
-  }
-}
+import { usePaystackPayment } from 'react-paystack';
 
 const steps = ['Delivery Details', 'Payment', 'Confirmation'];
 const deliveryMethods = ['Campus Pickup', 'Hall Delivery', 'Digital Delivery'];
@@ -40,16 +31,27 @@ const Checkout = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Use a stable ref for the payment reference — NEVER regenerate mid-session
+  const paymentRef = useRef(`CC-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`);
+
   const subtotal = items.reduce((s, i) => s + (i.product.price * i.qty), 0);
   const fee = Math.round(subtotal * 0.10);
   const total = subtotal + fee;
+
+  const paystackConfig = {
+    reference: paymentRef.current,
+    email: user?.email || 'student@campus.edu',
+    amount: total * 100, // kobo
+    publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '',
+  };
+
+  const initializePayment = usePaystackPayment(paystackConfig);
 
   const handlePlaceOrder = async (paystackRef?: string) => {
     if (!isAuthenticated || !user?.id) {
       toast({ title: 'Authentication Required', description: 'Please login to complete your order.', variant: 'destructive' });
       return;
     }
-    
     setLoading(true);
     try {
       const result = await checkoutService.createOrder(user.id, items, delivery, payment, paystackRef);
@@ -70,44 +72,30 @@ const Checkout = () => {
       toast({ title: 'Login Required', description: 'Please login to proceed with payment.', variant: 'destructive' });
       return;
     }
-
-    if (!window.PaystackPop) {
-      toast({ title: 'Payment Error', description: 'Paystack SDK is still loading. Please wait a moment and try again.', variant: 'destructive' });
+    if (!import.meta.env.VITE_PAYSTACK_PUBLIC_KEY) {
+      toast({ title: 'Configuration Error', description: 'Payment key is not configured. Please contact support.', variant: 'destructive' });
       return;
     }
 
-    const paystackConfig = {
-      key: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '',
-      email: user?.email || "student@campus.edu",
-      amount: total * 100, // Paystack works with kobo/cents
-      ref: (new Date()).getTime().toString(),
-      // Adding metadata can help track the origin
-      metadata: {
-        custom_fields: [
-          {
-            display_name: "Is Iframe",
-            variable_name: "is_iframe",
-            value: window.self !== window.top ? "yes" : "no"
-          }
-        ]
-      },
-      callback: (response: any) => {
-        handlePlaceOrder(response.reference);
-      },
-      onClose: () => {
-        toast({ title: 'Payment Cancelled', description: 'You cancelled the payment process.' });
-      }
-    };
-
-    try {
-      // Use setup() instead of constructor to fix "is not a constructor" error
-      // and provide better compatibility with sandboxed environments
-      const handler = window.PaystackPop.setup(paystackConfig);
-      handler.openIframe();
-    } catch (error) {
-      console.error('Paystack initialization error:', error);
-      toast({ title: 'Payment Error', description: 'Failed to start payment. Please refresh the page.', variant: 'destructive' });
+    // If running inside an iframe (e.g. Lovable preview), warn the user.
+    // On the real deployed site this check is false and the popup works normally.
+    if (window.self !== window.top) {
+      toast({
+        title: 'Open in Full Browser Tab',
+        description: 'Paystack cannot load inside a preview frame. Please open the live site directly to pay.',
+        variant: 'destructive',
+      });
+      return;
     }
+
+    initializePayment(
+      (ref: any) => {
+        handlePlaceOrder(ref.reference);
+      },
+      () => {
+        toast({ title: 'Payment Cancelled', description: 'You closed the payment window.' });
+      }
+    );
   };
 
   if (items.length === 0 && step !== 2) {

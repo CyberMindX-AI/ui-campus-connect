@@ -12,6 +12,8 @@ import { useCreateProduct, useUpdateProduct, useProduct } from '@/hooks/api/useP
 import { uploadProductImage } from '@/services/products.service';
 import { Link } from 'react-router-dom';
 import { contactAdminAboutProduct } from '@/lib/whatsapp';
+import { notificationService } from '@/services/notification.service';
+import { supabase } from '@/lib/supabase';
 
 const conditions = ['New', 'Like New', 'Used (Good)', 'Used (Fair)', 'Refurbished'];
 const deliveryOptions = ['Campus Pickup', 'Hall Delivery', 'Digital Delivery'];
@@ -165,9 +167,29 @@ const CreateProduct = () => {
       createProduct(
         productData as any,
         {
-          onSuccess: (created: any) => {
+          onSuccess: async (created: any) => {
             toast({ title: 'Listing Submitted!', description: 'It will be live once approved.' });
             setSuccessProduct({ id: created?.id || '', title: title });
+
+            // Notify the admin about the new pending product
+            try {
+              const { data: adminProfile } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('role', 'admin')
+                .single();
+
+              if (adminProfile?.id) {
+                await notificationService.sendNotification({
+                  user_id: adminProfile.id,
+                  title: '🛒 New Product Pending Approval',
+                  message: `"${title}" was submitted by ${user?.email || 'a seller'} and is awaiting your review.`,
+                  type: 'info'
+                });
+              }
+            } catch (_) {
+              // Notification failure should not block the seller flow
+            }
           },
           onError: (error: any) => toast({ title: 'Creation failed', description: error.message, variant: 'destructive' })
         }

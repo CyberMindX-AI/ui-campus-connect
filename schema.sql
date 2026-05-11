@@ -240,6 +240,12 @@ CREATE POLICY "Conversation participants can view messages." ON public.messages 
 CREATE POLICY "Authenticated users can send messages." ON public.messages FOR INSERT WITH CHECK (auth.uid() = sender_id);
 
 CREATE POLICY "Users can update their own notifications." ON public.notifications FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can view their own notifications." ON public.notifications FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Authenticated users can insert notifications." ON public.notifications FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Admins can manage all notifications." ON public.notifications FOR ALL USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin');
+
+-- Admin product management policy (allows admin to approve/reject any product)
+CREATE POLICY "Admins can update any product." ON public.products FOR UPDATE USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin');
 
 -- Seller Applications policies
 CREATE POLICY "Users can view their own applications." ON public.seller_applications FOR SELECT USING (auth.uid() = user_id OR (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin');
