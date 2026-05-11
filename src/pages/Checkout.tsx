@@ -10,7 +10,15 @@ import { useAuth } from '@/contexts/AuthContext';
 import { checkoutService } from '@/services/checkout.service';
 import { useToast } from '@/hooks/use-toast';
 
-import { usePaystackPayment } from 'react-paystack';
+// Remove usePaystackPayment as we'll use the global object for better iframe support
+// import { usePaystackPayment } from 'react-paystack';
+
+// Add type for Paystack global
+declare global {
+  interface Window {
+    PaystackPop: any;
+  }
+}
 
 const steps = ['Delivery Details', 'Payment', 'Confirmation'];
 const deliveryMethods = ['Campus Pickup', 'Hall Delivery', 'Digital Delivery'];
@@ -35,15 +43,6 @@ const Checkout = () => {
   const subtotal = items.reduce((s, i) => s + (i.product.price * i.qty), 0);
   const fee = Math.round(subtotal * 0.10);
   const total = subtotal + fee;
-
-  const config = {
-    reference: (new Date()).getTime().toString(),
-    email: user?.email || "student@campus.edu",
-    amount: total * 100, // Paystack works with kobo/cents
-    publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '',
-  };
-
-  const initializePayment = usePaystackPayment(config);
 
   const handlePlaceOrder = async (paystackRef?: string) => {
     if (!isAuthenticated || !user?.id) {
@@ -72,15 +71,34 @@ const Checkout = () => {
       return;
     }
 
-    // Since Paystack standard handles multiple payment types, we trigger it for all
-    initializePayment(
-      (ref: any) => {
-        handlePlaceOrder(ref.reference);
+    if (!window.PaystackPop) {
+      toast({ title: 'Payment Error', description: 'Paystack SDK could not be loaded. Please refresh the page.', variant: 'destructive' });
+      return;
+    }
+
+    const config = {
+      key: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '',
+      email: user?.email || "student@campus.edu",
+      amount: total * 100, // Paystack works with kobo/cents
+      ref: (new Date()).getTime().toString(),
+      // Ensure the popup is called at the top-level window if nested
+      container: 'root', // Optional: specify container
+      callback: (response: any) => {
+        handlePlaceOrder(response.reference);
       },
-      () => {
+      onClose: () => {
         toast({ title: 'Payment Cancelled', description: 'You cancelled the payment process.' });
       }
-    );
+    };
+
+    try {
+      // Use the PaystackPop directly for better control over iframe context
+      const paystack = new window.PaystackPop();
+      paystack.newTransaction(config);
+    } catch (error) {
+      console.error('Paystack error:', error);
+      toast({ title: 'Payment Error', description: 'Failed to initialize payment popup.', variant: 'destructive' });
+    }
   };
 
   if (items.length === 0 && step !== 2) {
