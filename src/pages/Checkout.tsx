@@ -10,6 +10,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { checkoutService } from '@/services/checkout.service';
 import { useToast } from '@/hooks/use-toast';
 
+import { usePaystackPayment } from 'react-paystack';
+
 const steps = ['Delivery Details', 'Payment', 'Confirmation'];
 const deliveryMethods = ['Campus Pickup', 'Hall Delivery', 'Digital Delivery'];
 const paymentMethods = [
@@ -34,21 +36,51 @@ const Checkout = () => {
   const fee = Math.round(subtotal * 0.10);
   const total = subtotal + fee;
 
-  const handlePlaceOrder = async () => {
-    if (!isAuthenticated || !user?.id) return;
+  const config = {
+    reference: (new Date()).getTime().toString(),
+    email: user?.email || "student@campus.edu",
+    amount: total * 100, // Paystack works with kobo/cents
+    publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '',
+  };
+
+  const initializePayment = usePaystackPayment(config);
+
+  const handlePlaceOrder = async (paystackRef?: string) => {
+    if (!isAuthenticated || !user?.id) {
+      toast({ title: 'Authentication Required', description: 'Please login to complete your order.', variant: 'destructive' });
+      return;
+    }
+    
     setLoading(true);
     try {
-      const result = await checkoutService.createOrder(user.id, items);
+      const result = await checkoutService.createOrder(user.id, items, delivery, payment, paystackRef);
       setOrderId(result?.[0]?.id.substring(0, 8).toUpperCase() || 'CC-' + Math.random().toString(36).substr(2, 6).toUpperCase());
       await clearCart();
       setStep(2);
       toast({ title: 'Order placed!', description: 'Your payment has been processed and seller notified.' });
     } catch (error) {
       console.error('Checkout error:', error);
-      toast({ title: 'Payment Failed', description: 'There was an error processing your transaction.', variant: 'destructive' });
+      toast({ title: 'Order Failed', description: 'There was an error recording your transaction.', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePaymentInitiation = () => {
+    if (!isAuthenticated) {
+      toast({ title: 'Login Required', description: 'Please login to proceed with payment.', variant: 'destructive' });
+      return;
+    }
+
+    // Since Paystack standard handles multiple payment types, we trigger it for all
+    initializePayment(
+      (ref: any) => {
+        handlePlaceOrder(ref.reference);
+      },
+      () => {
+        toast({ title: 'Payment Cancelled', description: 'You cancelled the payment process.' });
+      }
+    );
   };
 
   if (items.length === 0 && step !== 2) {
@@ -125,7 +157,7 @@ const Checkout = () => {
                 </div>
                 <div className="mt-4 flex gap-3">
                   <Button variant="outline" onClick={() => setStep(0)}>Back</Button>
-                  <Button variant="hero" onClick={handlePlaceOrder} disabled={loading}>
+                  <Button variant="hero" onClick={handlePaymentInitiation} disabled={loading}>
                     {loading ? 'Processing...' : `Pay ₦${total.toLocaleString()}`}
                   </Button>
                 </div>

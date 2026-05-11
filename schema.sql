@@ -75,6 +75,8 @@ CREATE TABLE IF NOT EXISTS public.transactions (
     amount BIGINT NOT NULL,
     status TEXT CHECK (status IN ('pending', 'processing', 'completed', 'cancelled', 'disputed')) DEFAULT 'pending',
     delivery_method TEXT,
+    payment_method TEXT DEFAULT 'card',
+    payment_reference TEXT,
     notes TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
