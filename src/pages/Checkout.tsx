@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Shield, CreditCard, Building2, Smartphone, CheckCircle } from 'lucide-react';
+import { Shield, CreditCard, Building2, Smartphone, CheckCircle, MessageCircle, Package, ExternalLink } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { checkoutService } from '@/services/checkout.service';
 import { useToast } from '@/hooks/use-toast';
+import { buildWhatsAppUrl } from '@/lib/whatsapp';
 
 // Declare Paystack global type
 declare global {
@@ -27,7 +27,7 @@ const paymentMethods = [
 ];
 
 const Checkout = () => {
-  const { items, total: cartTotal, clearCart } = useCart();
+  const { items, clearCart } = useCart();
   const { user, isAuthenticated } = useAuth();
   const [step, setStep] = useState(0);
   const [delivery, setDelivery] = useState('Campus Pickup');
@@ -35,28 +35,38 @@ const Checkout = () => {
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [orderId, setOrderId] = useState('');
+  const [paystackRef, setPaystackRef] = useState('');
+  // Snapshot cart before it clears so confirmation screen can display items
+  const [orderSnapshot, setOrderSnapshot] = useState<{ title: string; amount: number }[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const subtotal = items.reduce((s, i) => s + (i.product.price * i.qty), 0);
-  const fee = Math.round(subtotal * 0.10);
+  const subtotal = items.reduce((s, i) => s + i.product.price * i.qty, 0);
+  const fee = Math.round(subtotal * 0.1);
   const total = subtotal + fee;
 
-  const handlePlaceOrder = async (paystackRef?: string) => {
+  const handlePlaceOrder = async (ref: string) => {
     if (!isAuthenticated || !user?.id) {
       toast({ title: 'Authentication Required', description: 'Please login to complete your order.', variant: 'destructive' });
       return;
     }
+
+    // Save snapshot before cart clears
+    const snapshot = items.map(i => ({ title: i.product.title, amount: i.product.price * i.qty }));
+    setOrderSnapshot(snapshot);
+    setPaystackRef(ref);
+
     setLoading(true);
     try {
-      const result = await checkoutService.createOrder(user.id, items, delivery, payment, paystackRef);
-      setOrderId(result?.[0]?.id.substring(0, 8).toUpperCase() || generateRef());
+      const result = await checkoutService.createOrder(user.id, items, delivery, payment, ref);
+      const newOrderId = result?.[0]?.id?.substring(0, 8).toUpperCase() || generateRef();
+      setOrderId(newOrderId);
       await clearCart();
       setStep(2);
-      toast({ title: 'Order placed!', description: 'Your payment has been processed and seller notified.' });
+      toast({ title: '🎉 Payment Confirmed!', description: 'Your order has been placed and the seller notified.' });
     } catch (error) {
       console.error('Checkout error:', error);
-      toast({ title: 'Order Failed', description: 'There was an error recording your transaction.', variant: 'destructive' });
+      toast({ title: 'Order Failed', description: 'Payment received but order save failed. Please contact admin.', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -76,9 +86,7 @@ const Checkout = () => {
       return;
     }
 
-    // ✅ Generate a FRESH reference every time the user clicks Pay.
-    // This ensures Paystack creates a new virtual account for bank transfers
-    // instead of reusing an expired one from a previous attempt.
+    // Fresh reference every click — ensures Paystack generates a new virtual account for bank transfer
     const freshRef = generateRef();
 
     try {
@@ -87,18 +95,29 @@ const Checkout = () => {
         email: user?.email || 'student@campus.edu',
         amount: total * 100, // kobo
         ref: freshRef,
-        callback: (response: any) => {
-          handlePlaceOrder(response.reference);
-        },
-        onClose: () => {
-          toast({ title: 'Payment Cancelled', description: 'You closed the payment window.' });
-        },
+        callback: (response: any) => handlePlaceOrder(response.reference),
+        onClose: () => toast({ title: 'Payment Cancelled', description: 'You closed the payment window.' }),
       });
       handler.openIframe();
     } catch (err) {
       console.error('Paystack error:', err);
       toast({ title: 'Payment Error', description: 'Could not open payment window. Please refresh and try again.', variant: 'destructive' });
     }
+  };
+
+  // Build pre-filled WhatsApp message to admin with full order details
+  const buildAdminMessage = () => {
+    const itemList = orderSnapshot.map(i => `• ${i.title} — ₦${i.amount.toLocaleString()}`).join('\n');
+    const msg =
+      `🛒 *New Order — UI Marketplace*\n\n` +
+      `*Order ID:* ${orderId}\n` +
+      `*Buyer:* ${user?.email}\n` +
+      `*Payment Ref:* ${paystackRef}\n` +
+      `*Delivery:* ${delivery}\n\n` +
+      `*Items:*\n${itemList}\n\n` +
+      `*Total Paid:* ₦${total.toLocaleString()}\n\n` +
+      `Please confirm and coordinate delivery. Thank you!`;
+    return buildWhatsAppUrl(msg);
   };
 
   if (items.length === 0 && step !== 2) {
@@ -117,7 +136,7 @@ const Checkout = () => {
       <div className="container mx-auto px-4 py-6 sm:py-8">
         <h1 className="font-heading text-xl font-bold text-foreground sm:text-2xl">Checkout</h1>
 
-        {/* Step indicator */}
+        {/* Step Indicator */}
         <div className="mt-6 flex items-center gap-2">
           {steps.map((s, i) => (
             <div key={s} className="flex items-center gap-2">
@@ -132,6 +151,8 @@ const Checkout = () => {
 
         <div className="mt-6 grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-6">
+
+            {/* ── STEP 0: Delivery ── */}
             {step === 0 && (
               <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
                 <h2 className="font-heading text-lg font-semibold text-foreground">Delivery Method</h2>
@@ -155,6 +176,7 @@ const Checkout = () => {
               </div>
             )}
 
+            {/* ── STEP 1: Payment ── */}
             {step === 1 && (
               <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
                 <h2 className="font-heading text-lg font-semibold text-foreground">Payment Method</h2>
@@ -182,47 +204,100 @@ const Checkout = () => {
               </div>
             )}
 
+            {/* ── STEP 2: Confirmation ── */}
             {step === 2 && (
               <div className="rounded-xl border border-border bg-card p-6 text-center sm:p-8">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
-                  <CheckCircle className="h-8 w-8 text-success" />
+                {/* Success icon */}
+                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
+                  <CheckCircle className="h-10 w-10 text-green-600" />
                 </div>
-                <h2 className="mt-4 font-heading text-xl font-bold text-foreground">Order Confirmed!</h2>
-                <p className="mt-1 text-sm text-muted-foreground">Order ID: {orderId}</p>
-                <p className="mt-4 text-sm text-muted-foreground">
-                  Your order has been placed successfully. The seller has been notified.
+
+                <h2 className="mt-4 font-heading text-2xl font-bold text-foreground">Payment Confirmed! 🎉</h2>
+                <p className="mt-1 text-sm font-mono text-muted-foreground">
+                  Order ID: <span className="font-bold text-foreground">{orderId}</span>
                 </p>
-                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-                  <Link to="/dashboard/buyer/orders"><Button variant="hero">View Order</Button></Link>
-                  <Link to="/products"><Button variant="outline">Continue Shopping</Button></Link>
+                {paystackRef && (
+                  <p className="mt-0.5 text-xs text-muted-foreground">Ref: {paystackRef}</p>
+                )}
+
+                <p className="mt-4 text-sm text-muted-foreground">
+                  Your payment was successful. Contact admin on WhatsApp to confirm your delivery,
+                  then track your order status below.
+                </p>
+
+                {/* Order recap */}
+                {orderSnapshot.length > 0 && (
+                  <div className="mt-5 rounded-lg bg-muted/50 p-4 text-left space-y-2">
+                    {orderSnapshot.map((item, i) => (
+                      <div key={i} className="flex justify-between text-sm">
+                        <span className="text-foreground font-medium truncate max-w-[60%]">{item.title}</span>
+                        <span className="text-muted-foreground">₦{item.amount.toLocaleString()}</span>
+                      </div>
+                    ))}
+                    <div className="border-t border-border pt-2 flex justify-between text-sm font-bold">
+                      <span className="text-foreground">Total Paid</span>
+                      <span className="text-primary">₦{total.toLocaleString()}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* CTA Buttons */}
+                <div className="mt-6 flex flex-col gap-3">
+                  <a href={buildAdminMessage()} target="_blank" rel="noopener noreferrer">
+                    <Button className="w-full bg-green-500 hover:bg-green-600 text-white gap-2 h-12 text-base font-bold">
+                      <MessageCircle className="h-5 w-5" />
+                      Contact Admin on WhatsApp
+                    </Button>
+                  </a>
+
+                  <Link to="/dashboard/buyer/orders">
+                    <Button variant="hero" className="w-full gap-2 h-12 text-base font-bold">
+                      <Package className="h-5 w-5" />
+                      Track My Order
+                    </Button>
+                  </Link>
+
+                  <Link to="/products">
+                    <Button variant="outline" className="w-full gap-2">
+                      <ExternalLink className="h-4 w-4" />
+                      Continue Shopping
+                    </Button>
+                  </Link>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Order Summary */}
-          <div className="rounded-xl border border-border bg-card p-4 sm:p-6 h-fit">
-            <h3 className="font-heading text-lg font-semibold text-foreground">Order Summary</h3>
-            <div className="mt-4 space-y-3">
-              {items.map((item) => (
-                <div key={item.product.id} className="flex items-center gap-3">
-                  <img src={item.product.images?.[0] || '/placeholder.svg'} alt={item.product.title} className="h-12 w-12 rounded-lg object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
-                  <div className="flex-1 min-w-0">
-                    <p className="truncate text-sm font-medium text-foreground">{item.product.title}</p>
-                    <p className="text-xs text-muted-foreground">{item.product.seller} x{item.qty}</p>
+          {/* Order Summary sidebar — hidden on confirmation step */}
+          {step !== 2 && (
+            <div className="rounded-xl border border-border bg-card p-4 sm:p-6 h-fit">
+              <h3 className="font-heading text-lg font-semibold text-foreground">Order Summary</h3>
+              <div className="mt-4 space-y-3">
+                {items.map((item) => (
+                  <div key={item.product.id} className="flex items-center gap-3">
+                    <img
+                      src={item.product.images?.[0] || '/placeholder.svg'}
+                      alt={item.product.title}
+                      className="h-12 w-12 rounded-lg object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="truncate text-sm font-medium text-foreground">{item.product.title}</p>
+                      <p className="text-xs text-muted-foreground">{item.product.seller} x{item.qty}</p>
+                    </div>
+                    <span className="text-sm font-semibold text-foreground">₦{(item.product.price * item.qty).toLocaleString()}</span>
                   </div>
-                  <span className="text-sm font-semibold text-foreground">₦{(item.product.price * item.qty).toLocaleString()}</span>
-                </div>
-              ))}
+                ))}
+              </div>
+              <hr className="my-4 border-border" />
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>₦{subtotal.toLocaleString()}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Service Fee (10%)</span><span>₦{fee.toLocaleString()}</span></div>
+                <hr className="border-border" />
+                <div className="flex justify-between font-semibold"><span>Total</span><span className="text-primary">₦{total.toLocaleString()}</span></div>
+              </div>
             </div>
-            <hr className="my-4 border-border" />
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span className="text-foreground">₦{subtotal.toLocaleString()}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Service Fee (10%)</span><span className="text-foreground">₦{fee.toLocaleString()}</span></div>
-              <hr className="border-border" />
-              <div className="flex justify-between font-semibold"><span className="text-foreground">Total</span><span className="text-primary">₦{total.toLocaleString()}</span></div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </Layout>
